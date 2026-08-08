@@ -1,0 +1,1479 @@
+local Players          = game:GetService("Players")
+local Player           = Players.LocalPlayer
+local RunService       = game:GetService("RunService")
+local TweenService     = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService      = game:GetService("HttpService")
+
+local DPI = {}
+do
+    local cam     = workspace.CurrentCamera
+    local vp      = cam.ViewportSize
+    local sH, sW  = vp.Y, vp.X
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    local isTablet = UserInputService.TouchEnabled and (sH > 900 or sW > 900)
+    local BH, BW
+    if isMobile and not isTablet then BH,BW = 380,680
+    elseif isTablet               then BH,BW = 500,900
+    else                               BH,BW = 600,1080 end
+    local raw = math.min(sH/BH, sW/BW)
+    local cor
+    if isMobile and not isTablet then
+        cor = sH>=700 and 0.80 or sH>=550 and 0.88 or sH>=400 and 0.95 or 1.00
+    elseif isTablet then
+        cor = sH>=800 and 0.85 or 0.92
+    else
+        cor = sH>=2160 and 0.90 or sH>=1440 and 0.95 or 1.00
+    end
+    local fs = math.clamp(raw*cor, 0.55, 1.40)
+    fs = math.floor(fs/0.05+0.5)*0.05
+    DPI.scale    = fs
+    DPI.isMobile = isMobile
+    DPI.isTablet = isTablet
+    DPI.sW, DPI.sH = sW, sH
+    function DPI:S(v)  return math.round(v*self.scale) end
+    function DPI:U2(xs,xo,ys,yo) return UDim2.new(xs,math.round(xo*self.scale),ys,math.round(yo*self.scale)) end
+    function DPI:U(s,o) return UDim.new(s,math.round(o*self.scale)) end
+    function DPI:F(v)  return math.max(8,math.round(v*self.scale)) end
+    cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        local nv = cam.ViewportSize
+        if not isMobile and not isTablet then
+            local nr = math.min(nv.Y/600, nv.X/1080)
+            DPI.scale = math.floor(math.clamp(nr,0.55,1.40)/0.05+0.5)*0.05
+            DPI.sW, DPI.sH = nv.X, nv.Y
+        end
+    end)
+end
+
+local ThemePresets = {
+    Pink   = { A=Color3.fromRGB(255,105,180), M=Color3.fromRGB(255,160,210), W=Color3.fromRGB(255,220,240) },
+    Green  = { A=Color3.fromRGB(0,200,100),   M=Color3.fromRGB(100,220,160), W=Color3.fromRGB(200,255,230) },
+    Blue   = { A=Color3.fromRGB(0,140,255),   M=Color3.fromRGB(80,180,255),  W=Color3.fromRGB(200,230,255) },
+    Purple = { A=Color3.fromRGB(160,60,255),  M=Color3.fromRGB(200,130,255), W=Color3.fromRGB(230,200,255) },
+    Red    = { A=Color3.fromRGB(255,50,80),   M=Color3.fromRGB(255,130,150), W=Color3.fromRGB(255,200,210) },
+    Gold   = { A=Color3.fromRGB(255,190,0),   M=Color3.fromRGB(255,220,80),  W=Color3.fromRGB(255,245,200) },
+    Cyan   = { A=Color3.fromRGB(0,220,220),   M=Color3.fromRGB(80,235,235),  W=Color3.fromRGB(200,250,255) },
+    Orange = { A=Color3.fromRGB(255,130,0),   M=Color3.fromRGB(255,190,80),  W=Color3.fromRGB(255,235,200) },
+}
+
+local AP = ThemePresets.Pink
+local Theme = {
+    BG          = Color3.fromRGB(13,13,18),
+    BGSec       = Color3.fromRGB(22,18,28),
+    BGItem      = Color3.fromRGB(32,28,40),
+    BGCard      = Color3.fromRGB(28,24,36),
+    TextPri     = Color3.fromRGB(255,255,255),
+    TextSec     = Color3.fromRGB(200,185,210),
+    TextDim     = Color3.fromRGB(130,115,145),
+    Stroke      = Color3.fromRGB(60,50,75),
+    Petal1      = Color3.fromRGB(255,182,193),
+    Petal2      = Color3.fromRGB(255,105,180),
+    Petal3      = Color3.fromRGB(255,20,147),
+}
+function Theme.Accent()  return AP.A end
+function Theme.AccentM() return AP.M end
+function Theme.AccentW() return AP.W end
+function Theme.Grad()
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0,   AP.A),
+        ColorSequenceKeypoint.new(0.55,AP.M),
+        ColorSequenceKeypoint.new(1,   AP.W),
+    })
+end
+function Theme.GradBG()
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(13,13,18)),
+        ColorSequenceKeypoint.new(0.5, AP.A),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(13,13,18)),
+    })
+end
+
+local ThemeCBs = {}
+local function ApplyTheme(name)
+    local p = ThemePresets[name]
+    if not p then return end
+    AP = p
+    for _,fn in pairs(ThemeCBs) do pcall(fn, p) end
+end
+local function OnThemeChange(fn) table.insert(ThemeCBs, fn) end
+
+local function New(cls, props, parent)
+    local i = Instance.new(cls)
+    if parent then i.Parent = parent end
+    for k,v in pairs(props) do i[k]=v end
+    return i
+end
+
+local function Corner(r, p) return New("UICorner",{CornerRadius=DPI:U(0,r)},p) end
+local function Stroke(c,t,tr,p)
+    return New("UIStroke",{Color=c,Thickness=t,Transparency=tr or 0},p)
+end
+local function Gradient(cs,rot,p)
+    return New("UIGradient",{Color=cs,Rotation=rot or 0},p)
+end
+local function Padding(l,r,t,b,p)
+    return New("UIPadding",{
+        PaddingLeft  = DPI:U(0,l or 0),
+        PaddingRight = DPI:U(0,r or 0),
+        PaddingTop   = DPI:U(0,t or 0),
+        PaddingBottom= DPI:U(0,b or 0),
+    },p)
+end
+
+local function GetGuiParent()
+    if RunService:IsStudio() then
+        return Player:WaitForChild("PlayerGui")
+    end
+    local ok,r = pcall(function() if gethui then return gethui() end end)
+    if ok and r then return r end
+    local ok2,r2 = pcall(function() if cloneref then return cloneref(game:GetService("CoreGui")) end end)
+    if ok2 and r2 then return r2 end
+    local ok3,r3 = pcall(function() return game:GetService("CoreGui") end)
+    if ok3 and r3 then return r3 end
+    return Player:WaitForChild("PlayerGui")
+end
+
+local function Ripple(btn, x, y)
+    task.spawn(function()
+        btn.ClipsDescendants = true
+        local c = New("ImageLabel",{
+            Image="rbxassetid://106471194043211",
+            ImageColor3=Color3.fromRGB(255,255,255),
+            ImageTransparency=0.88,
+            BackgroundTransparency=1,
+            ZIndex=10,Name="Rpl",
+        },btn)
+        local nx = x - btn.AbsolutePosition.X
+        local ny = y - btn.AbsolutePosition.Y
+        c.Position = UDim2.new(0,nx,0,ny)
+        local sz = math.max(btn.AbsoluteSize.X,btn.AbsoluteSize.Y)*1.6
+        TweenService:Create(c,TweenInfo.new(0.45,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{
+            Size=UDim2.new(0,sz,0,sz),
+            Position=UDim2.new(0.5,-sz/2,0.5,-sz/2),
+            ImageTransparency=1,
+        }):Play()
+        task.wait(0.45)
+        c:Destroy()
+    end)
+end
+
+local function DrawSakura(parent)
+    local petals = {
+        {pos=UDim2.new(0.05,0,0.05,0), rot=25,  s=DPI:S(18), c=Theme.Petal1, tr=0.55},
+        {pos=UDim2.new(0.90,0,0.02,0), rot=-15, s=DPI:S(14), c=Theme.Petal2, tr=0.60},
+        {pos=UDim2.new(0.80,0,0.85,0), rot=40,  s=DPI:S(20), c=Theme.Petal1, tr=0.50},
+        {pos=UDim2.new(0.02,0,0.75,0), rot=-30, s=DPI:S(12), c=Theme.Petal3, tr=0.65},
+        {pos=UDim2.new(0.50,0,0.03,0), rot=10,  s=DPI:S(10), c=Theme.Petal2, tr=0.70},
+    }
+    for _,pd in ipairs(petals) do
+        local petal = New("ImageLabel",{
+            Image               = "rbxassetid://6031280882",
+            ImageColor3         = pd.c,
+            ImageTransparency   = pd.tr,
+            BackgroundTransparency = 1,
+            BorderSizePixel     = 0,
+            Position            = pd.pos,
+            Size                = UDim2.fromOffset(pd.s,pd.s),
+            Rotation            = pd.rot,
+            ZIndex              = 2,
+        },parent)
+        task.spawn(function()
+            while petal and petal.Parent do
+                TweenService:Create(petal,TweenInfo.new(3+math.random()*2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,0,true),{
+                    Rotation = pd.rot + (math.random()*20-10),
+                    Position = UDim2.new(pd.pos.X.Scale, pd.pos.X.Offset, pd.pos.Y.Scale+0.02, pd.pos.Y.Offset),
+                }):Play()
+                task.wait(3+math.random()*2)
+            end
+        end)
+    end
+end
+
+local function MakeOpenBtn()
+    local sg = New("ScreenGui",{ZIndexBehavior=Enum.ZIndexBehavior.Sibling},GetGuiParent())
+    local btn = New("ImageButton",{
+        Image               = "rbxassetid://72876614672836",
+        ImageColor3         = Theme.Accent(),
+        BackgroundColor3    = Theme.BGItem,
+        BackgroundTransparency = 0,
+        BorderSizePixel     = 0,
+        Position            = DPI:U2(0.05,0,0.07,0),
+        Size                = DPI:U2(0,38,0,38),
+        Visible             = false,
+    },sg)
+    Corner(10,btn)
+    Stroke(Theme.Accent(),1.5,0,btn)
+    local drag,ds,sp = false,nil,nil
+    btn.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then
+            drag=true; ds=i.Position; sp=btn.Position
+            i.Changed:Connect(function() if i.UserInputState==Enum.UserInputState.End then drag=false end end)
+        end
+    end)
+    btn.InputChanged:Connect(function(i)
+        if drag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+            local d = i.Position-ds
+            btn.Position = UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)
+        end
+    end)
+    return btn
+end
+
+local OpenBtn = MakeOpenBtn()
+
+local function MakeDrag(handle, frame)
+    local drag,ds,sp = false,nil,nil
+    handle.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+            drag=true; ds=i.Position; sp=frame.Position
+            i.Changed:Connect(function() if i.UserInputState==Enum.UserInputState.End then drag=false end end)
+        end
+    end)
+    handle.InputChanged:Connect(function(i)
+        if drag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+            local d=i.Position-ds
+            frame.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)
+        end
+    end)
+end
+
+local MugiHub = {}
+local Notif   = {}
+MugiHub.Unloaded = false
+
+function MugiHub:SetNotification(cfg)
+    local Title   = cfg[1] or ""
+    local Sub     = cfg[2] or ""
+    local Body    = cfg[3] or ""
+    local Dur     = cfg[5] or 0.35
+    local Delay   = cfg[6] or 5
+
+    local sg = New("ScreenGui",{ZIndexBehavior=Enum.ZIndexBehavior.Sibling},GetGuiParent())
+    local holder = New("Frame",{
+        AnchorPoint            = Vector2.new(1,1),
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        Position               = DPI:U2(1,-12,1,-12),
+        Size                   = DPI:U2(0,290,1,0),
+        Name                   = "NHolder",
+    },sg)
+
+    local GAP = DPI:S(8)
+
+    local function Restack()
+        local kids = {}
+        for _,v in ipairs(holder:GetChildren()) do
+            if v:IsA("Frame") and v.Name=="NFrame" then
+                table.insert(kids,v)
+            end
+        end
+        local totalY = 0
+        local ti = TweenInfo.new(0.22,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+        for i=#kids,1,-1 do
+            local v=kids[i]
+            TweenService:Create(v,ti,{
+                Position=UDim2.new(0,0,1,-(totalY+v.AbsoluteSize.Y))
+            }):Play()
+            totalY = totalY + v.AbsoluteSize.Y + GAP
+        end
+    end
+
+    holder.ChildAdded:Connect(Restack)
+    holder.ChildRemoved:Connect(Restack)
+
+    local nFrame = New("Frame",{
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        Size                   = DPI:U2(1,0,0,88),
+        AnchorPoint            = Vector2.new(0,1),
+        Position               = UDim2.new(1,0,1,0),
+        Name                   = "NFrame",
+    },holder)
+
+    local card = New("Frame",{
+        BackgroundColor3       = Theme.BGCard,
+        BorderSizePixel        = 0,
+        Size                   = UDim2.new(1,0,1,0),
+        ClipsDescendants       = true,
+    },nFrame)
+    Corner(10,card)
+    Stroke(Theme.Accent(),1.2,0.1,card)
+
+    local accentBar = New("Frame",{
+        BackgroundColor3 = Theme.Accent(),
+        BorderSizePixel  = 0,
+        Size             = DPI:U2(0,3,1,0),
+    },card)
+    Corner(3,accentBar)
+    Gradient(Theme.Grad(),90,accentBar)
+
+    New("TextLabel",{
+        Font=Enum.Font.GothamBold,
+        Text=Title,
+        TextColor3=Theme.TextPri,
+        TextSize=DPI:F(13),
+        TextXAlignment=Enum.TextXAlignment.Left,
+        BackgroundTransparency=1,
+        BorderSizePixel=0,
+        Position=DPI:U2(0,14,0,8),
+        Size=DPI:U2(1,-60,0,15),
+    },card)
+
+    New("TextLabel",{
+        Font=Enum.Font.GothamBold,
+        Text=Sub,
+        TextColor3=Theme.Accent(),
+        TextSize=DPI:F(11),
+        TextXAlignment=Enum.TextXAlignment.Left,
+        BackgroundTransparency=1,
+        BorderSizePixel=0,
+        Position=DPI:U2(0,14,0,24),
+        Size=DPI:U2(1,-60,0,12),
+    },card)
+
+    New("TextLabel",{
+        Font=Enum.Font.Gotham,
+        Text=Body,
+        TextColor3=Theme.TextSec,
+        TextSize=DPI:F(11),
+        TextXAlignment=Enum.TextXAlignment.Left,
+        TextWrapped=true,
+        BackgroundTransparency=1,
+        BorderSizePixel=0,
+        Position=DPI:U2(0,14,0,38),
+        Size=DPI:U2(1,-18,0,26),
+    },card)
+
+    local barBG = New("Frame",{
+        BackgroundColor3=Theme.BGItem,
+        BorderSizePixel=0,
+        AnchorPoint=Vector2.new(0,1),
+        Position=DPI:U2(0,14,1,-6),
+        Size=DPI:U2(1,-28,0,DPI:S(4)),
+    },card)
+    Corner(3,barBG)
+
+    local barFill = New("Frame",{
+        BackgroundColor3=Theme.Accent(),
+        BorderSizePixel=0,
+        Size=UDim2.fromScale(1,1),
+    },barBG)
+    Corner(3,barFill)
+    Gradient(Theme.Grad(),0,barFill)
+
+    local closeBtn = New("TextButton",{
+        Font=Enum.Font.GothamBold,
+        Text="✕",
+        TextColor3=Theme.TextDim,
+        TextSize=DPI:F(12),
+        AnchorPoint=Vector2.new(1,0),
+        BackgroundTransparency=1,
+        BorderSizePixel=0,
+        Position=UDim2.new(1,-DPI:S(6),0,DPI:S(6)),
+        Size=DPI:U2(0,18,0,18),
+        ZIndex=5,
+        AutoButtonColor=false,
+    },card)
+
+    local closed = false
+    local function Close()
+        if closed then return end
+        closed = true
+        TweenService:Create(card,TweenInfo.new(Dur,Enum.EasingStyle.Back,Enum.EasingDirection.In),{
+            Position=DPI:U2(1,20,0,0),
+            BackgroundTransparency=1,
+        }):Play()
+        task.wait(Dur)
+        nFrame:Destroy()
+        if #holder:GetChildren()==0 then sg:Destroy() end
+    end
+
+    closeBtn.Activated:Connect(Close)
+    closeBtn.MouseButton1Down:Connect(function()
+        closeBtn.TextColor3 = Theme.Accent()
+    end)
+    closeBtn.MouseButton1Up:Connect(function()
+        closeBtn.TextColor3 = Theme.TextDim
+    end)
+
+    TweenService:Create(card,TweenInfo.new(Dur,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{
+        Position=UDim2.new(0,0,0,0),
+    }):Play()
+    card.Position = DPI:U2(1,20,0,0)
+
+    task.spawn(function()
+        local steps = 80
+        for i=steps,0,-1 do
+            if closed then break end
+            barFill.Size = UDim2.fromScale(i/steps,1)
+            task.wait(Delay/steps)
+        end
+        Close()
+    end)
+end
+
+function MugiHub:CreateWindow(cfg)
+    local Title   = cfg.Title or cfg[1] or "MugiHub"
+    local Desc    = cfg.Description or cfg[2] or ""
+    local CTheme  = cfg.Theme or "Pink"
+    local CIcon   = cfg.Icon or "rbxassetid://72876614672836"
+    local CThumb  = cfg.Thumbnail or nil
+    local TabW    = cfg["Tab Width"] or 128
+
+    ApplyTheme(CTheme)
+
+    local scaledW    = DPI:S(580)
+    local scaledH    = DPI:S(340)
+    local scaledTabW = DPI:S(TabW)
+
+    local rootGui = New("ScreenGui",{ZIndexBehavior=Enum.ZIndexBehavior.Sibling},GetGuiParent())
+
+    local holder = New("Frame",{
+        AnchorPoint            = Vector2.new(0.5,0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        Position               = UDim2.new(0.5,0,0.5,0),
+        Size                   = UDim2.fromOffset(scaledW+DPI:S(40),scaledH+DPI:S(40)),
+        ZIndex                 = 1,
+        Name                   = "Holder",
+    },rootGui)
+
+    local shadow = New("ImageLabel",{
+        Image               = "rbxassetid://6015897843",
+        ImageColor3         = Color3.fromRGB(0,0,0),
+        ImageTransparency   = 0.55,
+        ScaleType           = Enum.ScaleType.Slice,
+        SliceCenter         = Rect.new(49,49,450,450),
+        AnchorPoint         = Vector2.new(0.5,0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel     = 0,
+        Position            = UDim2.new(0.5,0,0.5,0),
+        Size                = UDim2.fromOffset(scaledW,scaledH),
+    },holder)
+
+    local Main = New("Frame",{
+        AnchorPoint            = Vector2.new(0.5,0.5),
+        BackgroundColor3       = Theme.BG,
+        BackgroundTransparency = 0,
+        BorderSizePixel        = 0,
+        Position               = UDim2.new(0.5,0,0.5,0),
+        Size                   = UDim2.fromOffset(scaledW,scaledH),
+        ClipsDescendants       = true,
+        Name                   = "Main",
+    },shadow)
+    Corner(12,Main)
+
+    DrawSakura(Main)
+
+    local topH = DPI:S(42)
+    local Top = New("Frame",{
+        BackgroundColor3       = Theme.BGSec,
+        BackgroundTransparency = 0,
+        BorderSizePixel        = 0,
+        Size                   = UDim2.new(1,0,0,topH),
+        ZIndex                 = 3,
+        Name                   = "Top",
+    },Main)
+    Corner(12,Top)
+    New("Frame",{
+        BackgroundColor3 = Theme.BGSec,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0,0,0.5,0),
+        Size             = UDim2.new(1,0,0.5,0),
+        ZIndex           = 3,
+    },Top)
+
+    local gradLine = New("Frame",{
+        BackgroundColor3 = Theme.BG,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0,0,1,-DPI:S(1)),
+        Size             = UDim2.new(1,0,0,DPI:S(1)),
+        ZIndex           = 4,
+    },Top)
+    Gradient(Theme.GradBG(),0,gradLine)
+
+    local iconSz = DPI:S(22)
+    local WIcon = New("ImageLabel",{
+        Image                  = CIcon,
+        ImageColor3            = Theme.Accent(),
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        AnchorPoint            = Vector2.new(0,0.5),
+        Position               = DPI:U2(0,10,0.5,0),
+        Size                   = UDim2.fromOffset(iconSz,iconSz),
+        ZIndex                 = 4,
+    },Top)
+
+    local titleLbl = New("TextLabel",{
+        Font                   = Enum.Font.GothamBold,
+        Text                   = Title,
+        TextColor3             = Theme.TextPri,
+        TextSize               = DPI:F(14),
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        AnchorPoint            = Vector2.new(0,0.5),
+        Position               = DPI:U2(0,10+iconSz+DPI:S(6),0.5,0),
+        AutomaticSize          = Enum.AutomaticSize.X,
+        Size                   = UDim2.new(0,0,0,DPI:S(18)),
+        ZIndex                 = 4,
+    },Top)
+    Gradient(Theme.Grad(),0,titleLbl)
+
+    local descTag, descTagStroke
+    if Desc and Desc ~= "" then
+        descTag = New("Frame",{
+            BackgroundColor3       = Theme.Accent(),
+            BackgroundTransparency = 0.15,
+            BorderSizePixel        = 0,
+            AnchorPoint            = Vector2.new(0,0.5),
+            Position               = DPI:U2(0,10+iconSz+DPI:S(6)+DPI:S(90),0.5,0),
+            AutomaticSize          = Enum.AutomaticSize.X,
+            Size                   = UDim2.new(0,0,0,DPI:S(20)),
+            ZIndex                 = 4,
+        },Top)
+        Corner(5,descTag)
+        descTagStroke = Stroke(Theme.Accent(),1,0.2,descTag)
+        Padding(8,8,0,0,descTag)
+        New("TextLabel",{
+            Font                   = Enum.Font.GothamBold,
+            Text                   = Desc,
+            TextColor3             = Theme.TextPri,
+            TextSize               = DPI:F(11),
+            TextXAlignment         = Enum.TextXAlignment.Center,
+            BackgroundTransparency = 1,
+            BorderSizePixel        = 0,
+            AnchorPoint            = Vector2.new(0,0.5),
+            Position               = UDim2.new(0,0,0.5,0),
+            AutomaticSize          = Enum.AutomaticSize.X,
+            Size                   = UDim2.new(0,0,1,0),
+            ZIndex                 = 4,
+        },descTag)
+        task.defer(function()
+            task.wait()
+            local tw = titleLbl.AbsoluteSize.X
+            if tw > 0 then
+                descTag.Position = DPI:U2(0,10+iconSz+DPI:S(6)+tw+DPI:S(10),0.5,0)
+            end
+        end)
+    end
+
+    local extraTags = {}
+    local function AddTag(text, bgColor)
+        bgColor = bgColor or Theme.BGItem
+        local tag = New("Frame",{
+            BackgroundColor3       = bgColor,
+            BackgroundTransparency = 0.1,
+            BorderSizePixel        = 0,
+            AnchorPoint            = Vector2.new(0,0.5),
+            Position               = UDim2.new(0,0,0.5,0),
+            AutomaticSize          = Enum.AutomaticSize.X,
+            Size                   = UDim2.new(0,0,0,DPI:S(20)),
+            ZIndex                 = 4,
+        },Top)
+        Corner(5,tag)
+        Stroke(bgColor,1,0.3,tag)
+        Padding(7,7,0,0,tag)
+        New("TextLabel",{
+            Font=Enum.Font.GothamBold,
+            Text=text,
+            TextColor3=Theme.TextPri,
+            TextSize=DPI:F(10),
+            TextXAlignment=Enum.TextXAlignment.Center,
+            BackgroundTransparency=1,
+            BorderSizePixel=0,
+            AnchorPoint=Vector2.new(0,0.5),
+            Position=UDim2.new(0,0,0.5,0),
+            AutomaticSize=Enum.AutomaticSize.X,
+            Size=UDim2.new(0,0,1,0),
+            ZIndex=4,
+        },tag)
+        table.insert(extraTags,tag)
+        task.defer(function()
+            task.wait()
+            local baseX = 10+iconSz+DPI:S(6)+titleLbl.AbsoluteSize.X+DPI:S(10)
+            if descTag then baseX = baseX + (descTag.AbsoluteSize.X or 0) + DPI:S(6) end
+            local offset = 0
+            for _,t in ipairs(extraTags) do
+                t.Position = DPI:U2(0,baseX+offset,0.5,0)
+                offset = offset + (t.AbsoluteSize.X or 0) + DPI:S(6)
+            end
+        end)
+        return tag
+    end
+
+    local executor = "Unknown"
+    if syn then executor = "Synapse X"
+    elseif KRNL_LOADED then executor = "Krnl"
+    elseif identifyexecutor then
+        local ok,r = pcall(identifyexecutor)
+        if ok and r then executor = r end
+    elseif getexecutorname then
+        local ok,r = pcall(getexecutorname)
+        if ok and r then executor = r end
+    end
+    if executor ~= "Unknown" then
+        AddTag(executor, Theme.BGItem)
+    end
+
+    local MinBtn = New("ImageButton",{
+        Image                  = "rbxassetid://72876614672836",
+        ImageColor3            = Theme.TextSec,
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        AnchorPoint            = Vector2.new(1,0.5),
+        Position               = UDim2.new(1,-DPI:S(38),0.5,0),
+        Size                   = DPI:U2(0,20,0,20),
+        ZIndex                 = 5,
+        AutoButtonColor        = false,
+    },Top)
+
+    local CloseBtn = New("TextButton",{
+        Font                   = Enum.Font.GothamBold,
+        Text                   = "✕",
+        TextColor3             = Theme.TextSec,
+        TextSize               = DPI:F(14),
+        AnchorPoint            = Vector2.new(1,0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        Position               = UDim2.new(1,-DPI:S(12),0.5,0),
+        Size                   = DPI:U2(0,22,0,22),
+        ZIndex                 = 5,
+        AutoButtonColor        = false,
+    },Top)
+
+    CloseBtn.MouseEnter:Connect(function()
+        CloseBtn.TextColor3 = Theme.Accent()
+    end)
+    CloseBtn.MouseLeave:Connect(function()
+        CloseBtn.TextColor3 = Theme.TextSec
+    end)
+    MinBtn.MouseEnter:Connect(function()
+        MinBtn.ImageColor3 = Theme.Accent()
+    end)
+    MinBtn.MouseLeave:Connect(function()
+        MinBtn.ImageColor3 = Theme.TextSec
+    end)
+
+    MinBtn.Activated:Connect(function()
+        holder.Visible = false
+        OpenBtn.Visible = true
+    end)
+    OpenBtn.Activated:Connect(function()
+        holder.Visible = true
+        OpenBtn.Visible = false
+    end)
+
+    CloseBtn.Activated:Connect(function()
+        local cg = New("ScreenGui",{ZIndexBehavior=Enum.ZIndexBehavior.Sibling},GetGuiParent())
+        local ov = New("Frame",{
+            Size=UDim2.fromScale(1,1),
+            BackgroundColor3=Color3.fromRGB(0,0,0),
+            BackgroundTransparency=0.45,
+            BorderSizePixel=0,
+            ZIndex=20,
+        },cg)
+        local dlg = New("Frame",{
+            AnchorPoint=Vector2.new(0.5,0.5),
+            Position=UDim2.fromScale(0.5,0.5),
+            Size=DPI:U2(0,300,0,140),
+            BackgroundColor3=Theme.BGCard,
+            BorderSizePixel=0,
+            ZIndex=21,
+        },cg)
+        Corner(12,dlg)
+        Stroke(Theme.Accent(),1.2,0.1,dlg)
+        New("TextLabel",{
+            Font=Enum.Font.GothamBold,
+            Text="MugiHub",
+            TextColor3=Theme.Accent(),
+            TextSize=DPI:F(13),
+            BackgroundTransparency=1,
+            BorderSizePixel=0,
+            Position=DPI:U2(0,14,0,12),
+            Size=DPI:U2(1,-28,0,16),
+            ZIndex=22,
+        },dlg)
+        New("TextLabel",{
+            Font=Enum.Font.Gotham,
+            Text="Yakin ingin menutup script ini?",
+            TextColor3=Theme.TextSec,
+            TextSize=DPI:F(12),
+            TextWrapped=true,
+            BackgroundTransparency=1,
+            BorderSizePixel=0,
+            Position=DPI:U2(0,14,0,34),
+            Size=DPI:U2(1,-28,0,36),
+            ZIndex=22,
+        },dlg)
+        local function DlgBtn(txt,xpos,primary)
+            local b = New("TextButton",{
+                Font=Enum.Font.GothamBold,
+                Text=txt,
+                TextColor3=primary and Theme.BG or Theme.TextPri,
+                TextSize=DPI:F(12),
+                BackgroundColor3=primary and Theme.Accent() or Theme.BGItem,
+                BorderSizePixel=0,
+                AnchorPoint=Vector2.new(0,1),
+                Position=DPI:U2(0,xpos,1,-14),
+                Size=DPI:U2(0,124,0,32),
+                ZIndex=22,
+                AutoButtonColor=false,
+            },dlg)
+            Corner(7,b)
+            if primary then Gradient(Theme.Grad(),0,b) end
+            return b
+        end
+        local cancelB = DlgBtn("Batal",14,false)
+        local closeB  = DlgBtn("Tutup",152,true)
+        cancelB.Activated:Connect(function() cg:Destroy() end)
+        closeB.Activated:Connect(function()
+            cg:Destroy()
+            MugiHub.Unloaded = true
+            if rootGui then rootGui:Destroy() end
+            if OpenBtn and OpenBtn.Parent then OpenBtn.Parent:Destroy() end
+            for _,v in pairs(Player:GetDescendants()) do
+                if v:IsA("LocalScript") and v.Name~="RobloxCharacterSounds" then
+                    pcall(function() v.Disabled=true end)
+                end
+            end
+        end)
+    end)
+
+    MakeDrag(Top, holder)
+
+    local divX = DPI:S(topH)
+    local sideW = scaledTabW
+
+    local SearchFrame = New("Frame",{
+        BackgroundColor3       = Theme.BGSec,
+        BackgroundTransparency = 0,
+        BorderSizePixel        = 0,
+        Position               = DPI:U2(0,8,0,topH+DPI:S(8)),
+        Size                   = UDim2.new(0,sideW,0,DPI:S(28)),
+        ClipsDescendants       = true,
+        ZIndex                 = 3,
+    },Main)
+    Corner(7,SearchFrame)
+    Stroke(Theme.Accent(),1,0.6,SearchFrame)
+
+    New("ImageLabel",{
+        Image               = "rbxassetid://139077035360664",
+        ImageColor3         = Theme.Accent(),
+        BackgroundTransparency = 1,
+        BorderSizePixel     = 0,
+        AnchorPoint         = Vector2.new(0,0.5),
+        Position            = DPI:U2(0,5,0.5,0),
+        Size                = UDim2.fromOffset(DPI:S(14),DPI:S(14)),
+        ZIndex              = 4,
+    },SearchFrame)
+
+    local SearchBox = New("TextBox",{
+        Font             = Enum.Font.Gotham,
+        PlaceholderText  = "Cari tab...",
+        PlaceholderColor3= Theme.TextDim,
+        Text             = "",
+        TextColor3       = Theme.TextPri,
+        TextSize         = DPI:F(11),
+        TextXAlignment   = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+        BorderSizePixel  = 0,
+        AnchorPoint      = Vector2.new(0,0.5),
+        Position         = DPI:U2(0,22,0.5,0),
+        Size             = DPI:U2(1,-26,1,-6),
+        ClearTextOnFocus = false,
+        ZIndex           = 4,
+    },SearchFrame)
+
+    local TabScroll = New("ScrollingFrame",{
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        ScrollBarThickness     = 0,
+        CanvasSize             = UDim2.new(0,0,2,0),
+        Active                 = true,
+        Position               = DPI:U2(0,8,0,topH+DPI:S(8)+DPI:S(28)+DPI:S(6)),
+        Size                   = UDim2.new(0,sideW,1,-(topH+DPI:S(8)+DPI:S(28)+DPI:S(6)+DPI:S(8))),
+        ZIndex                 = 3,
+    },Main)
+    New("UIListLayout",{Padding=UDim.new(0,DPI:S(3)),SortOrder=Enum.SortOrder.LayoutOrder},TabScroll)
+
+    local function UpdateTabCanvas()
+        local h=0
+        for _,v in pairs(TabScroll:GetChildren()) do
+            if v.Name~="UIListLayout" then h=h+DPI:S(3)+v.Size.Y.Offset end
+        end
+        TabScroll.CanvasSize=UDim2.new(0,0,0,h)
+    end
+    TabScroll.ChildAdded:Connect(UpdateTabCanvas)
+    TabScroll.ChildRemoved:Connect(UpdateTabCanvas)
+
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local q=string.lower(SearchBox.Text)
+        for _,v in pairs(TabScroll:GetChildren()) do
+            if v.Name=="TabBtn" then
+                local lbl=v:FindFirstChild("TabName")
+                if lbl then v.Visible=(q=="" or string.find(string.lower(lbl.Text),q,1,true)~=nil) end
+            end
+        end
+    end)
+
+    local divider = New("Frame",{
+        BackgroundColor3       = Theme.Stroke,
+        BackgroundTransparency = 0.2,
+        BorderSizePixel        = 0,
+        Position               = UDim2.new(0,sideW+DPI:S(8),0,topH),
+        Size                   = UDim2.new(0,DPI:S(1),1,-topH),
+        ZIndex                 = 3,
+    },Main)
+
+    local contentX = sideW+DPI:S(8)+DPI:S(1)+DPI:S(8)
+    local contentW = scaledW - contentX - DPI:S(8)
+
+    local ContentArea = New("Frame",{
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        Position               = UDim2.new(0,contentX,0,topH+DPI:S(8)),
+        Size                   = UDim2.new(0,contentW,1,-(topH+DPI:S(8)+DPI:S(8))),
+        ClipsDescendants       = true,
+        ZIndex                 = 2,
+    },Main)
+
+    local TabNameLbl = New("TextLabel",{
+        Font=Enum.Font.GothamBold,
+        Text="",
+        TextColor3=Theme.TextPri,
+        TextSize=DPI:F(15),
+        TextXAlignment=Enum.TextXAlignment.Left,
+        BackgroundTransparency=1,
+        BorderSizePixel=0,
+        Size=UDim2.new(1,0,0,DPI:S(22)),
+        ZIndex=3,
+    },ContentArea)
+    Gradient(Theme.Grad(),0,TabNameLbl)
+
+    local ThumbFrame = New("Frame",{
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        Position               = UDim2.new(0,0,0,DPI:S(26)),
+        Size                   = UDim2.new(1,0,0,0),
+        ClipsDescendants       = true,
+        ZIndex                 = 2,
+    },ContentArea)
+    local ThumbImg = New("ImageLabel",{
+        BackgroundColor3       = Theme.BGItem,
+        BackgroundTransparency = 0.5,
+        BorderSizePixel        = 0,
+        Size                   = UDim2.fromScale(1,1),
+        ScaleType              = Enum.ScaleType.Crop,
+        Image                  = "",
+    },ThumbFrame)
+    Corner(8,ThumbImg)
+
+    local PagesFolder = New("Folder",{Name="PagesFolder"},ContentArea)
+    local PageLayout  = New("UIPageLayout",{
+        SortOrder       = Enum.SortOrder.LayoutOrder,
+        TweenTime       = 0.3,
+        EasingDirection = Enum.EasingDirection.InOut,
+        EasingStyle     = Enum.EasingStyle.Quad,
+    },PagesFolder)
+
+    local TabThumbs = {}
+
+    local function SetThumb(url)
+        if url and url~="" then
+            ThumbFrame.Size = UDim2.new(1,0,0,DPI:S(65))
+            ThumbImg.Image  = url
+            ThumbFrame.Visible = true
+        else
+            ThumbFrame.Size = UDim2.new(1,0,0,0)
+            ThumbFrame.Visible = false
+        end
+    end
+    if CThumb then SetThumb(CThumb) end
+
+    OnThemeChange(function(p)
+        WIcon.ImageColor3     = p.A
+        local g = Theme.Grad()
+        if titleLbl:FindFirstChildOfClass("UIGradient") then
+            titleLbl:FindFirstChildOfClass("UIGradient").Color = g
+        end
+        if descTag then
+            descTag.BackgroundColor3 = p.A
+            if descTagStroke then descTagStroke.Color = p.A end
+        end
+        accentBar.BackgroundColor3 = p.A
+        if accentBar:FindFirstChildOfClass("UIGradient") then
+            accentBar:FindFirstChildOfClass("UIGradient").Color = g
+        end
+        Stroke(Theme.Accent(),1,0.6,SearchFrame)
+    end)
+
+    local W = {}
+    local TabCount = 0
+
+    function W:CreateTab(cfg2)
+        local TName  = cfg2.Name or cfg2[1] or "Tab"
+        local TIcon  = cfg2.Icon or cfg2[2] or ""
+        local TThumb = cfg2.Thumbnail or cfg2[3] or nil
+
+        TabThumbs[TabCount] = TThumb or ""
+
+        local pageScroll = New("ScrollingFrame",{
+            ScrollBarImageColor3   = Theme.Accent(),
+            ScrollBarThickness     = DPI:S(2),
+            Active                 = true,
+            LayoutOrder            = TabCount,
+            BackgroundTransparency = 1,
+            BorderSizePixel        = 0,
+            Size                   = UDim2.new(1,0,1,0),
+        },PagesFolder)
+        New("UIListLayout",{Padding=UDim.new(0,DPI:S(4)),SortOrder=Enum.SortOrder.LayoutOrder},pageScroll)
+
+        local function UpdateScrollCanvas()
+            local h=0
+            for _,v in pairs(pageScroll:GetChildren()) do
+                if v.Name~="UIListLayout" then h=h+DPI:S(4)+v.Size.Y.Offset end
+            end
+            pageScroll.CanvasSize=UDim2.new(0,0,0,h)
+        end
+
+        local tabBtn = New("Frame",{
+            BackgroundColor3       = Theme.BGItem,
+            BackgroundTransparency = TabCount==0 and 0.5 or 0.9,
+            BorderSizePixel        = 0,
+            LayoutOrder            = TabCount,
+            Size                   = DPI:U2(1,0,0,32),
+            ZIndex                 = 3,
+            Name                   = "TabBtn",
+        },TabScroll)
+        Corner(7,tabBtn)
+
+        local activeBar = New("Frame",{
+            BackgroundColor3 = Theme.Accent(),
+            BorderSizePixel  = 0,
+            Position         = DPI:U2(0,2,0.5,-DPI:S(8)),
+            Size             = TabCount==0 and DPI:U2(0,3,0,16) or DPI:U2(0,0,0,16),
+            ZIndex           = 4,
+        },tabBtn)
+        Corner(3,activeBar)
+        Gradient(Theme.Grad(),90,activeBar)
+
+        if TIcon ~= "" then
+            New("ImageLabel",{
+                Image                  = TIcon,
+                ImageColor3            = Theme.TextSec,
+                BackgroundTransparency = 1,
+                BorderSizePixel        = 0,
+                AnchorPoint            = Vector2.new(0,0.5),
+                Position               = DPI:U2(0,12,0.5,0),
+                Size                   = UDim2.fromOffset(DPI:S(14),DPI:S(14)),
+                ZIndex                 = 4,
+            },tabBtn)
+        end
+
+        New("TextLabel",{
+            Font=Enum.Font.GothamBold,
+            Text=TName,
+            TextColor3=TabCount==0 and Theme.TextPri or Theme.TextDim,
+            TextSize=DPI:F(12),
+            TextXAlignment=Enum.TextXAlignment.Left,
+            BackgroundTransparency=1,
+            BorderSizePixel=0,
+            AnchorPoint=Vector2.new(0,0.5),
+            Position=TIcon~="" and DPI:U2(0,30,0.5,0) or DPI:U2(0,12,0.5,0),
+            Size=UDim2.new(1,-(TIcon~="" and DPI:S(34) or DPI:S(16)),1,0),
+            ZIndex=4,
+            Name="TabName",
+        },tabBtn)
+
+        if TabCount==0 then
+            PageLayout:JumpToIndex(0)
+            TabNameLbl.Text = TName
+            SetThumb(TabThumbs[0])
+        end
+
+        local tabClickBtn = New("TextButton",{
+            Text="",
+            BackgroundTransparency=1,
+            BorderSizePixel=0,
+            Size=UDim2.fromScale(1,1),
+            ZIndex=5,
+        },tabBtn)
+
+        tabClickBtn.Activated:Connect(function()
+            Ripple(tabClickBtn,Player:GetMouse().X,Player:GetMouse().Y)
+            if tabBtn.LayoutOrder == PageLayout.CurrentPage.LayoutOrder then return end
+
+            for _,tf in pairs(TabScroll:GetChildren()) do
+                if tf.Name=="TabBtn" then
+                    TweenService:Create(tf,TweenInfo.new(0.18),{BackgroundTransparency=0.9}):Play()
+                    local abar = tf:FindFirstChild("Frame") or tf:FindFirstChildOfClass("Frame")
+                    if abar and abar.Name~="TabBtn" then
+                        TweenService:Create(abar,TweenInfo.new(0.18),{Size=DPI:U2(0,0,0,16)}):Play()
+                    end
+                    local lbl=tf:FindFirstChild("TabName")
+                    if lbl then TweenService:Create(lbl,TweenInfo.new(0.18),{TextColor3=Theme.TextDim}):Play() end
+                end
+            end
+
+            TweenService:Create(tabBtn,TweenInfo.new(0.25,Enum.EasingStyle.Back),{BackgroundTransparency=0.5}):Play()
+            TweenService:Create(activeBar,TweenInfo.new(0.25,Enum.EasingStyle.Back),{Size=DPI:U2(0,3,0,16)}):Play()
+            local nameLbl=tabBtn:FindFirstChild("TabName")
+            if nameLbl then TweenService:Create(nameLbl,TweenInfo.new(0.18),{TextColor3=Theme.TextPri}):Play() end
+
+            PageLayout:JumpToIndex(tabBtn.LayoutOrder)
+            TabNameLbl.Text = TName
+            SetThumb(TabThumbs[tabBtn.LayoutOrder] or "")
+        end)
+
+        local S = {}
+        local SecCount = 0
+
+        function S:AddSection(title, openDef)
+            openDef = openDef~=nil and openDef or false
+            local secFrame = New("Frame",{
+                BackgroundTransparency = 1,
+                BorderSizePixel        = 0,
+                ClipsDescendants       = true,
+                LayoutOrder            = SecCount,
+                Size                   = DPI:U2(1,0,0,34),
+            },pageScroll)
+
+            local secHead = New("Frame",{
+                BackgroundColor3       = Theme.BGSec,
+                BackgroundTransparency = 0,
+                BorderSizePixel        = 0,
+                Size                   = DPI:U2(1,0,0,30),
+                ZIndex                 = 3,
+            },secFrame)
+            Corner(7,secHead)
+            local secAccent = New("Frame",{
+                BackgroundColor3=Theme.Accent(),
+                BorderSizePixel=0,
+                Position=DPI:U2(0,0,0,4),
+                Size=DPI:U2(0,3,1,-8),
+            },secHead)
+            Corner(2,secAccent)
+            Gradient(Theme.Grad(),90,secAccent)
+
+            New("TextLabel",{
+                Font=Enum.Font.GothamBold,
+                Text=title,
+                TextColor3=Theme.TextPri,
+                TextSize=DPI:F(12),
+                TextXAlignment=Enum.TextXAlignment.Left,
+                BackgroundTransparency=1,
+                BorderSizePixel=0,
+                AnchorPoint=Vector2.new(0,0.5),
+                Position=DPI:U2(0,12,0.5,0),
+                Size=DPI:U2(1,-40,1,0),
+                ZIndex=4,
+            },secHead)
+
+            local arrow = New("TextLabel",{
+                Font=Enum.Font.GothamBold,
+                Text="›",
+                TextColor3=Theme.Accent(),
+                TextSize=DPI:F(16),
+                AnchorPoint=Vector2.new(1,0.5),
+                BackgroundTransparency=1,
+                BorderSizePixel=0,
+                Position=UDim2.new(1,-DPI:S(10),0.5,0),
+                Size=DPI:U2(0,14,1,0),
+                ZIndex=4,
+            },secHead)
+
+            local itemsFrame = New("Frame",{
+                BackgroundTransparency = 1,
+                BorderSizePixel        = 0,
+                Position               = UDim2.new(0,0,0,DPI:S(33)),
+                Size                   = UDim2.new(1,0,0,0),
+                ClipsDescendants       = true,
+            },secFrame)
+            New("UIListLayout",{Padding=UDim.new(0,DPI:S(3)),SortOrder=Enum.SortOrder.LayoutOrder},itemsFrame)
+
+            local isOpen = false
+            local function CalcItemsH()
+                local h=0
+                for _,v in pairs(itemsFrame:GetChildren()) do
+                    if v.Name~="UIListLayout" then h=h+DPI:S(3)+v.Size.Y.Offset end
+                end
+                return h
+            end
+            local function UpdateSec()
+                local ti=TweenInfo.new(0.18,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+                if isOpen then
+                    local ih=CalcItemsH()
+                    TweenService:Create(itemsFrame,ti,{Size=UDim2.new(1,0,0,ih)}):Play()
+                    TweenService:Create(secFrame,ti,{Size=DPI:U2(1,0,0,34+ih)}):Play()
+                    TweenService:Create(arrow,ti,{Rotation=90}):Play()
+                else
+                    TweenService:Create(itemsFrame,ti,{Size=UDim2.new(1,0,0,0)}):Play()
+                    TweenService:Create(secFrame,ti,{Size=DPI:U2(1,0,0,34)}):Play()
+                    TweenService:Create(arrow,ti,{Rotation=0}):Play()
+                end
+                task.wait(0.2)
+                UpdateScrollCanvas()
+            end
+            local secHeadBtn=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=5},secHead)
+            secHeadBtn.Activated:Connect(function()
+                Ripple(secHeadBtn,Player:GetMouse().X,Player:GetMouse().Y)
+                isOpen=not isOpen
+                UpdateSec()
+            end)
+            itemsFrame.ChildAdded:Connect(function()
+                if isOpen then UpdateSec() end
+                UpdateScrollCanvas()
+            end)
+
+            if openDef then isOpen=true; task.defer(UpdateSec) end
+
+            local I = {}
+            local ICount = 0
+
+            local function BaseItem(h)
+                local f=New("Frame",{
+                    BackgroundColor3=Theme.BGItem,
+                    BackgroundTransparency=0,
+                    BorderSizePixel=0,
+                    LayoutOrder=ICount,
+                    Size=DPI:U2(1,0,0,h or 38),
+                },itemsFrame)
+                Corner(7,f)
+                return f
+            end
+
+            function I:AddToggle(c)
+                local TT=c[1]or"" local TC=c[2]or"" local TD=c[3]or false local TF=c[4]or function()end
+                local tFuncs={Value=TD}
+                local f=BaseItem(38)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=TT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,10,0.5,-7),Size=DPI:U2(1,-80,0,14),ZIndex=2},f)
+                New("TextLabel",{Font=Enum.Font.Gotham,Text=TC,TextColor3=Theme.TextDim,TextSize=DPI:F(10),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,10,0.5,7),Size=DPI:U2(1,-80,0,12),ZIndex=2},f)
+                local pill=New("Frame",{BackgroundColor3=Color3.fromRGB(55,50,65),BackgroundTransparency=0,BorderSizePixel=0,AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,-DPI:S(12),0.5,0),Size=DPI:U2(0,32,0,16),ZIndex=2},f)
+                Corner(9,pill)
+                local pStroke=Stroke(Theme.TextDim,1.2,0.5,pill)
+                local dot=New("Frame",{BackgroundColor3=Theme.TextDim,BorderSizePixel=0,Position=DPI:U2(0,1,0.5,-DPI:S(7)),Size=DPI:U2(0,14,0,14),ZIndex=3},pill)
+                Corner(9,dot)
+                local function Anim(on)
+                    local ti=TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.InOut)
+                    TweenService:Create(pill,ti,{BackgroundColor3=on and Theme.Accent() or Color3.fromRGB(55,50,65)}):Play()
+                    TweenService:Create(dot,ti,{Position=on and DPI:U2(0,DPI:S(32)-DPI:S(15),0.5,-DPI:S(7)) or DPI:U2(0,1,0.5,-DPI:S(7)),BackgroundColor3=on and Theme.TextPri or Theme.TextDim}):Play()
+                    TweenService:Create(pStroke,ti,{Color=on and Theme.Accent() or Theme.TextDim,Transparency=on and 0 or 0.5}):Play()
+                end
+                local tb=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=4},f)
+                tb.Activated:Connect(function()
+                    Ripple(tb,Player:GetMouse().X,Player:GetMouse().Y)
+                    tFuncs.Value=not tFuncs.Value; tFuncs:Set(tFuncs.Value)
+                end)
+                function tFuncs:Set(v) TF(v); Anim(v) end
+                tFuncs:Set(TD)
+                ICount+=1; return tFuncs
+            end
+
+            function I:AddButton(c)
+                local BT=c[1]or"" local BC=c[2]or"" local BI=c[3]or"" local BF=c[4]or function()end
+                local f=BaseItem(38)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=BT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,10,0.5,-7),Size=DPI:U2(1,-(BI~="" and DPI:S(48) or DPI:S(16)),0,14),ZIndex=2},f)
+                New("TextLabel",{Font=Enum.Font.Gotham,Text=BC,TextColor3=Theme.TextDim,TextSize=DPI:F(10),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,10,0.5,7),Size=DPI:U2(1,-(BI~="" and DPI:S(48) or DPI:S(16)),0,12),ZIndex=2},f)
+                if BI~="" then
+                    local iF=New("Frame",{BackgroundColor3=Theme.BGSec,BorderSizePixel=0,AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,-DPI:S(10),0.5,0),Size=DPI:U2(0,24,0,24),ZIndex=2},f)
+                    Corner(6,iF)
+                    New("ImageLabel",{Image=BI,ImageColor3=Theme.Accent(),BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromScale(0.75,0.75),ZIndex=3},iF)
+                end
+                local tb=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=4},f)
+                tb.Activated:Connect(function()
+                    Ripple(tb,Player:GetMouse().X,Player:GetMouse().Y)
+                    TweenService:Create(f,TweenInfo.new(0.08),{BackgroundColor3=Theme.BGSec}):Play()
+                    task.wait(0.08)
+                    TweenService:Create(f,TweenInfo.new(0.12),{BackgroundColor3=Theme.BGItem}):Play()
+                    BF()
+                end)
+                ICount+=1; return {}
+            end
+
+            function I:AddSlider(c)
+                local ST=c[1]or"" local SC=c[2]or"" local SI=c[3]or 1 local SMn=c[4]or 0 local SMx=c[5]or 100 local SD=c[6]or 50 local SF=c[7]or function()end
+                local sFuncs={Value=SD}
+                local f=BaseItem(48)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=ST,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,Position=DPI:U2(0,10,0,7),Size=DPI:U2(1,-80,0,14),ZIndex=2},f)
+                New("TextLabel",{Font=Enum.Font.Gotham,Text=SC,TextColor3=Theme.TextDim,TextSize=DPI:F(10),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,Position=DPI:U2(0,10,0,20),Size=DPI:U2(1,-80,0,12),ZIndex=2},f)
+                local valBox=New("TextBox",{Font=Enum.Font.GothamBold,Text="0",TextColor3=Theme.BG,TextSize=DPI:F(10),BackgroundColor3=Theme.Accent(),BorderSizePixel=0,AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-DPI:S(8),0,DPI:S(6)),Size=DPI:U2(0,32,0,18),ZIndex=3},f)
+                Corner(4,valBox)
+                Gradient(Theme.Grad(),0,valBox)
+                local track=New("Frame",{BackgroundColor3=Theme.BGSec,BorderSizePixel=0,AnchorPoint=Vector2.new(0.5,1),Position=UDim2.new(0.5,0,1,-DPI:S(7)),Size=DPI:U2(1,-20,0,4),ZIndex=2},f)
+                Corner(3,track)
+                local fill=New("Frame",{BackgroundColor3=Theme.Accent(),BorderSizePixel=0,Size=UDim2.fromScale(0.5,1),ZIndex=3},track)
+                Corner(3,fill)
+                Gradient(Theme.Grad(),0,fill)
+                local dot=New("Frame",{BackgroundColor3=Theme.TextPri,BorderSizePixel=0,AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(0.5,DPI:S(4),0.5,0),Size=DPI:U2(0,9,0,9),ZIndex=4},fill)
+                Corner(5,dot)
+                Stroke(Theme.Accent(),1,0,dot)
+                local function Rnd(n,fac) return math.clamp(math.floor(n/fac+0.5)*fac,SMn,SMx) end
+                function sFuncs:Set(v)
+                    v=Rnd(v,SI); sFuncs.Value=v
+                    valBox.Text=tostring(v)
+                    fill.Size=UDim2.fromScale((v-SMn)/math.max(SMx-SMn,1),1)
+                end
+                local drag=false
+                local function GX(x) return math.clamp((x-track.AbsolutePosition.X)/math.max(track.AbsoluteSize.X,1),0,1) end
+                track.InputBegan:Connect(function(i)
+                    if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+                        drag=true; sFuncs:Set(SMn+(SMx-SMn)*GX(i.Position.X))
+                    end
+                end)
+                UserInputService.InputChanged:Connect(function(i)
+                    if drag and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+                        sFuncs:Set(SMn+(SMx-SMn)*GX(i.Position.X))
+                    end
+                end)
+                UserInputService.InputEnded:Connect(function(i)
+                    if drag and (i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch) then
+                        drag=false; SF(sFuncs.Value)
+                    end
+                end)
+                valBox.FocusLost:Connect(function() sFuncs:Set(tonumber(valBox.Text) or SMn); SF(sFuncs.Value) end)
+                sFuncs:Set(SD); SF(SD)
+                ICount+=1; return sFuncs
+            end
+
+            function I:AddInput(c)
+                local IT=c[1]or"" local IP=c[2]or"" local ID=c[3]or"" local IF=c[4]or function()end
+                local iFuncs={Value=ID}
+                local f=BaseItem(48)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=IT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,Position=DPI:U2(0,10,0,7),Size=DPI:U2(1,-16,0,14),ZIndex=2},f)
+                local inpF=New("Frame",{BackgroundColor3=Theme.BGSec,BorderSizePixel=0,AnchorPoint=Vector2.new(0.5,1),Position=UDim2.new(0.5,0,1,-DPI:S(7)),Size=DPI:U2(1,-20,0,22),ClipsDescendants=true,ZIndex=2},f)
+                Corner(5,inpF)
+                local iStroke=Stroke(Theme.Stroke,1,0,inpF)
+                local tb=New("TextBox",{Font=Enum.Font.Gotham,PlaceholderText=IP,PlaceholderColor3=Theme.TextDim,Text=ID,TextColor3=Theme.TextPri,TextSize=DPI:F(11),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,7,0.5,0),Size=DPI:U2(1,-14,1,-4),ZIndex=3},inpF)
+                tb.Focused:Connect(function() TweenService:Create(iStroke,TweenInfo.new(0.15),{Color=Theme.Accent()}):Play() end)
+                tb.FocusLost:Connect(function() TweenService:Create(iStroke,TweenInfo.new(0.15),{Color=Theme.Stroke}):Play(); iFuncs:Set(tb.Text) end)
+                function iFuncs:Set(v) tb.Text=v; iFuncs.Value=v; IF(v) end
+                ICount+=1; return iFuncs
+            end
+
+            function I:AddDropdown(c)
+                local DT=c[1]or"" local DC=c[2]or"" local DM=c[3]or false local DO=c[4]or{} local DDef=c[5]or{} local DF=c[6]or function()end
+                local dFuncs={Value=DDef,Options=DO}
+                local f=BaseItem(38)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=DT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,10,0.5,-7),Size=DPI:U2(1,-160,0,14),ZIndex=2},f)
+                New("TextLabel",{Font=Enum.Font.Gotham,Text=DC,TextColor3=Theme.TextDim,TextSize=DPI:F(10),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,10,0.5,7),Size=DPI:U2(1,-160,0,12),ZIndex=2},f)
+                local selF=New("Frame",{BackgroundColor3=Theme.BGSec,BorderSizePixel=0,AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,-DPI:S(8),0.5,0),Size=DPI:U2(0,140,0,26),ClipsDescendants=true,ZIndex=2},f)
+                Corner(5,selF)
+                Stroke(Theme.Stroke,1,0,selF)
+                local selLbl=New("TextLabel",{Font=Enum.Font.Gotham,Text="Pilih...",TextColor3=Theme.TextDim,TextSize=DPI:F(11),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,6,0.5,0),Size=DPI:U2(1,-28,1,-4),ZIndex=3},selF)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text="›",TextColor3=Theme.Accent(),TextSize=DPI:F(14),AnchorPoint=Vector2.new(1,0.5),BackgroundTransparency=1,BorderSizePixel=0,Position=UDim2.new(1,-DPI:S(4),0.5,0),Size=DPI:U2(0,14,1,0),ZIndex=3},selF)
+
+                local dropFrame=New("Frame",{BackgroundColor3=Theme.BGCard,BorderSizePixel=0,Position=UDim2.new(0,0,1,DPI:S(4)),Size=DPI:U2(1,0,0,0),ClipsDescendants=true,ZIndex=10,Visible=false},f)
+                Corner(7,dropFrame)
+                Stroke(Theme.Accent(),1,0.3,dropFrame)
+                local dropScroll=New("ScrollingFrame",{ScrollBarThickness=DPI:S(2),ScrollBarImageColor3=Theme.Accent(),CanvasSize=UDim2.new(0,0,0,0),BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=11},dropFrame)
+                New("UIListLayout",{Padding=UDim.new(0,DPI:S(2)),SortOrder=Enum.SortOrder.LayoutOrder},dropScroll)
+                local searchDrop=New("TextBox",{Font=Enum.Font.Gotham,PlaceholderText="Cari...",PlaceholderColor3=Theme.TextDim,Text="",TextColor3=Theme.TextPri,TextSize=DPI:F(11),BackgroundColor3=Theme.BGSec,BackgroundTransparency=0,BorderSizePixel=0,Size=DPI:U2(1,0,0,24),ZIndex=12,ClearTextOnFocus=false},dropScroll)
+                Corner(0,searchDrop)
+                Padding(6,0,0,0,searchDrop)
+
+                local isOpen=false
+                local function ToggleDrop()
+                    isOpen=not isOpen
+                    local ti=TweenInfo.new(0.18,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+                    if isOpen then
+                        dropFrame.Visible=true
+                        local dh=math.min(#DO*DPI:S(28)+DPI:S(26),DPI:S(120))
+                        TweenService:Create(dropFrame,ti,{Size=DPI:U2(1,0,0,dh)}):Play()
+                        TweenService:Create(f,ti,{Size=DPI:U2(1,0,0,38+dh+DPI:S(4))}):Play()
+                    else
+                        TweenService:Create(dropFrame,ti,{Size=DPI:U2(1,0,0,0)}):Play()
+                        TweenService:Create(f,ti,{Size=DPI:U2(1,0,0,38)}):Play()
+                        task.wait(0.18); dropFrame.Visible=false
+                    end
+                    task.wait(0.2); UpdateScrollCanvas()
+                end
+
+                local selBtn=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=4},selF)
+                selBtn.Activated:Connect(ToggleDrop)
+
+                searchDrop:GetPropertyChangedSignal("Text"):Connect(function()
+                    local q=string.lower(searchDrop.Text)
+                    for _,v in pairs(dropScroll:GetChildren()) do
+                        if v:IsA("Frame") then
+                            local lt=v:FindFirstChildOfClass("TextLabel")
+                            if lt then v.Visible=(q=="" or string.find(string.lower(lt.Text),q,1,true)~=nil) end
+                        end
+                    end
+                end)
+
+                function dFuncs:Set(val)
+                    dFuncs.Value=val or dFuncs.Value
+                    for _,opt in pairs(dropScroll:GetChildren()) do
+                        if opt:IsA("Frame") then
+                            local lt=opt:FindFirstChildOfClass("TextLabel")
+                            local cf=opt:FindFirstChild("ChooseDot")
+                            local found=lt and table.find(dFuncs.Value,lt.Text)
+                            if cf then
+                                TweenService:Create(cf,TweenInfo.new(0.15),{BackgroundColor3=found and Theme.Accent() or Theme.TextDim,Size=found and DPI:U2(0,8,0,8) or DPI:U2(0,6,0,6)}):Play()
+                            end
+                            TweenService:Create(opt,TweenInfo.new(0.15),{BackgroundTransparency=found and 0.7 or 0.999}):Play()
+                        end
+                    end
+                    selLbl.Text=table.concat(dFuncs.Value,", ")
+                    if selLbl.Text=="" then selLbl.Text="Pilih..." end
+                    DF(dFuncs.Value)
+                end
+
+                function dFuncs:AddOption(name)
+                    local opt=New("Frame",{BackgroundColor3=Theme.Accent(),BackgroundTransparency=0.999,BorderSizePixel=0,Size=DPI:U2(1,0,0,28),ZIndex=11},dropScroll)
+                    Corner(5,opt)
+                    local cd=New("Frame",{Name="ChooseDot",BackgroundColor3=Theme.TextDim,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,8,0.5,0),Size=DPI:U2(0,6,0,6),ZIndex=12},opt)
+                    Corner(4,cd)
+                    New("TextLabel",{Font=Enum.Font.Gotham,Text=name,TextColor3=Theme.TextPri,TextSize=DPI:F(11),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,20,0.5,0),Size=DPI:U2(1,-24,1,0),ZIndex=12},opt)
+                    local ob=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=13},opt)
+                    ob.Activated:Connect(function()
+                        Ripple(ob,Player:GetMouse().X,Player:GetMouse().Y)
+                        local alreadySel=table.find(dFuncs.Value,name)~=nil
+                        if DM then
+                            if not alreadySel then table.insert(dFuncs.Value,name)
+                            else for i,v in ipairs(dFuncs.Value) do if v==name then table.remove(dFuncs.Value,i);break end end end
+                        else dFuncs.Value={name} end
+                        dFuncs:Set(dFuncs.Value)
+                    end)
+                    local h=0
+                    for _,v in pairs(dropScroll:GetChildren()) do if v:IsA("Frame") then h=h+DPI:S(2)+v.Size.Y.Offset end end
+                    dropScroll.CanvasSize=UDim2.new(0,0,0,h)
+                end
+
+                function dFuncs:Clear()
+                    for _,v in pairs(dropScroll:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
+                    dFuncs.Value={}; dFuncs.Options={}
+                    selLbl.Text="Pilih..."
+                end
+
+                function dFuncs:Refresh(list,sel)
+                    dFuncs:Clear()
+                    for _,v in ipairs(list or {}) do dFuncs:AddOption(v) end
+                    dFuncs.Options=list or {}
+                    dFuncs:Set(sel or {})
+                end
+
+                dFuncs:Refresh(DO,DDef)
+                ICount+=1; return dFuncs
+            end
+
+            function I:AddParagraph(c)
+                local PT=c[1]or"" local PC=c[2]or""
+                local f=BaseItem(38)
+                local tl=New("TextLabel",{Font=Enum.Font.GothamBold,Text=PT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,BackgroundTransparency=1,BorderSizePixel=0,Position=DPI:U2(0,10,0,8),Size=DPI:U2(1,-16,0,14),ZIndex=2},f)
+                local cl=New("TextLabel",{Font=Enum.Font.Gotham,Text=PC,TextColor3=Theme.TextSec,TextSize=DPI:F(10),TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextWrapped=true,BackgroundTransparency=1,BorderSizePixel=0,Position=DPI:U2(0,10,0,23),Size=DPI:U2(1,-16,0,12),ZIndex=2},f)
+                local pFuncs={}
+                local function Upd()
+                    cl.TextWrapped=false
+                    local lines=math.ceil(cl.TextBounds.X/math.max(cl.AbsoluteSize.X,1))
+                    cl.Size=DPI:U2(1,-16,0,DPI:S(11)*(lines+1))
+                    f.Size=DPI:U2(1,0,0,cl.AbsoluteSize.Y+DPI:S(30))
+                    cl.TextWrapped=true
+                    UpdateScrollCanvas()
+                end
+                Upd()
+                cl:GetPropertyChangedSignal("AbsoluteSize"):Connect(Upd)
+                function pFuncs:Set(c2) tl.Text=c2[1]or""; cl.Text=c2[2]or""; Upd() end
+                ICount+=1; return pFuncs
+            end
+
+            function I:AddSeperator(c)
+                local ST=c[1]or""
+                local f=New("Frame",{BackgroundColor3=Theme.BGSec,BorderSizePixel=0,LayoutOrder=ICount,Size=DPI:U2(1,0,0,26),ZIndex=2},itemsFrame)
+                Corner(5,f)
+                Gradient(Theme.GradBG(),0,f)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=ST,TextColor3=Theme.TextSec,TextSize=DPI:F(11),TextXAlignment=Enum.TextXAlignment.Center,BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=3},f)
+                ICount+=1; return {}
+            end
+
+            function I:AddLine()
+                local f=New("Frame",{BackgroundColor3=Theme.Accent(),BackgroundTransparency=0.5,BorderSizePixel=0,LayoutOrder=ICount,Size=DPI:U2(1,0,0,DPI:S(2)),ZIndex=2},itemsFrame)
+                Corner(2,f)
+                Gradient(Theme.GradBG(),0,f)
+                ICount+=1; return {}
+            end
+
+            function I:AddCardButton(c)
+                local CT=c[1]or"" local CC=c[2]or"" local CF=c[3]or function()end
+                local f=New("Frame",{BackgroundColor3=Theme.BGCard,BorderSizePixel=0,LayoutOrder=ICount,Size=DPI:U2(1,0,0,44),ZIndex=2},itemsFrame)
+                Corner(8,f)
+                Stroke(Theme.Stroke,1,0.4,f)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=CT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,14,0.5,-7),Size=DPI:U2(1,-20,0,14),ZIndex=3},f)
+                New("TextLabel",{Font=Enum.Font.Gotham,Text=CC,TextColor3=Theme.TextDim,TextSize=DPI:F(10),TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,BorderSizePixel=0,AnchorPoint=Vector2.new(0,0.5),Position=DPI:U2(0,14,0.5,7),Size=DPI:U2(1,-20,0,12),ZIndex=3},f)
+                local tb=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=4},f)
+                tb.Activated:Connect(function()
+                    Ripple(tb,Player:GetMouse().X,Player:GetMouse().Y)
+                    TweenService:Create(f,TweenInfo.new(0.08),{BackgroundColor3=Theme.BGSec}):Play()
+                    task.wait(0.1); TweenService:Create(f,TweenInfo.new(0.12),{BackgroundColor3=Theme.BGCard}):Play()
+                    CF()
+                end)
+                ICount+=1; return {}
+            end
+
+            SecCount+=1
+            return I
+        end
+
+        function S:AddPageSection(thumbUrl)
+            local pg = New("Frame",{
+                BackgroundTransparency = 1,
+                BorderSizePixel        = 0,
+                LayoutOrder            = SecCount,
+                Size                   = UDim2.new(1,0,0,DPI:S(4)),
+            },pageScroll)
+            if thumbUrl and thumbUrl~="" then
+                local imgF=New("Frame",{BackgroundTransparency=1,BorderSizePixel=0,Size=DPI:U2(1,0,0,DPI:S(80)),LayoutOrder=SecCount},pageScroll)
+                local img=New("ImageLabel",{Image=thumbUrl,BackgroundColor3=Theme.BGItem,BackgroundTransparency=0.3,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ScaleType=Enum.ScaleType.Crop},imgF)
+                Corner(10,img)
+                SecCount+=1
+                task.defer(UpdateScrollCanvas)
+            end
+            local btnHolder=New("Frame",{BackgroundTransparency=1,BorderSizePixel=0,LayoutOrder=SecCount,Size=UDim2.new(1,0,0,DPI:S(4))},pageScroll)
+            New("UIListLayout",{Padding=UDim.new(0,DPI:S(5)),SortOrder=Enum.SortOrder.LayoutOrder},btnHolder)
+            local BH={}
+            function BH:AddButton(c)
+                local BT=c[1]or"" local BF=c[2]or function()end
+                local bH=DPI:S(40)
+                local bF=New("Frame",{BackgroundColor3=Theme.BGCard,BorderSizePixel=0,LayoutOrder=#btnHolder:GetChildren(),Size=DPI:U2(1,0,0,bH),ZIndex=2},btnHolder)
+                Corner(8,bF)
+                Stroke(Theme.Stroke,1,0.3,bF)
+                New("TextLabel",{Font=Enum.Font.GothamBold,Text=BT,TextColor3=Theme.TextPri,TextSize=DPI:F(12),TextXAlignment=Enum.TextXAlignment.Center,BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=3},bF)
+                local tb=New("TextButton",{Text="",BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.fromScale(1,1),ZIndex=4},bF)
+                tb.Activated:Connect(function()
+                    Ripple(tb,Player:GetMouse().X,Player:GetMouse().Y)
+                    TweenService:Create(bF,TweenInfo.new(0.08),{BackgroundColor3=Theme.BGSec}):Play()
+                    task.wait(0.1); TweenService:Create(bF,TweenInfo.new(0.12),{BackgroundColor3=Theme.BGCard}):Play()
+                    BF()
+                end)
+                local h=0
+                for _,v in pairs(btnHolder:GetChildren()) do if v.Name~="UIListLayout" then h=h+DPI:S(5)+v.Size.Y.Offset end end
+                btnHolder.Size=DPI:U2(1,0,0,h)
+                pg.Size=DPI:U2(1,0,0,DPI:S(4))
+                task.defer(UpdateScrollCanvas)
+            end
+            SecCount+=1
+            return BH
+        end
+
+        TabCount+=1
+        return S
+    end
+
+    function W:SetTheme(name)
+        ApplyTheme(name)
+        for _,d in pairs(Main:GetDescendants()) do
+            pcall(function()
+                if d:IsA("UIGradient") then d.Color=Theme.Grad() end
+            end)
+        end
+    end
+
+    function W:SetThumbnail(url) SetThumb(url or "") end
+    function W:SetTabThumbnail(idx,url) TabThumbs[idx]=url or "" end
+    function W:AddTag(text,color) return AddTag(text,color) end
+
+    return W
+end
+
+return MugiHub

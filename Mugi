@@ -1,6 +1,6 @@
 --[[
     MugiHub UI Library
-    Emerald template / Mugi systems
+    Mugi systems
     MugiHub
     
     Features:
@@ -153,6 +153,10 @@ Theme.TextDim         = Color3.fromRGB(130, 115, 145)
 Theme.Stroke           = Color3.fromRGB(60, 50, 75)
 Theme.StrokeActive     = Theme.AccentPink
 
+function Theme.Accent()
+    return Theme.AccentPink
+end
+
 function Theme.AccentGradient()
     return ColorSequence.new({
         ColorSequenceKeypoint.new(0, Theme.AccentPink),
@@ -162,6 +166,14 @@ function Theme.AccentGradient()
 end
 
 function Theme.PinkWhiteGradient()
+    return Theme.AccentGradient()
+end
+-- Compatibility aliases only; no color preset system is restored.
+function Theme.GreenWhiteGradient()
+    return Theme.AccentGradient()
+end
+
+function Theme.GreenBlackGradient()
     return Theme.AccentGradient()
 end
 
@@ -261,7 +273,7 @@ local function MakeOpenCloseButton()
         BackgroundColor3       = Theme.BGItem,
         BackgroundTransparency = 0,
         BorderSizePixel        = 0,
-        Image                  = "rbxassetid://136893287430224",
+        Image                  = "rbxassetid://72876614672836",
         ImageColor3            = Theme.AccentPink,
         ScaleType              = Enum.ScaleType.Fit,
         Position               = DPI:U2(0.05, 0, 0.05, 0),
@@ -302,24 +314,56 @@ local OpenCloseBtn = MakeOpenCloseButton()
 --  MAKE DRAGGABLE (untuk main window)
 -- ============================================================
 local function MakeDraggable(topbar, frame)
-    local dragging, dragStart, startPos = false, nil, nil
+    local dragging = false
+    local dragStart = nil
+    local startPos = nil
+    local dragInput = nil
+
     topbar.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1
         or inp.UserInputType == Enum.UserInputType.Touch then
-            dragging  = true
+            dragging = true
             dragStart = inp.Position
-            startPos  = frame.Position
+            startPos = frame.Position
+
             inp.Changed:Connect(function()
-                if inp.UserInputState == Enum.UserInputState.End then dragging = false end
+                if inp.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    dragInput = nil
+                end
             end)
         end
     end)
+
     topbar.InputChanged:Connect(function(inp)
-        if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement
-        or inp.UserInputType == Enum.UserInputType.Touch) then
-            local d = inp.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X,
-                                        startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        if inp.UserInputType == Enum.UserInputType.MouseMovement
+        or inp.UserInputType == Enum.UserInputType.Touch then
+            dragInput = inp
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(inp)
+        if not dragging then return end
+        if inp ~= dragInput
+        and inp.UserInputType ~= Enum.UserInputType.MouseMovement
+        and inp.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+
+        local d = inp.Position - dragStart
+        frame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + d.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + d.Y
+        )
+    end)
+
+    UserInputService.InputEnded:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1
+        or inp.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+            dragInput = nil
         end
     end)
 end
@@ -491,7 +535,7 @@ function MugiHub:CreateWindow(cfg)
     local baseH  = cfg[4] and cfg[4].Y.Offset or 315
     local TabW   = cfg[3] or cfg["Tab Width"] or 120
 
-    local Title       = cfg[1] or cfg.Title or "EmeraldUI"
+    local Title       = cfg[1] or cfg.Title or "MugiHub"
     local Description = cfg[2] or cfg.Description or ""
     local CfgThumb    = cfg.Thumbnail or nil
 
@@ -558,8 +602,7 @@ function MugiHub:CreateWindow(cfg)
 
     local iconSize   = DPI:S(20)
     local iconPad    = DPI:S(8)
-    local rightPad   = DPI:S(60)
-    local CfgIcon    = cfg.Icon or "rbxassetid://136893287430224"
+    local CfgIcon = cfg.Icon or "rbxassetid://72876614672836"
 
     -- Window Icon (kiri topbar)
     local WindowIcon = Custom:Create("ImageLabel", {
@@ -590,7 +633,7 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "TitleLabel",
     }, Top)
     Custom:Create("UIGradient", {
-        Color    = Theme.GreenWhiteGradient(),
+        Color    = Theme.AccentGradient(),
         Rotation = 0,
     }, titleLbl)
 
@@ -885,10 +928,7 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "ThumbGrad",
     }, ThumbImage)
     Custom:Create("UIGradient", {
-        Color    = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(13,13,13)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(13,13,13)),
-        }),
+        Color    = Theme.AccentGradient(),
         Transparency = NumberSequence.new({
             NumberSequenceKeypoint.new(0, 0),
             NumberSequenceKeypoint.new(1, 1),
@@ -1039,7 +1079,7 @@ function MugiHub:CreateWindow(cfg)
 
         local dTitle = Instance.new("TextLabel")
         dTitle.Font = Enum.Font.GothamBold
-        dTitle.Text = "EmeraldUI"
+        dTitle.Text = "MugiHub"
         dTitle.TextColor3 = Theme.AccentPink
         dTitle.TextSize = DPI:F(13)
         dTitle.Size = UDim2.new(1, 0, 1, 0)
@@ -1097,7 +1137,7 @@ function MugiHub:CreateWindow(cfg)
 
         -- Gradient pada tombol Close
         local g = Instance.new("UIGradient")
-        g.Color = Theme.GreenWhiteGradient()
+        g.Color = Theme.AccentGradient()
         g.Rotation = 0
         g.Parent = btnClose
 
@@ -1214,7 +1254,7 @@ function MugiHub:CreateWindow(cfg)
                 Name             = "ChooseFrame",
             }, Tab)
             Custom:Create("UIGradient", {
-                Color    = Theme.GreenWhiteGradient(),
+                Color    = Theme.AccentGradient(),
                 Rotation = 90,
             }, activeBar)
             Custom:Create("UIStroke", {
@@ -1297,7 +1337,7 @@ function MugiHub:CreateWindow(cfg)
                 Name             = "SectionAccent",
             }, SectionReal)
             Custom:Create("UIGradient", {
-                Color    = Theme.GreenWhiteGradient(),
+                Color    = Theme.AccentGradient(),
                 Rotation = 90,
             }, sectionAccent)
             Custom:Create("UICorner", {}, sectionAccent)
@@ -1358,7 +1398,7 @@ function MugiHub:CreateWindow(cfg)
             }, Section)
             Custom:Create("UICorner", {}, SectionDecide)
             Custom:Create("UIGradient", {
-                Color = Theme.GreenBlackGradient(),
+                Color = Theme.AccentGradient(),
             }, SectionDecide)
 
             local SectionAdd = Custom:Create("Frame", {
@@ -1501,7 +1541,7 @@ function MugiHub:CreateWindow(cfg)
                 local Sep = MakeItemBase("Seperator", ItemCount)
                 Sep.BackgroundColor3 = Theme.BGSecondary
                 sep_gradient = Custom:Create("UIGradient", {
-                    Color    = Theme.GreenBlackGradient(),
+                    Color    = Theme.AccentGradient(),
                     Rotation = 90,
                 }, Sep)
                 Custom:Create("TextLabel", {
@@ -1537,7 +1577,7 @@ function MugiHub:CreateWindow(cfg)
                     Name                 = "Line",
                 }, SectionAdd)
                 Custom:Create("UICorner", { CornerRadius = DPI:U(0, 2) }, Line)
-                Custom:Create("UIGradient", { Color = Theme.GreenBlackGradient() }, Line)
+                Custom:Create("UIGradient", { Color = Theme.AccentGradient() }, Line)
                 ItemCount += 1
                 return {}
             end
@@ -1799,7 +1839,7 @@ function MugiHub:CreateWindow(cfg)
                 Custom:Create("UICorner", { CornerRadius = DPI:U(0, 2) }, slInput)
                 -- Gradient pada input box
                 Custom:Create("UIGradient", {
-                    Color    = Theme.GreenWhiteGradient(),
+                    Color    = Theme.AccentGradient(),
                     Rotation = 0,
                 }, slInput)
 
@@ -1836,7 +1876,7 @@ function MugiHub:CreateWindow(cfg)
                 }, trackFrame)
                 Custom:Create("UICorner", {}, fillBar)
                 Custom:Create("UIGradient", {
-                    Color    = Theme.GreenWhiteGradient(),
+                    Color    = Theme.AccentGradient(),
                     Rotation = 0,
                 }, fillBar)
 
@@ -2236,7 +2276,7 @@ function MugiHub:CreateWindow(cfg)
                         Size             = DPI:U2(0, 0, 0, 0),
                         Name             = "ChooseFrame",
                     }, Opt)
-                    Custom:Create("UIGradient", { Color = Theme.GreenWhiteGradient(), Rotation = 90 }, cf)
+                    Custom:Create("UIGradient", { Color = Theme.AccentGradient(), Rotation = 90 }, cf)
                     Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 1.5, Transparency = 0.999 }, cf)
                     Custom:Create("UICorner", {}, cf)
 

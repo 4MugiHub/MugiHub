@@ -177,6 +177,25 @@ function Theme.GreenBlackGradient()
     return Theme.AccentGradient()
 end
 
+-- Normalize Roblox asset IDs so numeric IDs and "rbxassetid://" strings
+-- both work consistently across Window/Tab/Button icons.
+local function NormalizeAssetId(asset)
+    if asset == nil then
+        return ""
+    end
+    if typeof(asset) == "number" then
+        return "rbxassetid://" .. tostring(math.floor(asset))
+    end
+    local value = tostring(asset)
+    if value == "" then
+        return ""
+    end
+    if string.match(value, "^%d+$") then
+        return "rbxassetid://" .. value
+    end
+    return value
+end
+
 -- ============================================================
 --  CUSTOM INSTANCE CREATOR
 -- ============================================================
@@ -537,7 +556,8 @@ function MugiHub:CreateWindow(cfg)
 
     local Title       = cfg[1] or cfg.Title or "MugiHub"
     local Description = cfg[2] or cfg.Description or ""
-    local CfgThumb    = cfg.Thumbnail or nil
+    local CfgThumb    = cfg.Thumbnail and NormalizeAssetId(cfg.Thumbnail) or nil
+    local PositionalTags = cfg[5] or nil
 
     local scaledW    = DPI:S(baseW)
     local scaledH    = DPI:S(baseH)
@@ -602,12 +622,11 @@ function MugiHub:CreateWindow(cfg)
 
     local iconSize   = DPI:S(20)
     local iconPad    = DPI:S(8)
-    local CfgIcon = cfg.Icon or "rbxassetid://72876614672836"
+    local CfgIcon = NormalizeAssetId(cfg.Icon or "rbxassetid://72876614672836")
 
     -- Window Icon (kiri topbar)
     local WindowIcon = Custom:Create("ImageLabel", {
         Image                  = CfgIcon,
-        ImageColor3            = Theme.AccentPink,
         BackgroundTransparency = 1,
         BorderSizePixel        = 0,
         AnchorPoint            = Vector2.new(0, 0.5),
@@ -637,79 +656,129 @@ function MugiHub:CreateWindow(cfg)
         Rotation = 0,
     }, titleLbl)
 
-    -- Separator "|" antara Title dan Description
+    -- Separator "|" + description + tags.
+    -- Layout intentionally follows the reference: icon -> title -> separator
+    -- -> description -> tag pills -> minimize/close. Colors remain Mugi's theme.
     local sepLbl = nil
-    local descBadge = nil
-    local descInner = nil
-    local descStroke = nil
+    local descLbl = nil
+    local TagsFrame = nil
 
-    local function BuildDescBadge()
-        if Description == nil or Description == "" then return end
-
-        sepLbl = Custom:Create("TextLabel", {
-            Font                   = Enum.Font.GothamBold,
-            Text                   = "|",
-            TextColor3             = Theme.TextSecondary,
-            TextSize               = DPI:F(13),
-            BackgroundTransparency = 1,
-            BorderSizePixel        = 0,
-            AnchorPoint            = Vector2.new(0, 0.5),
-            Position               = DPI:U2(0, titleX + DPI:S(120), 0.5, 0),
-            Size                   = DPI:U2(0, DPI:S(10), 0, DPI:S(16)),
-            Name                   = "Separator",
-        }, Top)
-
-        descBadge = Custom:Create("Frame", {
-            BackgroundColor3       = Color3.fromRGB(20, 20, 20),
-            BackgroundTransparency = 0.15,
-            BorderSizePixel        = 0,
-            AnchorPoint            = Vector2.new(0, 0.5),
-            Position               = DPI:U2(0, titleX + DPI:S(120) + DPI:S(14), 0.5, 0),
-            AutomaticSize          = Enum.AutomaticSize.X,
-            Size                   = DPI:U2(0, 0, 0, DPI:S(20)),
-            Name                   = "DescBadge",
-        }, Top)
-        Custom:Create("UICorner", { CornerRadius = DPI:U(0, 5) }, descBadge)
-        descStroke = Custom:Create("UIStroke", {
-            Color        = Theme.AccentPink,
-            Thickness    = 1,
-            Transparency = 0.2,
-        }, descBadge)
-        Custom:Create("UIPadding", {
-            PaddingLeft  = DPI:U(0, 8),
-            PaddingRight = DPI:U(0, 8),
-        }, descBadge)
-
-        descInner = Custom:Create("TextLabel", {
-            Font                   = Enum.Font.GothamBold,
-            Text                   = Description,
-            TextColor3             = Theme.TextPrimary,
-            TextSize               = DPI:F(12),
-            TextXAlignment         = Enum.TextXAlignment.Center,
-            BackgroundTransparency = 1,
-            BorderSizePixel        = 0,
-            AnchorPoint            = Vector2.new(0, 0.5),
-            Position               = UDim2.new(0, 0, 0.5, 0),
-            AutomaticSize          = Enum.AutomaticSize.X,
-            Size                   = UDim2.new(0, 0, 1, 0),
-            Name                   = "DescText",
-        }, descBadge)
+    local RawTags = cfg.Tags or PositionalTags or {}
+    if typeof(RawTags) ~= "table" then
+        RawTags = { RawTags }
+    end
+    if cfg.Tag then
+        table.insert(RawTags, 1, cfg.Tag)
+    end
+    if cfg.Executor then
+        table.insert(RawTags, cfg.Executor)
     end
 
-    BuildDescBadge()
+    local function MakeTag(parent, text)
+        local tag = Custom:Create("Frame", {
+            BackgroundColor3       = Theme.BGSecondary,
+            BackgroundTransparency = 0.08,
+            BorderSizePixel        = 0,
+            AutomaticSize          = Enum.AutomaticSize.X,
+            Size                   = DPI:U2(0, 0, 0, 24),
+            Name                   = "Tag",
+        }, parent)
+        Custom:Create("UICorner", {
+            CornerRadius = UDim.new(1, 0)
+        }, tag)
+        Custom:Create("UIStroke", {
+            Color = Theme.Stroke,
+            Thickness = 1,
+            Transparency = 0.15,
+        }, tag)
+        Custom:Create("UIPadding", {
+            PaddingLeft = DPI:U(0, 10),
+            PaddingRight = DPI:U(0, 10),
+        }, tag)
+        Custom:Create("TextLabel", {
+            Font = Enum.Font.GothamBold,
+            Text = tostring(text or ""),
+            TextColor3 = Theme.TextPrimary,
+            TextSize = DPI:F(11),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = UDim2.new(0, 0, 1, 0),
+            Name = "TagText",
+        }, tag)
+        return tag
+    end
+
+    local function BuildTopMeta()
+        if sepLbl then sepLbl:Destroy(); sepLbl = nil end
+        if descLbl then descLbl:Destroy(); descLbl = nil end
+        if TagsFrame then TagsFrame:Destroy(); TagsFrame = nil end
+
+        local tw = titleLbl.AbsoluteSize.X
+        local cursorX = titleX + tw + DPI:S(8)
+
+        if Description ~= nil and tostring(Description) ~= "" then
+            sepLbl = Custom:Create("TextLabel", {
+                Font = Enum.Font.GothamBold,
+                Text = "|",
+                TextColor3 = Theme.TextSecondary,
+                TextSize = DPI:F(13),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                AnchorPoint = Vector2.new(0, 0.5),
+                Position = DPI:U2(0, cursorX, 0.5, 0),
+                Size = DPI:U2(0, DPI:S(10), 0, DPI:S(18)),
+                Name = "Separator",
+            }, Top)
+            cursorX += DPI:S(16)
+
+            descLbl = Custom:Create("TextLabel", {
+                Font = Enum.Font.Gotham,
+                Text = tostring(Description),
+                TextColor3 = Theme.TextSecondary,
+                TextSize = DPI:F(11),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                AnchorPoint = Vector2.new(0, 0.5),
+                Position = DPI:U2(0, cursorX, 0.5, 0),
+                AutomaticSize = Enum.AutomaticSize.X,
+                Size = DPI:U2(0, 0, 0, DPI:S(18)),
+                Name = "DescriptionLabel",
+            }, Top)
+            cursorX += descLbl.AbsoluteSize.X + DPI:S(10)
+        end
+
+        if #RawTags > 0 then
+            TagsFrame = Custom:Create("Frame", {
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                Position = DPI:U2(0, cursorX, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                AutomaticSize = Enum.AutomaticSize.X,
+                Size = DPI:U2(0, 0, 0, DPI:S(26)),
+                Name = "Tags",
+            }, Top)
+            local layout = Custom:Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                HorizontalAlignment = Enum.HorizontalAlignment.Left,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                Padding = DPI:U(0, 5),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+            }, TagsFrame)
+
+            for i, tagText in ipairs(RawTags) do
+                if tagText ~= nil and tostring(tagText) ~= "" then
+                    local tag = MakeTag(TagsFrame, tagText)
+                    tag.LayoutOrder = i
+                end
+            end
+        end
+    end
 
     task.defer(function()
         task.wait()
-        local tw = titleLbl.AbsoluteSize.X
-        if tw > 0 then
-            local newSepX = titleX + tw + DPI:S(6)
-            if sepLbl then
-                sepLbl.Position = DPI:U2(0, newSepX, 0.5, 0)
-            end
-            if descBadge then
-                descBadge.Position = DPI:U2(0, newSepX + DPI:S(12), 0.5, 0)
-            end
-        end
+        BuildTopMeta()
     end)
 
     -- Close button
@@ -939,7 +1008,7 @@ function MugiHub:CreateWindow(cfg)
     local function SetThumbForTab(thumbUrl)
         if thumbUrl and thumbUrl ~= "" then
             ThumbFrame.Size    = DPI:U2(1, 0, 0, DPI:S(70))
-            ThumbImage.Image   = thumbUrl
+            ThumbImage.Image   = NormalizeAssetId(thumbUrl)
             -- Adjust LayersReal agar tidak overlap thumbnail
             LayersReal.Size    = DPI:U2(1, 0, 1, -(DPI:S(33) + DPI:S(70)))
             LayersReal.Position = UDim2.new(0, 0, 0, DPI:S(33) + DPI:S(70))
@@ -1177,7 +1246,7 @@ function MugiHub:CreateWindow(cfg)
 
     function Tabs:CreateTab(cfg2)
         local _Name  = cfg2[1] or cfg2.Name or ""
-        local _Icon  = cfg2[2] or cfg2.Icon or ""
+        local _Icon  = NormalizeAssetId(cfg2[2] or cfg2.Icon or "")
         local _Thumb = cfg2[3] or cfg2.Thumbnail or nil
 
         -- Simpan thumbnail per tab index
@@ -1232,16 +1301,17 @@ function MugiHub:CreateWindow(cfg)
             Name                   = "TabName",
         }, Tab)
 
-        Custom:Create("ImageLabel", {
-            Image                  = _Icon,
+        local TabIcon = Custom:Create("ImageLabel", {
+            Image                  = _Icon or "",
             BackgroundTransparency = 0.999,
             BorderSizePixel        = 0,
             Position               = DPI:U2(0, 9, 0, 7),
             Size                   = DPI:U2(0, 16, 0, 16),
             Name                   = "FeatureImg",
         }, Tab)
+        TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 
-        -- Active indicator (gradient hijau-putih bar kiri)
+        -- Active indicator (gradient pink-putih bar kiri)
         if CountTab == 0 then
             LayersPageLayout:JumpToIndex(0)
             NameTab.Text = _Name
@@ -1586,7 +1656,7 @@ function MugiHub:CreateWindow(cfg)
             function Item:AddButton(cfg3)
                 local BTitle    = cfg3[1] or cfg3.Title or ""
                 local BContent  = cfg3[2] or cfg3.Content or ""
-                local BIcon     = cfg3[3] or cfg3.Icon or "rbxassetid://7734010488"
+                local BIcon     = NormalizeAssetId(cfg3[3] or cfg3.Icon or "rbxassetid://7734010488")
                 local BCallback = cfg3[4] or cfg3.Callback or function() end
                 local bFuncs    = {}
 
@@ -1645,7 +1715,6 @@ function MugiHub:CreateWindow(cfg)
                     }, Btn)
                     Custom:Create("ImageLabel", {
                         Image                  = BIcon,
-                        ImageColor3            = Theme.AccentPink,
                         AnchorPoint            = Vector2.new(0.5, 0.5),
                         BackgroundTransparency = 0.999,
                         BorderSizePixel        = 0,
@@ -1777,6 +1846,170 @@ function MugiHub:CreateWindow(cfg)
                 ItemCount += 1
                 return tFuncs
             end
+
+            -- AddKeybind
+            -- Supports Enum.KeyCode, numeric asset-style strings are not
+            -- relevant here; the bound key is selected from keyboard input.
+            function Item:AddKeybind(cfg3)
+                local KTitle    = cfg3[1] or cfg3.Title or ""
+                local KContent  = cfg3[2] or cfg3.Content or ""
+                local KDefault  = cfg3[3] or cfg3.Default or cfg3.Key or Enum.KeyCode.RightShift
+                local KCallback = cfg3[4] or cfg3.Callback or function() end
+                local kFuncs    = { Key = nil, Value = nil, Listening = false }
+
+                local function NormalizeKey(key)
+                    if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
+                        return key
+                    end
+                    if typeof(key) == "string" then
+                        local ok, result = pcall(function()
+                            return Enum.KeyCode[key]
+                        end)
+                        if ok and result then
+                            return result
+                        end
+                    end
+                    return Enum.KeyCode.RightShift
+                end
+
+                local KDefaultKey = NormalizeKey(KDefault)
+                kFuncs.Key = KDefaultKey
+                kFuncs.Value = KDefaultKey
+
+                local KeyItem = MakeItemBase("Keybind", ItemCount)
+
+                local kTitle = Custom:Create("TextLabel", {
+                    Font                   = Enum.Font.GothamBold,
+                    Text                   = KTitle,
+                    TextColor3             = Theme.TextPrimary,
+                    TextSize               = DPI:F(13),
+                    TextXAlignment         = Enum.TextXAlignment.Left,
+                    TextYAlignment         = Enum.TextYAlignment.Top,
+                    BackgroundTransparency = 0.999,
+                    BorderSizePixel        = 0,
+                    Position               = DPI:U2(0, 10, 0, 10),
+                    Size                   = DPI:U2(1, -145, 0, 13),
+                    Name                   = "KeybindTitle",
+                }, KeyItem)
+
+                local kContent = Custom:Create("TextLabel", {
+                    Font                   = Enum.Font.GothamBold,
+                    Text                   = KContent,
+                    TextColor3             = Theme.TextSecondary,
+                    TextSize               = DPI:F(12),
+                    TextXAlignment         = Enum.TextXAlignment.Left,
+                    TextYAlignment         = Enum.TextYAlignment.Bottom,
+                    BackgroundTransparency = 0.999,
+                    BorderSizePixel        = 0,
+                    Position               = DPI:U2(0, 10, 0, 23),
+                    Size                   = DPI:U2(1, -145, 0, 12),
+                    Name                   = "KeybindContent",
+                }, KeyItem)
+
+                local function UpdateKeybind()
+                    kContent.TextWrapped = false
+                    local ratio = kContent.TextBounds.X / math.max(kContent.AbsoluteSize.X, 1)
+                    kContent.Size = DPI:U2(1, -145, 0, DPI:S(12) + DPI:S(12) * math.ceil(ratio))
+                    KeyItem.Size = DPI:U2(1, 0, 0, kContent.AbsoluteSize.Y + DPI:S(33))
+                    kContent.TextWrapped = true
+                end
+                UpdateKeybind()
+                kContent:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+                    UpdateKeybind()
+                    UpdateSizeSection()
+                end)
+
+                local keyFrame = Custom:Create("Frame", {
+                    AnchorPoint          = Vector2.new(1, 0.5),
+                    BackgroundColor3     = Theme.BGItem,
+                    BackgroundTransparency = 0.05,
+                    BorderSizePixel      = 0,
+                    Position             = UDim2.new(1, -DPI:S(8), 0.5, 0),
+                    Size                 = DPI:U2(0, 108, 0, 30),
+                    Name                 = "KeybindFrame",
+                }, KeyItem)
+                Custom:Create("UICorner", { CornerRadius = DPI:U(0, 5) }, keyFrame)
+                local keyStroke = Custom:Create("UIStroke", {
+                    Color = Theme.Stroke,
+                    Thickness = 1,
+                }, keyFrame)
+
+                local keyButton = Custom:Create("TextButton", {
+                    Text = "",
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    Size = UDim2.fromScale(1, 1),
+                    Name = "KeybindButton",
+                }, keyFrame)
+
+                local keyLabel = Custom:Create("TextLabel", {
+                    Font = Enum.Font.GothamBold,
+                    Text = KDefaultKey.Name,
+                    TextColor3 = Theme.TextPrimary,
+                    TextSize = DPI:F(11),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    Size = UDim2.fromScale(1, 1),
+                    Name = "KeyLabel",
+                }, keyFrame)
+
+                local function SetKeyInternal(key)
+                    key = NormalizeKey(key)
+                    kFuncs.Key = key
+                    kFuncs.Value = key
+                    keyLabel.Text = key.Name
+                end
+
+                function kFuncs:Set(key)
+                    SetKeyInternal(key)
+                end
+
+                function kFuncs:Get()
+                    return kFuncs.Key
+                end
+
+                function kFuncs:Capture()
+                    if kFuncs.Listening then return end
+                    kFuncs.Listening = true
+                    keyLabel.Text = "Press key..."
+                    keyStroke.Color = Theme.AccentPink
+
+                    local connection
+                    connection = UserInputService.InputBegan:Connect(function(input, processed)
+                        if not kFuncs.Listening then
+                            connection:Disconnect()
+                            return
+                        end
+                        if processed then return end
+                        if input.UserInputType == Enum.UserInputType.Keyboard
+                        and input.KeyCode ~= Enum.KeyCode.Unknown then
+                            SetKeyInternal(input.KeyCode)
+                            kFuncs.Listening = false
+                            keyStroke.Color = Theme.Stroke
+                            connection:Disconnect()
+                        end
+                    end)
+                end
+
+                keyButton.Activated:Connect(function()
+                    kFuncs:Capture()
+                end)
+
+                UserInputService.InputBegan:Connect(function(input, processed)
+                    if processed then return end
+                    if input.UserInputType == Enum.UserInputType.Keyboard
+                    and input.KeyCode == kFuncs.Key
+                    and not kFuncs.Listening then
+                        KCallback(kFuncs.Key)
+                    end
+                end)
+
+                ItemCount += 1
+                return kFuncs
+            end
+
+            -- Case-compatible alias.
+            Item.AddKeyBind = Item.AddKeybind
 
             -- AddSlider
             function Item:AddSlider(cfg3)
@@ -2328,6 +2561,46 @@ function MugiHub:CreateWindow(cfg)
             CountSection += 1
             return Item
         end
+
+        -- ── README / ABOUT PAGE ─────────────────────────────────
+        -- Creates a README-style block inside the current tab.
+        -- This is intentionally built from the existing Section + Paragraph
+        -- components so it inherits the library's current layout/theme.
+        function Sections:AddReadme(cfg3)
+            cfg3 = cfg3 or {}
+
+            local sectionTitle = cfg3.SectionTitle
+                or cfg3.Section
+                or cfg3.Header
+                or cfg3[1]
+                or "About MugiHub?"
+
+            local contentTitle = cfg3.ContentTitle
+                or cfg3.Title2
+                or cfg3.Heading
+                or cfg3[2]
+                or "What is MugiHub?"
+
+            local content = cfg3.Content
+                or cfg3.Text
+                or cfg3.Description
+                or cfg3[3]
+                or ""
+
+            local open = cfg3.Open
+            if open == nil then open = true end
+
+            local readmeSection = Sections:AddSection(sectionTitle, open)
+            local readmeParagraph = readmeSection:AddParagraph({
+                Title = contentTitle,
+                Content = content,
+            })
+
+            return readmeParagraph
+        end
+
+        -- Alias with the common camel-case spelling.
+        Sections.AddREADME = Sections.AddReadme
 
         CountTab += 1
         return Sections

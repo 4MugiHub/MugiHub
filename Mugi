@@ -1,55 +1,17 @@
---[[
-    MugiHub UI Library
-    Mugi systems
-    MugiHub
-    
-    Features:
-    - Adaptive DPI Scaling (HP, Tablet, PC konsisten)
-    - Pink-Putih Gradient Theme
-    - Full white text
-    - Professional & clean
-    
-    Usage:
-        local Library = loadstring(game:HttpGet("YOUR_URL"))()
-        local Window = Library:CreateWindow({
-            Title = "MugiHub",
-            Description = "Game Name",
-        })
-]]
-
--- ============================================================
---  SERVICES
--- ============================================================
 local Players         = game:GetService("Players")
 local Player          = Players.LocalPlayer
 local RunService      = game:GetService("RunService")
 local TweenService    = game:GetService("TweenService")
 local UserInputService= game:GetService("UserInputService")
 local VirtualUser     = game:GetService("VirtualUser")
-
--- ============================================================
---  ADAPTIVE DPI SCALING SYSTEM
--- ============================================================
 local DPI = {}
-
 do
-    -- Ambil info viewport
     local camera = workspace.CurrentCamera
     local vpSize = camera.ViewportSize
-
-    -- Hitung "logical DPI" dari ukuran viewport
-    -- Referensi: 1080p desktop = DPI ~96, iPhone ~460, iPad ~264
-    -- Roblox pakai pixel fisik, kita estimasi dari tinggi layar
     local screenH = vpSize.Y
     local screenW = vpSize.X
-    
-    -- Estimasi DPI berdasarkan tinggi layar fisik
-    -- HP biasanya 5-7 inch, tablet 8-12 inch, PC 21-27 inch
     local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
     local isTablet = UserInputService.TouchEnabled and (screenH > 900 or screenW > 900)
-
-    -- Roblox viewport HP biasanya 380-700px (bukan resolusi fisik)
-    -- Jadi BASE_H disesuaikan per perangkat agar GUI proporsional
     local BASE_H, BASE_W
     if isMobile and not isTablet then
         BASE_H = 380
@@ -61,11 +23,9 @@ do
         BASE_H = 600
         BASE_W = 1080
     end
-
     local rawScaleH = screenH / BASE_H
     local rawScaleW = screenW / BASE_W
     local rawScale  = math.min(rawScaleH, rawScaleW)
-
     local dpiCorrection
     if isMobile and not isTablet then
         if screenH >= 700 then
@@ -92,36 +52,25 @@ do
             dpiCorrection = 1.00
         end
     end
-
     local finalScale = math.clamp(rawScale * dpiCorrection, 0.55, 1.40)
     finalScale = math.floor(finalScale / 0.05 + 0.5) * 0.05
-
     DPI.scale = finalScale
     DPI.isMobile = isMobile
     DPI.isTablet = isTablet
     DPI.screenW = screenW
     DPI.screenH = screenH
-
-    -- Helper: scale nilai angka
     function DPI:S(value)
         return math.round(value * self.scale)
     end
-
-    -- Helper: scale UDim2 offset (scale part tetap sama)
     function DPI:U2(xs, xo, ys, yo)
         return UDim2.new(xs, math.round(xo * self.scale), ys, math.round(yo * self.scale))
     end
-
-    -- Helper: scale UDim
     function DPI:U(scale, offset)
         return UDim.new(scale, math.round(offset * self.scale))
     end
-
-    -- Helper: scale font size (minimum 8)
     function DPI:F(size)
         return math.max(8, math.round(size * self.scale))
     end
-
     camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
         local newVP = camera.ViewportSize
         if not isMobile and not isTablet then
@@ -133,14 +82,7 @@ do
         end
     end)
 end
-
--- ============================================================
---  MUGI THEME SYSTEM
---  Fixed theme: Pink -> White Gradient
---  Color presets intentionally removed.
--- ============================================================
 local Theme = {}
-
 Theme.AccentPink      = Color3.fromRGB(255, 105, 180)
 Theme.AccentMid       = Color3.fromRGB(255, 160, 210)
 Theme.AccentWhite     = Color3.fromRGB(255, 255, 255)
@@ -152,11 +94,9 @@ Theme.TextSecondary   = Color3.fromRGB(200, 185, 210)
 Theme.TextDim         = Color3.fromRGB(130, 115, 145)
 Theme.Stroke           = Color3.fromRGB(60, 50, 75)
 Theme.StrokeActive     = Theme.AccentPink
-
 function Theme.Accent()
     return Theme.AccentPink
 end
-
 function Theme.AccentGradient()
     return ColorSequence.new({
         ColorSequenceKeypoint.new(0, Theme.AccentPink),
@@ -164,21 +104,9 @@ function Theme.AccentGradient()
         ColorSequenceKeypoint.new(1, Theme.AccentWhite),
     })
 end
-
 function Theme.PinkWhiteGradient()
     return Theme.AccentGradient()
 end
--- Compatibility aliases only; no color preset system is restored.
-function Theme.GreenWhiteGradient()
-    return Theme.AccentGradient()
-end
-
-function Theme.GreenBlackGradient()
-    return Theme.AccentGradient()
-end
-
--- Normalize Roblox asset IDs so numeric IDs and "rbxassetid://" strings
--- both work consistently across Window/Tab/Button icons.
 local function NormalizeAssetId(asset)
     if asset == nil then
         return ""
@@ -195,12 +123,7 @@ local function NormalizeAssetId(asset)
     end
     return value
 end
-
--- ============================================================
---  CUSTOM INSTANCE CREATOR
--- ============================================================
 local Custom = {}
-
 function Custom:Create(name, props, parent)
     local inst = Instance.new(name)
     if parent then inst.Parent = parent end
@@ -209,7 +132,6 @@ function Custom:Create(name, props, parent)
     end
     return inst
 end
-
 function Custom:EnabledAFK()
     if not VirtualUser then return end
     Player.Idled:Connect(function()
@@ -220,12 +142,7 @@ function Custom:EnabledAFK()
         end)
     end)
 end
-
 Custom:EnabledAFK()
-
--- ============================================================
---  RIPPLE CLICK EFFECT
--- ============================================================
 local function CircleClick(button, x, y)
     task.spawn(function()
         button.ClipsDescendants = true
@@ -237,19 +154,15 @@ local function CircleClick(button, x, y)
         circle.ZIndex           = 10
         circle.Name             = "Circle"
         circle.Parent           = button
-
         local nx = x - button.AbsolutePosition.X
         local ny = y - button.AbsolutePosition.Y
         circle.Position = UDim2.new(0, nx, 0, ny)
-
         local sz = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 1.5
         local ti = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
         TweenService:Create(circle, ti, {
             Size = UDim2.new(0, sz, 0, sz),
             Position = UDim2.new(0.5, -sz/2, 0.5, -sz/2),
         }):Play()
-
         task.wait(0.5)
         for _ = 1, 10 do
             circle.ImageTransparency = circle.ImageTransparency + 0.01
@@ -258,11 +171,6 @@ local function CircleClick(button, x, y)
         circle:Destroy()
     end)
 end
-
--- ============================================================
---  SAFE GUI PARENT + OPEN/CLOSE BUTTON
--- ============================================================
--- Safe GUI parent getter
 local function GetGuiParent()
     if RunService:IsStudio() then
         return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
@@ -281,28 +189,21 @@ local function GetGuiParent()
     if ok3 and result3 then return result3 end
     return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 end
-
--- ============================================================
 local function MakeOpenCloseButton()
     local sg = Custom:Create("ScreenGui", {
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     }, GetGuiParent())
-
     local btn = Custom:Create("ImageButton", {
-        BackgroundColor3       = Theme.BGItem,
-        BackgroundTransparency = 0,
+        BackgroundTransparency = 1,
         BorderSizePixel        = 0,
         Image                  = "rbxassetid://72876614672836",
-        ImageColor3            = Theme.AccentPink,
+        ImageColor3            = Color3.fromRGB(255, 255, 255),
+        ImageTransparency      = 0,
         ScaleType              = Enum.ScaleType.Fit,
         Position               = DPI:U2(0.05, 0, 0.05, 0),
         Size                   = DPI:U2(0, 36, 0, 36),
         Visible                = false,
     }, sg)
-    Custom:Create("UICorner", { CornerRadius = DPI:U(0, 8) }, btn)
-    Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 1.5 }, btn)
-
-    -- Draggable
     local dragging, dragStart, startPos = false, nil, nil
     btn.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.Touch
@@ -323,28 +224,20 @@ local function MakeOpenCloseButton()
                                       startPos.Y.Scale, startPos.Y.Offset + d.Y)
         end
     end)
-
     return btn
 end
-
 local OpenCloseBtn = MakeOpenCloseButton()
-
--- ============================================================
---  MAKE DRAGGABLE (untuk main window)
--- ============================================================
 local function MakeDraggable(topbar, frame)
     local dragging = false
     local dragStart = nil
     local startPos = nil
     local dragInput = nil
-
     topbar.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1
         or inp.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = inp.Position
             startPos = frame.Position
-
             inp.Changed:Connect(function()
                 if inp.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -353,14 +246,12 @@ local function MakeDraggable(topbar, frame)
             end)
         end
     end)
-
     topbar.InputChanged:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseMovement
         or inp.UserInputType == Enum.UserInputType.Touch then
             dragInput = inp
         end
     end)
-
     UserInputService.InputChanged:Connect(function(inp)
         if not dragging then return end
         if inp ~= dragInput
@@ -368,7 +259,6 @@ local function MakeDraggable(topbar, frame)
         and inp.UserInputType ~= Enum.UserInputType.Touch then
             return
         end
-
         local d = inp.Position - dragStart
         frame.Position = UDim2.new(
             startPos.X.Scale,
@@ -377,7 +267,6 @@ local function MakeDraggable(topbar, frame)
             startPos.Y.Offset + d.Y
         )
     end)
-
     UserInputService.InputEnded:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1
         or inp.UserInputType == Enum.UserInputType.Touch then
@@ -386,29 +275,19 @@ local function MakeDraggable(topbar, frame)
         end
     end)
 end
-
--- ============================================================
---  LIBRARY MAIN TABLE
--- ============================================================
 local MugiHub = {}
+MugiHub.Version = "V8"
 local Notification = {}
 MugiHub.Unloaded = false
-
-
--- ============================================================
---  NOTIFICATION SYSTEM
--- ============================================================
 function MugiHub:SetNotification(cfg)
     local Title       = cfg[1] or cfg.Title or ""
     local Description = cfg[2] or cfg.Description or ""
     local Content     = cfg[3] or cfg.Content or ""
     local Time        = cfg[5] or cfg.Time or 0.5
     local Delay       = cfg[6] or cfg.Delay or 5
-
     local notifGui = Custom:Create("ScreenGui", {
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     }, GetGuiParent())
-
     local layout = Custom:Create("Frame", {
         AnchorPoint            = Vector2.new(1, 1),
         BackgroundTransparency = 0.999,
@@ -417,9 +296,7 @@ function MugiHub:SetNotification(cfg)
         Size                   = DPI:U2(0, 300, 1, 0),
         Name                   = "NotificationLayout",
     }, notifGui)
-
     local NOTIF_GAP = DPI:S(8)
-
     local function ReStackNotifs()
         local children = {}
         for _, v in ipairs(layout:GetChildren()) do
@@ -437,10 +314,8 @@ function MugiHub:SetNotification(cfg)
             totalY = totalY + v.Size.Y.Offset + NOTIF_GAP
         end
     end
-
     layout.ChildAdded:Connect(ReStackNotifs)
     layout.ChildRemoved:Connect(ReStackNotifs)
-
     local notifFrame = Custom:Create("Frame", {
         BackgroundTransparency = 1,
         BorderSizePixel        = 0,
@@ -449,7 +324,6 @@ function MugiHub:SetNotification(cfg)
         Position               = UDim2.new(1, 0, 1, 0),
         Name                   = "NotificationFrame",
     }, layout)
-
     local notifReal = Custom:Create("Frame", {
         BackgroundColor3  = Theme.BGItem,
         BorderSizePixel   = 0,
@@ -458,15 +332,12 @@ function MugiHub:SetNotification(cfg)
         Name              = "NotificationFrameReal",
     }, notifFrame)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0,8) }, notifReal)
-
-    -- Top bar
     local top = Custom:Create("Frame", {
         BackgroundTransparency = 0.999,
         BorderSizePixel        = 0,
         Size                   = DPI:U2(1, 0, 0, 36),
         Name                   = "Top",
     }, notifReal)
-
     local titleLbl = Custom:Create("TextLabel", {
         Font                 = Enum.Font.GothamBold,
         Text                 = Title,
@@ -478,8 +349,6 @@ function MugiHub:SetNotification(cfg)
         Size                 = UDim2.new(1, 0, 1, 0),
         Position             = DPI:U2(0, 10, 0, 0),
     }, top)
-
-    -- Gradient label untuk description
     local descLbl = Custom:Create("TextLabel", {
         Font                 = Enum.Font.GothamBold,
         Text                 = Description,
@@ -492,7 +361,6 @@ function MugiHub:SetNotification(cfg)
         Position             = DPI:U2(0, titleLbl.TextBounds.X + 15, 0, 0),
     }, top)
     Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 0.4 }, descLbl)
-
     local closeBtn = Custom:Create("TextButton", {
         Font                 = Enum.Font.SourceSans,
         Text                 = "X",
@@ -504,7 +372,6 @@ function MugiHub:SetNotification(cfg)
         Position             = UDim2.new(1, -5, 0.5, 0),
         Size                 = DPI:U2(0, 25, 0, 25),
     }, top)
-
     local contentLbl = Custom:Create("TextLabel", {
         Font                 = Enum.Font.GothamBold,
         Text                 = Content,
@@ -519,13 +386,11 @@ function MugiHub:SetNotification(cfg)
     }, notifReal)
     contentLbl.Size = DPI:U2(1, -20, 0, 13 + (13 * (contentLbl.TextBounds.X // contentLbl.AbsoluteSize.X)))
     contentLbl.TextWrapped = true
-
     if contentLbl.AbsoluteSize.Y < 27 then
         notifFrame.Size = DPI:U2(1, 0, 0, 65)
     else
         notifFrame.Size = DPI:U2(1, 0, 0, contentLbl.AbsoluteSize.Y + 40)
     end
-
     local waited = false
     function Notification:Close()
         if waited then return end
@@ -536,43 +401,30 @@ function MugiHub:SetNotification(cfg)
         notifFrame:Destroy()
         waited = false
     end
-
     closeBtn.Activated:Connect(function() Notification:Close() end)
     TweenService:Create(notifReal, TweenInfo.new(tonumber(Time), Enum.EasingStyle.Back, Enum.EasingDirection.InOut),
         { Position = UDim2.new(0, 0, 0, 0) }):Play()
     task.wait(tonumber(Delay))
     Notification:Close()
-
     return Notification
 end
-
--- ============================================================
---  CREATE WINDOW
--- ============================================================
 function MugiHub:CreateWindow(cfg)
     local baseW  = cfg[4] and cfg[4].X.Offset or 550
     local baseH  = cfg[4] and cfg[4].Y.Offset or 315
     local TabW   = cfg[3] or cfg["Tab Width"] or 120
-
     local Title       = cfg[1] or cfg.Title or "MugiHub"
     local Description = cfg[2] or cfg.Description or ""
     local CfgThumb    = cfg.Thumbnail and NormalizeAssetId(cfg.Thumbnail) or nil
     local PositionalTags = cfg[5] or nil
-
     local scaledW    = DPI:S(baseW)
     local scaledH    = DPI:S(baseH)
     local scaledTabW = DPI:S(TabW)
     local SizeUi     = UDim2.fromOffset(scaledW, scaledH)
-
     local Funcs = {}
     local TabThumbnails = {}
-
-    -- Root ScreenGui
     local rootGui = Custom:Create("ScreenGui", {
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     }, GetGuiParent())
-
-    -- Drop shadow holder
     local shadowHolder = Custom:Create("Frame", {
         BackgroundTransparency = 1,
         BorderSizePixel        = 0,
@@ -582,7 +434,6 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "DropShadowHolder",
         Position               = UDim2.new(0.5, 0, 0.5, 0),
     }, rootGui)
-
     local dropShadow = Custom:Create("ImageLabel", {
         Image               = "",
         ImageColor3         = Color3.fromRGB(0,0,0),
@@ -597,8 +448,6 @@ function MugiHub:CreateWindow(cfg)
         ZIndex              = 1,
         Name                = "DropShadow",
     }, shadowHolder)
-
-    -- Main frame
     local Main = Custom:Create("Frame", {
         AnchorPoint          = Vector2.new(0.5, 0.5),
         BackgroundColor3     = Theme.BG,
@@ -610,8 +459,6 @@ function MugiHub:CreateWindow(cfg)
     }, dropShadow)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0, 8) }, Main)
     Custom:Create("UIStroke", { Color = Theme.Stroke, Thickness = 1.5 }, Main)
-
-    -- ── TOP BAR ──────────────────────────────────────────────
     local Top = Custom:Create("Frame", {
         BackgroundTransparency = 0.999,
         BorderSizePixel        = 0,
@@ -619,12 +466,9 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "Top",
     }, Main)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0, 5) }, Top)
-
     local iconSize   = DPI:S(20)
     local iconPad    = DPI:S(8)
     local CfgIcon = NormalizeAssetId(cfg.Icon or "rbxassetid://72876614672836")
-
-    -- Window Icon (kiri topbar)
     local WindowIcon = Custom:Create("ImageLabel", {
         Image                  = CfgIcon,
         BackgroundTransparency = 1,
@@ -634,8 +478,6 @@ function MugiHub:CreateWindow(cfg)
         Size                   = UDim2.fromOffset(iconSize, iconSize),
         Name                   = "WindowIcon",
     }, Top)
-
-    -- Title label dengan gradient
     local titleX = iconPad + iconSize + DPI:S(6)
     local titleLbl = Custom:Create("TextLabel", {
         Font                   = Enum.Font.GothamBold,
@@ -655,14 +497,9 @@ function MugiHub:CreateWindow(cfg)
         Color    = Theme.AccentGradient(),
         Rotation = 0,
     }, titleLbl)
-
-    -- Separator "|" + description + tags.
-    -- Layout intentionally follows the reference: icon -> title -> separator
-    -- -> description -> tag pills -> minimize/close. Colors remain Mugi's theme.
     local sepLbl = nil
     local descLbl = nil
     local TagsFrame = nil
-
     local RawTags = cfg.Tags or PositionalTags or {}
     if typeof(RawTags) ~= "table" then
         RawTags = { RawTags }
@@ -673,7 +510,6 @@ function MugiHub:CreateWindow(cfg)
     if cfg.Executor then
         table.insert(RawTags, cfg.Executor)
     end
-
     local function MakeTag(parent, text)
         local tag = Custom:Create("Frame", {
             BackgroundColor3       = Theme.BGSecondary,
@@ -708,15 +544,12 @@ function MugiHub:CreateWindow(cfg)
         }, tag)
         return tag
     end
-
     local function BuildTopMeta()
         if sepLbl then sepLbl:Destroy(); sepLbl = nil end
         if descLbl then descLbl:Destroy(); descLbl = nil end
         if TagsFrame then TagsFrame:Destroy(); TagsFrame = nil end
-
         local tw = titleLbl.AbsoluteSize.X
         local cursorX = titleX + tw + DPI:S(8)
-
         if Description ~= nil and tostring(Description) ~= "" then
             sepLbl = Custom:Create("TextLabel", {
                 Font = Enum.Font.GothamBold,
@@ -731,7 +564,6 @@ function MugiHub:CreateWindow(cfg)
                 Name = "Separator",
             }, Top)
             cursorX += DPI:S(16)
-
             descLbl = Custom:Create("TextLabel", {
                 Font = Enum.Font.Gotham,
                 Text = tostring(Description),
@@ -748,7 +580,6 @@ function MugiHub:CreateWindow(cfg)
             }, Top)
             cursorX += descLbl.AbsoluteSize.X + DPI:S(10)
         end
-
         if #RawTags > 0 then
             TagsFrame = Custom:Create("Frame", {
                 BackgroundTransparency = 1,
@@ -766,7 +597,6 @@ function MugiHub:CreateWindow(cfg)
                 Padding = DPI:U(0, 5),
                 SortOrder = Enum.SortOrder.LayoutOrder,
             }, TagsFrame)
-
             for i, tagText in ipairs(RawTags) do
                 if tagText ~= nil and tostring(tagText) ~= "" then
                     local tag = MakeTag(TagsFrame, tagText)
@@ -775,13 +605,10 @@ function MugiHub:CreateWindow(cfg)
             end
         end
     end
-
     task.defer(function()
         task.wait()
         BuildTopMeta()
     end)
-
-    -- Close button
     local CloseBtn = Custom:Create("TextButton", {
         Font                   = Enum.Font.SourceSans,
         Text                   = "X",
@@ -794,8 +621,6 @@ function MugiHub:CreateWindow(cfg)
         Size                   = DPI:U2(0, 25, 0, 25),
         Name                   = "Close",
     }, Top)
-
-    -- Minimize button
     local MinBtn = Custom:Create("TextButton", {
         Font                   = Enum.Font.GothamBold,
         Text                   = "—",
@@ -808,8 +633,6 @@ function MugiHub:CreateWindow(cfg)
         Size                   = DPI:U2(0, 25, 0, 25),
         Name                   = "Min",
     }, Top)
-
-    -- Divider bawah top bar
     Custom:Create("Frame", {
         AnchorPoint          = Vector2.new(0.5, 0),
         BackgroundColor3     = Theme.TextPrimary,
@@ -819,31 +642,28 @@ function MugiHub:CreateWindow(cfg)
         Size                 = DPI:U2(1, 0, 0, 1),
         Name                 = "DecideFrame",
     }, Main)
-
-    -- ── SEARCH BAR GLOBAL (di atas sidebar) ─────────────────
     local SearchBarFrame = Custom:Create("Frame", {
         BackgroundColor3     = Theme.BGSecondary,
-        BackgroundTransparency = 0.3,
+        BackgroundTransparency = 0.18,
         BorderSizePixel      = 0,
-        Position             = DPI:U2(0, 9, 0, 50),
-        Size                 = UDim2.new(0, scaledTabW, 0, DPI:S(26)),
+        Position             = DPI:U2(0, 9, 0, 46),
+        Size                 = UDim2.new(0, scaledTabW, 0, DPI:S(30)),
         Name                 = "SearchBarFrame",
         ClipsDescendants     = true,
     }, Main)
-    Custom:Create("UICorner", { CornerRadius = DPI:U(0, 5) }, SearchBarFrame)
-    Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 1, Transparency = 0.7 }, SearchBarFrame)
-
-    local SearchIcon = Custom:Create("TextLabel", {
-        Font                   = Enum.Font.GothamBold,
-        Text                   = "🔍",
-        TextScaled             = true,
+    Custom:Create("UICorner", { CornerRadius = DPI:U(0, 6) }, SearchBarFrame)
+    Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 1, Transparency = 0.45 }, SearchBarFrame)
+    local SearchIcon = Custom:Create("ImageLabel", {
+        Image                  = "rbxassetid://98201252600735",
+        ImageColor3            = Color3.fromRGB(255, 255, 255),
+        ImageTransparency      = 0,
         BackgroundTransparency = 1,
         BorderSizePixel        = 0,
         AnchorPoint            = Vector2.new(0, 0.5),
-        Position               = DPI:U2(0, 3, 0.5, 0),
-        Size                   = DPI:U2(0, 14, 0, 14),
+        Position               = DPI:U2(0, 8, 0.5, 0),
+        Size                   = DPI:U2(0, 15, 0, 15),
+        ScaleType              = Enum.ScaleType.Fit,
     }, SearchBarFrame)
-
     local SearchBox = Custom:Create("TextBox", {
         Font                 = Enum.Font.GothamBold,
         PlaceholderText      = "Search...",
@@ -854,13 +674,11 @@ function MugiHub:CreateWindow(cfg)
         TextXAlignment       = Enum.TextXAlignment.Left,
         BackgroundTransparency = 1,
         BorderSizePixel      = 0,
-        Position             = DPI:U2(0, 22, 0, 0),
-        Size                 = DPI:U2(1, -26, 1, 0),
+        Position             = DPI:U2(0, 29, 0, 0),
+        Size                 = DPI:U2(1, -35, 1, 0),
         ClearTextOnFocus     = false,
         Name                 = "SearchBox",
     }, SearchBarFrame)
-
-    -- ── TAB SIDEBAR ──────────────────────────────────────────
     local LayersTab = Custom:Create("Frame", {
         BackgroundTransparency = 0.999,
         BorderSizePixel        = 0,
@@ -869,8 +687,6 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "LayersTab",
     }, Main)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0, 2) }, LayersTab)
-
-    -- Vertical divider antara tab & content
     local tabDivider = Custom:Create("Frame", {
         BackgroundColor3     = Theme.Stroke,
         BackgroundTransparency = 0.3,
@@ -879,8 +695,6 @@ function MugiHub:CreateWindow(cfg)
         Size                 = DPI:U2(0, 1, 1, -DPI:S(59)),
         Name                 = "TabDivider",
     }, Main)
-
-    -- ── CONTENT AREA ─────────────────────────────────────────
     local Layers = Custom:Create("Frame", {
         BackgroundTransparency = 0.999,
         BorderSizePixel        = 0,
@@ -889,7 +703,6 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "Layers",
     }, Main)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0, 2) }, Layers)
-
     local NameTab = Custom:Create("TextLabel", {
         Font                   = Enum.Font.GothamBold,
         Text                   = "",
@@ -902,7 +715,6 @@ function MugiHub:CreateWindow(cfg)
         Size                   = DPI:U2(1, 0, 0, 30),
         Name                   = "NameTab",
     }, Layers)
-
     local LayersReal = Custom:Create("Frame", {
         AnchorPoint            = Vector2.new(0, 1),
         BackgroundTransparency = 0.999,
@@ -912,9 +724,7 @@ function MugiHub:CreateWindow(cfg)
         Size                   = DPI:U2(1, 0, 1, -33),
         Name                   = "LayersReal",
     }, Layers)
-
     local LayersFolder = Custom:Create("Folder", { Name = "LayersFolder" }, LayersReal)
-
     local LayersPageLayout = Custom:Create("UIPageLayout", {
         SortOrder        = Enum.SortOrder.LayoutOrder,
         TweenTime        = 0.4,
@@ -922,8 +732,6 @@ function MugiHub:CreateWindow(cfg)
         EasingStyle      = Enum.EasingStyle.Quad,
         Name             = "LayersPageLayout",
     }, LayersFolder)
-
-    -- Scroll untuk tab buttons di sidebar
     local ScrollTab = Custom:Create("ScrollingFrame", {
         CanvasSize             = UDim2.new(0, 0, 2, 0),
         ScrollBarImageColor3   = Color3.fromRGB(0,0,0),
@@ -934,12 +742,10 @@ function MugiHub:CreateWindow(cfg)
         Size                   = DPI:U2(1, 0, 1, -10),
         Name                   = "ScrollTab",
     }, LayersTab)
-
     Custom:Create("UIListLayout", {
         Padding     = UDim.new(0, 0),
         SortOrder   = Enum.SortOrder.LayoutOrder,
     }, ScrollTab)
-
     local function UpdateScrollTabSize()
         local total = 0
         for _, v in pairs(ScrollTab:GetChildren()) do
@@ -951,8 +757,6 @@ function MugiHub:CreateWindow(cfg)
     end
     ScrollTab.ChildAdded:Connect(UpdateScrollTabSize)
     ScrollTab.ChildRemoved:Connect(UpdateScrollTabSize)
-
-    -- ── SEARCH LOGIC: filter tab buttons ──────────────────────
     SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
         local q = string.lower(SearchBox.Text)
         for _, tabFrame in pairs(ScrollTab:GetChildren()) do
@@ -964,8 +768,6 @@ function MugiHub:CreateWindow(cfg)
             end
         end
     end)
-
-    -- ── THUMBNAIL AREA (di bawah NameTab, atas content) ───────
     local ThumbFrame = Custom:Create("Frame", {
         BackgroundTransparency = 1,
         BorderSizePixel        = 0,
@@ -974,7 +776,6 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "ThumbFrame",
         ClipsDescendants       = true,
     }, Layers)
-
     local ThumbImage = Custom:Create("ImageLabel", {
         BackgroundColor3       = Theme.BGSecondary,
         BackgroundTransparency = 0.5,
@@ -985,8 +786,6 @@ function MugiHub:CreateWindow(cfg)
         Name                   = "ThumbImage",
     }, ThumbFrame)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0, 6) }, ThumbImage)
-
-    -- Gradient overlay bawah thumbnail agar text tidak tertutup
     local ThumbGrad = Custom:Create("Frame", {
         BackgroundColor3       = Theme.BG,
         BackgroundTransparency = 0,
@@ -1004,12 +803,10 @@ function MugiHub:CreateWindow(cfg)
         }),
         Rotation = 90,
     }, ThumbGrad)
-
     local function SetThumbForTab(thumbUrl)
         if thumbUrl and thumbUrl ~= "" then
             ThumbFrame.Size    = DPI:U2(1, 0, 0, DPI:S(70))
             ThumbImage.Image   = NormalizeAssetId(thumbUrl)
-            -- Adjust LayersReal agar tidak overlap thumbnail
             LayersReal.Size    = DPI:U2(1, 0, 1, -(DPI:S(33) + DPI:S(70)))
             LayersReal.Position = UDim2.new(0, 0, 0, DPI:S(33) + DPI:S(70))
             ThumbFrame.Visible = true
@@ -1020,13 +817,9 @@ function MugiHub:CreateWindow(cfg)
             LayersReal.Position = UDim2.new(0, 0, 1, 0)
         end
     end
-
-    -- Load default thumbnail jika ada di config
     if CfgThumb then
         SetThumbForTab(CfgThumb)
     end
-
-    -- ── DROPDOWN BLUR OVERLAY ────────────────────────────────
     local MoreBlur = Custom:Create("Frame", {
         AnchorPoint          = Vector2.new(1, 0.5),
         BackgroundColor3     = Color3.fromRGB(0,0,0),
@@ -1039,7 +832,6 @@ function MugiHub:CreateWindow(cfg)
         Name                 = "MoreBlur",
     }, Layers)
     Custom:Create("UICorner", { CornerRadius = DPI:U(0, 4) }, MoreBlur)
-
     local ConnectButton = Custom:Create("TextButton", {
         Text                 = "",
         BackgroundTransparency = 0.999,
@@ -1047,7 +839,6 @@ function MugiHub:CreateWindow(cfg)
         Size                 = UDim2.new(1, 0, 1, 0),
         Name                 = "ConnectButton",
     }, MoreBlur)
-
     local DropdownSelect = Custom:Create("Frame", {
         AnchorPoint          = Vector2.new(1, 0.5),
         BackgroundColor3     = Theme.BGItem,
@@ -1064,7 +855,6 @@ function MugiHub:CreateWindow(cfg)
         Thickness    = 2,
         Transparency = 0.6,
     }, DropdownSelect)
-
     local DropdownSelectReal = Custom:Create("Frame", {
         AnchorPoint          = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 0.999,
@@ -1073,7 +863,6 @@ function MugiHub:CreateWindow(cfg)
         Size                 = DPI:U2(1, -10, 1, -10),
         Name                 = "DropdownSelectReal",
     }, DropdownSelect)
-
     local DropdownFolder = Custom:Create("Folder", { Name = "DropdownFolder" }, DropdownSelectReal)
     local DropPageLayout = Custom:Create("UIPageLayout", {
         EasingDirection  = Enum.EasingDirection.InOut,
@@ -1082,7 +871,6 @@ function MugiHub:CreateWindow(cfg)
         SortOrder        = Enum.SortOrder.LayoutOrder,
         Name             = "DropPageLayout",
     }, DropdownFolder)
-
     ConnectButton.Activated:Connect(function()
         if MoreBlur.Visible then
             local ti = TweenInfo.new(0.2)
@@ -1092,8 +880,6 @@ function MugiHub:CreateWindow(cfg)
             MoreBlur.Visible = false
         end
     end)
-
-    -- ── MINIMIZE / CLOSE ─────────────────────────────────────
     MinBtn.Activated:Connect(function()
         CircleClick(MinBtn, Player:GetMouse().X, Player:GetMouse().Y)
         shadowHolder.Visible = false
@@ -1105,22 +891,9 @@ function MugiHub:CreateWindow(cfg)
     end)
     CloseBtn.Activated:Connect(function()
         CircleClick(CloseBtn, Player:GetMouse().X, Player:GetMouse().Y)
-
-        -- Confirm dialog
         local confirmGui = Instance.new("ScreenGui")
         confirmGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         confirmGui.Parent = GetGuiParent()
-
-        -- Overlay gelap
-        local overlay = Instance.new("Frame")
-        overlay.Size = UDim2.fromScale(1, 1)
-        overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        overlay.BackgroundTransparency = 0.4
-        overlay.BorderSizePixel = 0
-        overlay.ZIndex = 10
-        overlay.Parent = confirmGui
-
-        -- Dialog box
         local dialog = Instance.new("Frame")
         dialog.AnchorPoint = Vector2.new(0.5, 0.5)
         dialog.Position = UDim2.fromScale(0.5, 0.5)
@@ -1130,13 +903,10 @@ function MugiHub:CreateWindow(cfg)
         dialog.ZIndex = 11
         dialog.Parent = confirmGui
         Instance.new("UICorner", dialog).CornerRadius = DPI:U(0, 10)
-
         local stroke = Instance.new("UIStroke")
         stroke.Color = Theme.AccentPink
         stroke.Thickness = 1.5
         stroke.Parent = dialog
-
-        -- Title bar dialog
         local dTop = Instance.new("Frame")
         dTop.Size = DPI:U2(1, 0, 0, 36)
         dTop.BackgroundColor3 = Theme.AccentPink
@@ -1145,7 +915,6 @@ function MugiHub:CreateWindow(cfg)
         dTop.ZIndex = 11
         dTop.Parent = dialog
         Instance.new("UICorner", dTop).CornerRadius = DPI:U(0, 10)
-
         local dTitle = Instance.new("TextLabel")
         dTitle.Font = Enum.Font.GothamBold
         dTitle.Text = "MugiHub"
@@ -1158,8 +927,6 @@ function MugiHub:CreateWindow(cfg)
         dTitle.BorderSizePixel = 0
         dTitle.ZIndex = 12
         dTitle.Parent = dTop
-
-        -- Pesan
         local dMsg = Instance.new("TextLabel")
         dMsg.Font = Enum.Font.GothamBold
         dMsg.Text = "Are you sure you want to\nclose this script?"
@@ -1173,8 +940,6 @@ function MugiHub:CreateWindow(cfg)
         dMsg.BorderSizePixel = 0
         dMsg.ZIndex = 12
         dMsg.Parent = dialog
-
-        -- Tombol Cancel
         local btnCancel = Instance.new("TextButton")
         btnCancel.Font = Enum.Font.GothamBold
         btnCancel.Text = "Cancel"
@@ -1188,8 +953,6 @@ function MugiHub:CreateWindow(cfg)
         btnCancel.ZIndex = 12
         btnCancel.Parent = dialog
         Instance.new("UICorner", btnCancel).CornerRadius = DPI:U(0, 6)
-
-        -- Tombol Close
         local btnClose = Instance.new("TextButton")
         btnClose.Font = Enum.Font.GothamBold
         btnClose.Text = "Close"
@@ -1203,26 +966,20 @@ function MugiHub:CreateWindow(cfg)
         btnClose.ZIndex = 12
         btnClose.Parent = dialog
         Instance.new("UICorner", btnClose).CornerRadius = DPI:U(0, 6)
-
-        -- Gradient pada tombol Close
         local g = Instance.new("UIGradient")
         g.Color = Theme.AccentGradient()
         g.Rotation = 0
         g.Parent = btnClose
-
         btnCancel.Activated:Connect(function()
             confirmGui:Destroy()
         end)
-
         btnClose.Activated:Connect(function()
             confirmGui:Destroy()
-            -- Matikan semua: destroy GUI, set Unloaded, disconnect semua koneksi
             MugiHub.Unloaded = true
             if rootGui then rootGui:Destroy() end
             if OpenCloseBtn and OpenCloseBtn.Parent then
                 OpenCloseBtn.Parent:Destroy()
             end
-            -- Disable semua script lokal (fire semua BindableEvent cleanup)
             for _, v in pairs(game:GetService("Players").LocalPlayer:GetDescendants()) do
                 if v:IsA("LocalScript") and v.Name ~= "RobloxCharacterSounds" then
                     pcall(function() v.Disabled = true end)
@@ -1230,29 +987,18 @@ function MugiHub:CreateWindow(cfg)
             end
         end)
     end)
-
-    -- Resize shadow holder setelah render (TextBounds butuh 1 frame)
     task.defer(function()
         shadowHolder.Size = UDim2.fromOffset(scaledW + DPI:S(50), scaledH + DPI:S(50))
     end)
     MakeDraggable(Top, shadowHolder)
-
-    -- ============================================================
-    --  CREATE TAB
-    -- ============================================================
     local Tabs = {}
     local CountTab = 0
     local CountDropdown = 0
-
     function Tabs:CreateTab(cfg2)
         local _Name  = cfg2[1] or cfg2.Name or ""
         local _Icon  = NormalizeAssetId(cfg2[2] or cfg2.Icon or "")
         local _Thumb = cfg2[3] or cfg2.Thumbnail or nil
-
-        -- Simpan thumbnail per tab index
         TabThumbnails[CountTab] = _Thumb or ""
-
-        -- Content scroll untuk tab ini
         local ScrolLayers = Custom:Create("ScrollingFrame", {
             ScrollBarImageColor3   = Theme.AccentPink,
             ScrollBarThickness     = DPI:S(2),
@@ -1267,8 +1013,6 @@ function MugiHub:CreateWindow(cfg)
             Padding   = UDim.new(0, DPI:S(3)),
             SortOrder = Enum.SortOrder.LayoutOrder,
         }, ScrolLayers)
-
-        -- Tab button di sidebar
         local Tab = Custom:Create("Frame", {
             BackgroundColor3     = Theme.TextPrimary,
             BackgroundTransparency = CountTab == 0 and 0.92 or 0.999,
@@ -1278,7 +1022,6 @@ function MugiHub:CreateWindow(cfg)
             Name                 = "Tab",
         }, ScrollTab)
         Custom:Create("UICorner", { CornerRadius = DPI:U(0, 4) }, Tab)
-
         local TabButton = Custom:Create("TextButton", {
             Font                   = Enum.Font.GothamBold,
             Text                   = "",
@@ -1287,7 +1030,6 @@ function MugiHub:CreateWindow(cfg)
             Size                   = UDim2.new(1, 0, 1, 0),
             Name                   = "TabButton",
         }, Tab)
-
         Custom:Create("TextLabel", {
             Font                   = Enum.Font.GothamBold,
             Text                   = _Name,
@@ -1300,7 +1042,6 @@ function MugiHub:CreateWindow(cfg)
             Position               = DPI:U2(0, 30, 0, 0),
             Name                   = "TabName",
         }, Tab)
-
         local TabIcon = Custom:Create("ImageLabel", {
             Image                  = _Icon or "",
             BackgroundTransparency = 0.999,
@@ -1309,13 +1050,9 @@ function MugiHub:CreateWindow(cfg)
             Size                   = DPI:U2(0, 16, 0, 16),
             Name                   = "FeatureImg",
         }, Tab)
-        TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-
-        -- Active indicator (gradient pink-putih bar kiri)
         if CountTab == 0 then
             LayersPageLayout:JumpToIndex(0)
             NameTab.Text = _Name
-
             local activeBar = Custom:Create("Frame", {
                 BackgroundColor3 = Theme.AccentPink,
                 BorderSizePixel  = 0,
@@ -1333,7 +1070,6 @@ function MugiHub:CreateWindow(cfg)
             }, activeBar)
             Custom:Create("UICorner", {}, activeBar)
         end
-
         TabButton.Activated:Connect(function()
             CircleClick(TabButton, Player:GetMouse().X, Player:GetMouse().Y)
             local FrameChoose = nil
@@ -1343,7 +1079,6 @@ function MugiHub:CreateWindow(cfg)
                 end
                 if FrameChoose then break end
             end
-
             if FrameChoose and Tab.LayoutOrder ~= LayersPageLayout.CurrentPage.LayoutOrder then
                 for _, tf in pairs(ScrollTab:GetChildren()) do
                     if tf.Name == "Tab" then
@@ -1358,7 +1093,6 @@ function MugiHub:CreateWindow(cfg)
                 LayersPageLayout:JumpToIndex(Tab.LayoutOrder)
                 task.wait(0.05)
                 NameTab.Text = _Name
-                -- Update thumbnail per tab
                 local thumbUrl = TabThumbnails[Tab.LayoutOrder] or CfgThumb or ""
                 SetThumbForTab(thumbUrl)
                 TweenService:Create(FrameChoose, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
@@ -1368,15 +1102,11 @@ function MugiHub:CreateWindow(cfg)
                     { Size = DPI:U2(0, 2, 0, 12) }):Play()
             end
         end)
-
-        -- ── SECTIONS ─────────────────────────────────────────
         local Sections  = {}
         local CountSection = 0
-
         function Sections:AddSection(Title, OpenSection)
             Title       = Title or ""
             OpenSection = OpenSection or false
-
             local Section = Custom:Create("Frame", {
                 BackgroundTransparency = 0.999,
                 BorderSizePixel        = 0,
@@ -1385,7 +1115,6 @@ function MugiHub:CreateWindow(cfg)
                 Size                   = DPI:U2(1, 0, 0, 30),
                 Name                   = "Section",
             }, ScrolLayers)
-
             local SectionReal = Custom:Create("Frame", {
                 AnchorPoint          = Vector2.new(0.5, 0),
                 BackgroundColor3     = Theme.BGSecondary,
@@ -1397,8 +1126,6 @@ function MugiHub:CreateWindow(cfg)
                 Name                 = "SectionReal",
             }, Section)
             Custom:Create("UICorner", { CornerRadius = DPI:U(0, 4) }, SectionReal)
-
-            -- Gradient stripe di kiri section header
             local sectionAccent = Custom:Create("Frame", {
                 BackgroundColor3 = Theme.AccentPink,
                 BorderSizePixel  = 0,
@@ -1411,7 +1138,6 @@ function MugiHub:CreateWindow(cfg)
                 Rotation = 90,
             }, sectionAccent)
             Custom:Create("UICorner", {}, sectionAccent)
-
             local SectionButton = Custom:Create("TextButton", {
                 Font                   = Enum.Font.SourceSans,
                 Text                   = "",
@@ -1420,7 +1146,6 @@ function MugiHub:CreateWindow(cfg)
                 Size                   = UDim2.new(1, 0, 1, 0),
                 Name                   = "SectionButton",
             }, SectionReal)
-
             local FeatureFrame = Custom:Create("Frame", {
                 AnchorPoint          = Vector2.new(1, 0.5),
                 BackgroundTransparency = 0.999,
@@ -1429,7 +1154,6 @@ function MugiHub:CreateWindow(cfg)
                 Size                 = DPI:U2(0, 20, 0, 20),
                 Name                 = "FeatureFrame",
             }, SectionReal)
-
             Custom:Create("ImageLabel", {
                 Image                  = "rbxassetid://125609963478878",
                 ImageColor3            = Theme.AccentPink,
@@ -1441,7 +1165,6 @@ function MugiHub:CreateWindow(cfg)
                 Size                   = DPI:U2(1, 6, 1, 6),
                 Name                   = "FeatureImg",
             }, FeatureFrame)
-
             local SectionTitle = Custom:Create("TextLabel", {
                 Font                   = Enum.Font.GothamBold,
                 Text                   = Title,
@@ -1456,8 +1179,6 @@ function MugiHub:CreateWindow(cfg)
                 Size                   = DPI:U2(1, -50, 0, 13),
                 Name                   = "SectionTitle",
             }, SectionReal)
-
-            -- Divider line gradient bawah section header
             local SectionDecide = Custom:Create("Frame", {
                 BackgroundColor3     = Theme.TextPrimary,
                 BorderSizePixel      = 0,
@@ -1470,7 +1191,6 @@ function MugiHub:CreateWindow(cfg)
             Custom:Create("UIGradient", {
                 Color = Theme.AccentGradient(),
             }, SectionDecide)
-
             local SectionAdd = Custom:Create("Frame", {
                 AnchorPoint          = Vector2.new(0.5, 0),
                 BackgroundTransparency = 0.999,
@@ -1486,7 +1206,6 @@ function MugiHub:CreateWindow(cfg)
                 Padding   = UDim.new(0, DPI:S(3)),
                 SortOrder = Enum.SortOrder.LayoutOrder,
             }, SectionAdd)
-
             local function UpdateSizeScroll()
                 local off = 0
                 for _, child in pairs(ScrolLayers:GetChildren()) do
@@ -1496,7 +1215,6 @@ function MugiHub:CreateWindow(cfg)
                 end
                 ScrolLayers.CanvasSize = UDim2.new(0, 0, 0, off)
             end
-
             local function UpdateSizeSection()
                 if OpenSection then
                     local sz = DPI:S(38)
@@ -1513,7 +1231,6 @@ function MugiHub:CreateWindow(cfg)
                     UpdateSizeScroll()
                 end
             end
-
             local function ToggleSection()
                 CircleClick(SectionButton, Player:GetMouse().X, Player:GetMouse().Y)
                 if OpenSection then
@@ -1528,16 +1245,11 @@ function MugiHub:CreateWindow(cfg)
                     UpdateSizeSection()
                 end
             end
-
             SectionButton.Activated:Connect(ToggleSection)
             SectionAdd.ChildAdded:Connect(UpdateSizeSection)
             SectionAdd.ChildRemoved:Connect(UpdateSizeSection)
             UpdateSizeScroll()
-
-            -- ── ITEMS ────────────────────────────────────────
             local Item, ItemCount = {}, 0
-
-            -- Helper buat item frame dasar
             local function MakeItemBase(name, order)
                 local f = Custom:Create("Frame", {
                     BackgroundColor3     = Theme.BGItem,
@@ -1550,13 +1262,10 @@ function MugiHub:CreateWindow(cfg)
                 Custom:Create("UICorner", { CornerRadius = DPI:U(0, 4) }, f)
                 return f
             end
-
-            -- AddParagraph
             function Item:AddParagraph(cfg3)
                 local PTitle   = cfg3[1] or cfg3.Title or ""
                 local PContent = cfg3[2] or cfg3.Content or ""
                 local sFuncs   = {}
-
                 local P = MakeItemBase("Paragraph", ItemCount)
                 local ptLbl = Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
@@ -1583,7 +1292,6 @@ function MugiHub:CreateWindow(cfg)
                     Position               = DPI:U2(0, 10, 0, 23),
                     Name                   = "ParagraphContent",
                 }, P)
-
                 local function UpdateP()
                     pcLbl.TextWrapped = false
                     local lines = math.ceil(pcLbl.TextBounds.X / math.max(pcLbl.AbsoluteSize.X, 1))
@@ -1594,7 +1302,6 @@ function MugiHub:CreateWindow(cfg)
                 end
                 UpdateP()
                 pcLbl:GetPropertyChangedSignal("AbsoluteSize"):Connect(UpdateP)
-
                 function sFuncs:Set(c)
                     ptLbl.Text = c[1] or c.Title or ""
                     pcLbl.Text = c[2] or c.Content or ""
@@ -1603,8 +1310,6 @@ function MugiHub:CreateWindow(cfg)
                 ItemCount += 1
                 return sFuncs
             end
-
-            -- AddSeperator
             function Item:AddSeperator(cfg3)
                 local STitle = cfg3[1] or cfg3.Title or ""
                 local sFuncs = {}
@@ -1635,8 +1340,6 @@ function MugiHub:CreateWindow(cfg)
                 ItemCount += 1
                 return sFuncs
             end
-
-            -- AddLine
             function Item:AddLine()
                 local Line = Custom:Create("Frame", {
                     BackgroundColor3     = Theme.AccentPink,
@@ -1651,15 +1354,12 @@ function MugiHub:CreateWindow(cfg)
                 ItemCount += 1
                 return {}
             end
-
-            -- AddButton
             function Item:AddButton(cfg3)
                 local BTitle    = cfg3[1] or cfg3.Title or ""
                 local BContent  = cfg3[2] or cfg3.Content or ""
                 local BIcon     = NormalizeAssetId(cfg3[3] or cfg3.Icon or "rbxassetid://7734010488")
                 local BCallback = cfg3[4] or cfg3.Callback or function() end
                 local bFuncs    = {}
-
                 local Btn = MakeItemBase("Button", ItemCount)
                 Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
@@ -1729,15 +1429,12 @@ function MugiHub:CreateWindow(cfg)
                 ItemCount += 1
                 return bFuncs
             end
-
-            -- AddToggle
             function Item:AddToggle(cfg3)
                 local TgTitle    = cfg3[1] or cfg3.Title or ""
                 local TgContent  = cfg3[2] or cfg3.Content or ""
                 local TgDefault  = cfg3[3] or cfg3.Default or false
                 local TgCallback = cfg3[4] or cfg3.Callback or function() end
                 local tFuncs     = { Value = TgDefault }
-
                 local Tog = MakeItemBase("Toggle", ItemCount)
                 local tgTitle = Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
@@ -1776,7 +1473,6 @@ function MugiHub:CreateWindow(cfg)
                 tgCont:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
                     UpdateTg(); UpdateSizeSection()
                 end)
-
                 local tgBtnReal = Custom:Create("TextButton", {
                     Text                   = "",
                     BackgroundTransparency = 0.999,
@@ -1784,8 +1480,6 @@ function MugiHub:CreateWindow(cfg)
                     Size                   = UDim2.new(1, 0, 1, 0),
                     Name                   = "ToggleButton",
                 }, Tog)
-
-                -- Switch pill
                 local pill = Custom:Create("Frame", {
                     AnchorPoint            = Vector2.new(1, 0.5),
                     BackgroundColor3       = Color3.fromRGB(50, 50, 50),
@@ -1802,7 +1496,6 @@ function MugiHub:CreateWindow(cfg)
                     Thickness    = 1.5,
                     Transparency = 0.9,
                 }, pill)
-
                 local circle = Custom:Create("Frame", {
                     BackgroundColor3 = Theme.TextSecondary,
                     BorderSizePixel  = 0,
@@ -1812,7 +1505,6 @@ function MugiHub:CreateWindow(cfg)
                     Name             = "ToggleCircle",
                 }, pill)
                 Custom:Create("UICorner", { CornerRadius = UDim.new(1, 0) }, circle)
-
                 local function ToggleAnim(on)
                     local ti = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
                     TweenService:Create(tgTitle, ti, {
@@ -1831,7 +1523,6 @@ function MugiHub:CreateWindow(cfg)
                         BackgroundTransparency = 0,
                     }):Play()
                 end
-
                 tgBtnReal.Activated:Connect(function()
                     CircleClick(tgBtnReal, Player:GetMouse().X, Player:GetMouse().Y)
                     tFuncs.Value = not tFuncs.Value
@@ -1842,21 +1533,15 @@ function MugiHub:CreateWindow(cfg)
                     ToggleAnim(val)
                 end
                 tFuncs:Set(tFuncs.Value)
-
                 ItemCount += 1
                 return tFuncs
             end
-
-            -- AddKeybind
-            -- Supports Enum.KeyCode, numeric asset-style strings are not
-            -- relevant here; the bound key is selected from keyboard input.
             function Item:AddKeybind(cfg3)
                 local KTitle    = cfg3[1] or cfg3.Title or ""
                 local KContent  = cfg3[2] or cfg3.Content or ""
                 local KDefault  = cfg3[3] or cfg3.Default or cfg3.Key or Enum.KeyCode.RightShift
                 local KCallback = cfg3[4] or cfg3.Callback or function() end
                 local kFuncs    = { Key = nil, Value = nil, Listening = false }
-
                 local function NormalizeKey(key)
                     if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
                         return key
@@ -1871,13 +1556,10 @@ function MugiHub:CreateWindow(cfg)
                     end
                     return Enum.KeyCode.RightShift
                 end
-
                 local KDefaultKey = NormalizeKey(KDefault)
                 kFuncs.Key = KDefaultKey
                 kFuncs.Value = KDefaultKey
-
                 local KeyItem = MakeItemBase("Keybind", ItemCount)
-
                 local kTitle = Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
                     Text                   = KTitle,
@@ -1891,7 +1573,6 @@ function MugiHub:CreateWindow(cfg)
                     Size                   = DPI:U2(1, -145, 0, 13),
                     Name                   = "KeybindTitle",
                 }, KeyItem)
-
                 local kContent = Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
                     Text                   = KContent,
@@ -1905,7 +1586,6 @@ function MugiHub:CreateWindow(cfg)
                     Size                   = DPI:U2(1, -145, 0, 12),
                     Name                   = "KeybindContent",
                 }, KeyItem)
-
                 local function UpdateKeybind()
                     kContent.TextWrapped = false
                     local ratio = kContent.TextBounds.X / math.max(kContent.AbsoluteSize.X, 1)
@@ -1918,7 +1598,6 @@ function MugiHub:CreateWindow(cfg)
                     UpdateKeybind()
                     UpdateSizeSection()
                 end)
-
                 local keyFrame = Custom:Create("Frame", {
                     AnchorPoint          = Vector2.new(1, 0.5),
                     BackgroundColor3     = Theme.BGItem,
@@ -1933,7 +1612,6 @@ function MugiHub:CreateWindow(cfg)
                     Color = Theme.Stroke,
                     Thickness = 1,
                 }, keyFrame)
-
                 local keyButton = Custom:Create("TextButton", {
                     Text = "",
                     BackgroundTransparency = 1,
@@ -1941,7 +1619,6 @@ function MugiHub:CreateWindow(cfg)
                     Size = UDim2.fromScale(1, 1),
                     Name = "KeybindButton",
                 }, keyFrame)
-
                 local keyLabel = Custom:Create("TextLabel", {
                     Font = Enum.Font.GothamBold,
                     Text = KDefaultKey.Name,
@@ -1952,28 +1629,23 @@ function MugiHub:CreateWindow(cfg)
                     Size = UDim2.fromScale(1, 1),
                     Name = "KeyLabel",
                 }, keyFrame)
-
                 local function SetKeyInternal(key)
                     key = NormalizeKey(key)
                     kFuncs.Key = key
                     kFuncs.Value = key
                     keyLabel.Text = key.Name
                 end
-
                 function kFuncs:Set(key)
                     SetKeyInternal(key)
                 end
-
                 function kFuncs:Get()
                     return kFuncs.Key
                 end
-
                 function kFuncs:Capture()
                     if kFuncs.Listening then return end
                     kFuncs.Listening = true
                     keyLabel.Text = "Press key..."
                     keyStroke.Color = Theme.AccentPink
-
                     local connection
                     connection = UserInputService.InputBegan:Connect(function(input, processed)
                         if not kFuncs.Listening then
@@ -1990,11 +1662,9 @@ function MugiHub:CreateWindow(cfg)
                         end
                     end)
                 end
-
                 keyButton.Activated:Connect(function()
                     kFuncs:Capture()
                 end)
-
                 UserInputService.InputBegan:Connect(function(input, processed)
                     if processed then return end
                     if input.UserInputType == Enum.UserInputType.Keyboard
@@ -2003,15 +1673,10 @@ function MugiHub:CreateWindow(cfg)
                         KCallback(kFuncs.Key)
                     end
                 end)
-
                 ItemCount += 1
                 return kFuncs
             end
-
-            -- Case-compatible alias.
             Item.AddKeyBind = Item.AddKeybind
-
-            -- AddSlider
             function Item:AddSlider(cfg3)
                 local SLTitle    = cfg3[1] or cfg3.Title or ""
                 local SLContent  = cfg3[2] or cfg3.Content or ""
@@ -2021,7 +1686,6 @@ function MugiHub:CreateWindow(cfg)
                 local SLDefault  = cfg3[6] or cfg3.Default or 50
                 local SLCallback = cfg3[7] or cfg3.Callback or function() end
                 local slFuncs    = { Value = SLDefault }
-
                 local Slid = MakeItemBase("Slider", ItemCount)
                 Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
@@ -2059,8 +1723,6 @@ function MugiHub:CreateWindow(cfg)
                     UpdateSlid(); UpdateSizeSection()
                 end)
                 UpdateSlid()
-
-                -- Value textbox
                 local slInput = Custom:Create("Frame", {
                     AnchorPoint          = Vector2.new(0, 0.5),
                     BackgroundColor3     = Theme.AccentPink,
@@ -2070,12 +1732,10 @@ function MugiHub:CreateWindow(cfg)
                     Name                 = "SliderInput",
                 }, Slid)
                 Custom:Create("UICorner", { CornerRadius = DPI:U(0, 2) }, slInput)
-                -- Gradient pada input box
                 Custom:Create("UIGradient", {
                     Color    = Theme.AccentGradient(),
                     Rotation = 0,
                 }, slInput)
-
                 local textBox = Custom:Create("TextBox", {
                     Font                   = Enum.Font.GothamBold,
                     Text                   = "0",
@@ -2086,8 +1746,6 @@ function MugiHub:CreateWindow(cfg)
                     BorderSizePixel        = 0,
                     Size                   = UDim2.new(1, 0, 1, 0),
                 }, slInput)
-
-                -- Track bar
                 local trackFrame = Custom:Create("Frame", {
                     AnchorPoint          = Vector2.new(1, 0.5),
                     BackgroundColor3     = Theme.TextPrimary,
@@ -2098,7 +1756,6 @@ function MugiHub:CreateWindow(cfg)
                     Name                 = "SliderFrame",
                 }, Slid)
                 Custom:Create("UICorner", {}, trackFrame)
-
                 local fillBar = Custom:Create("Frame", {
                     AnchorPoint      = Vector2.new(0, 0.5),
                     BackgroundColor3 = Theme.AccentPink,
@@ -2112,7 +1769,6 @@ function MugiHub:CreateWindow(cfg)
                     Color    = Theme.AccentGradient(),
                     Rotation = 0,
                 }, fillBar)
-
                 local dot = Custom:Create("Frame", {
                     AnchorPoint      = Vector2.new(1, 0.5),
                     BackgroundColor3 = Theme.AccentWhite,
@@ -2123,14 +1779,11 @@ function MugiHub:CreateWindow(cfg)
                 }, fillBar)
                 Custom:Create("UICorner", {}, dot)
                 Custom:Create("UIStroke", { Color = Theme.AccentPink }, dot)
-
                 local dragging = false
-
                 local function Round(n, f)
                     local r = math.floor(n / f + 0.5) * f
                     return math.clamp(r, SLMin, SLMax)
                 end
-
                 function slFuncs:Set(val)
                     val = math.clamp(Round(val, SLInc), SLMin, SLMax)
                     slFuncs.Value = val
@@ -2138,12 +1791,10 @@ function MugiHub:CreateWindow(cfg)
                     local pct = (val - SLMin) / math.max(SLMax - SLMin, 1)
                     fillBar.Size = UDim2.fromScale(pct, 1)
                 end
-
                 local function GetScaleFromX(x)
                     local rel = x - trackFrame.AbsolutePosition.X
                     return math.clamp(rel / math.max(trackFrame.AbsoluteSize.X, 1), 0, 1)
                 end
-
                 trackFrame.InputBegan:Connect(function(i)
                     if i.UserInputType == Enum.UserInputType.MouseButton1
                     or i.UserInputType == Enum.UserInputType.Touch then
@@ -2152,7 +1803,6 @@ function MugiHub:CreateWindow(cfg)
                         slFuncs:Set(SLMin + (SLMax - SLMin) * sc)
                     end
                 end)
-
                 UserInputService.InputChanged:Connect(function(i)
                     if dragging and (
                         i.UserInputType == Enum.UserInputType.MouseMovement or
@@ -2162,7 +1812,6 @@ function MugiHub:CreateWindow(cfg)
                         slFuncs:Set(SLMin + (SLMax - SLMin) * sc)
                     end
                 end)
-
                 UserInputService.InputEnded:Connect(function(i)
                     if dragging and (
                         i.UserInputType == Enum.UserInputType.MouseButton1 or
@@ -2172,28 +1821,22 @@ function MugiHub:CreateWindow(cfg)
                         SLCallback(slFuncs.Value)
                     end
                 end)
-
                 textBox.FocusLost:Connect(function()
                     local v = tonumber(textBox.Text) or SLMin
                     slFuncs:Set(v)
                     SLCallback(slFuncs.Value)
                 end)
-
                 slFuncs:Set(SLDefault)
                 SLCallback(slFuncs.Value)
-
                 ItemCount += 1
                 return slFuncs
             end
-
-            -- AddInput
             function Item:AddInput(cfg3)
                 local ITitle    = cfg3[1] or cfg3.Title or ""
                 local IContent  = cfg3[2] or cfg3.Content or ""
                 local IDefault  = cfg3[3] or cfg3.Default or ""
                 local ICallback = cfg3[4] or cfg3.Callback or function() end
                 local iFuncs    = { Value = IDefault }
-
                 local Inp = MakeItemBase("Input", ItemCount)
                 Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
@@ -2232,7 +1875,6 @@ function MugiHub:CreateWindow(cfg)
                     iCont.TextWrapped = false; UpdateInp(); iCont.TextWrapped = true
                     UpdateSizeSection()
                 end)
-
                 local inpFrame = Custom:Create("Frame", {
                     AnchorPoint          = Vector2.new(1, 0.5),
                     BackgroundColor3     = Theme.BGSecondary,
@@ -2245,7 +1887,6 @@ function MugiHub:CreateWindow(cfg)
                 }, Inp)
                 Custom:Create("UICorner", { CornerRadius = DPI:U(0, 4) }, inpFrame)
                 Custom:Create("UIStroke", { Color = Theme.Stroke, Thickness = 1 }, inpFrame)
-
                 local iBox = Custom:Create("TextBox", {
                     CursorPosition       = -1,
                     Font                 = Enum.Font.GothamBold,
@@ -2262,8 +1903,6 @@ function MugiHub:CreateWindow(cfg)
                     Size                 = DPI:U2(1, -10, 1, -8),
                     Name                 = "InputTextBox",
                 }, inpFrame)
-
-                -- Accent border saat focused
                 iBox.Focused:Connect(function()
                     TweenService:Create(inpFrame:FindFirstChildOfClass("UIStroke"), TweenInfo.new(0.2),
                         { Color = Theme.AccentPink }):Play()
@@ -2273,19 +1912,15 @@ function MugiHub:CreateWindow(cfg)
                         { Color = Theme.Stroke }):Play()
                     iFuncs:Set(iBox.Text)
                 end)
-
                 function iFuncs:Set(val)
                     iBox.Text = val
                     iFuncs.Value = val
                     ICallback(val)
                 end
                 iFuncs:Set(IDefault)
-
                 ItemCount += 1
                 return iFuncs
             end
-
-            -- AddDropdown
             function Item:AddDropdown(cfg3)
                 local DTitle    = cfg3[1] or cfg3.Title or ""
                 local DContent  = cfg3[2] or cfg3.Content or ""
@@ -2294,7 +1929,6 @@ function MugiHub:CreateWindow(cfg)
                 local DDefault  = cfg3[5] or cfg3.Default or {}
                 local DCallback = cfg3[6] or cfg3.Callback or function() end
                 local dFuncs    = { Value = DDefault, Options = DOptions }
-
                 local Drop = MakeItemBase("Dropdown", ItemCount)
                 local dBtn = Custom:Create("TextButton", {
                     Text                   = "",
@@ -2340,7 +1974,6 @@ function MugiHub:CreateWindow(cfg)
                     dCont.TextWrapped = true
                     UpdateSizeSection()
                 end)
-
                 local selFrame = Custom:Create("Frame", {
                     AnchorPoint          = Vector2.new(1, 0.5),
                     BackgroundColor3     = Theme.BGSecondary,
@@ -2353,7 +1986,6 @@ function MugiHub:CreateWindow(cfg)
                 }, Drop)
                 Custom:Create("UICorner", { CornerRadius = DPI:U(0, 4) }, selFrame)
                 Custom:Create("UIStroke", { Color = Theme.Stroke, Thickness = 1 }, selFrame)
-
                 dBtn.Activated:Connect(function()
                     if not MoreBlur.Visible then
                         MoreBlur.Visible = true
@@ -2363,7 +1995,6 @@ function MugiHub:CreateWindow(cfg)
                         TweenService:Create(DropdownSelect, ti, {Position = DPI:U2(1,-11,0.5,0)}):Play()
                     end
                 end)
-
                 local optLabel = Custom:Create("TextLabel", {
                     Font                   = Enum.Font.GothamBold,
                     Text                   = "",
@@ -2387,7 +2018,6 @@ function MugiHub:CreateWindow(cfg)
                     Position               = UDim2.new(1, 0, 0.5, 0),
                     Size                   = DPI:U2(0, 25, 0, 25),
                 }, selFrame)
-
                 local scrollSel = Custom:Create("ScrollingFrame", {
                     CanvasSize             = UDim2.new(0,0,0,0),
                     ScrollBarImageColor3   = Theme.AccentPink,
@@ -2403,7 +2033,6 @@ function MugiHub:CreateWindow(cfg)
                     Padding   = UDim.new(0, DPI:S(3)),
                     SortOrder = Enum.SortOrder.LayoutOrder,
                 }, scrollSel)
-
                 local searchBar = Custom:Create("TextBox", {
                     Font                 = Enum.Font.GothamBold,
                     PlaceholderText      = "Search...",
@@ -2418,7 +2047,6 @@ function MugiHub:CreateWindow(cfg)
                     Name                 = "SearchBar",
                 }, scrollSel)
                 Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 1, Transparency = 0.5 }, searchBar)
-
                 searchBar:GetPropertyChangedSignal("Text"):Connect(function()
                     local q = string.lower(searchBar.Text)
                     for _, v in pairs(scrollSel:GetChildren()) do
@@ -2428,9 +2056,7 @@ function MugiHub:CreateWindow(cfg)
                         end
                     end
                 end)
-
                 local DropCount = 0
-
                 function dFuncs:Clear()
                     for _, f in pairs(scrollSel:GetChildren()) do
                         if f.Name == "Option" then
@@ -2441,7 +2067,6 @@ function MugiHub:CreateWindow(cfg)
                         end
                     end
                 end
-
                 function dFuncs:Set(val)
                     dFuncs.Value = val or dFuncs.Value
                     for _, opt in pairs(scrollSel:GetChildren()) do
@@ -2470,7 +2095,6 @@ function MugiHub:CreateWindow(cfg)
                     optLabel.Text = joined ~= "" and joined or "Select Options"
                     DCallback(dFuncs.Value)
                 end
-
                 function dFuncs:AddOption(optName)
                     optName = optName or "Option"
                     local Opt = Custom:Create("Frame", {
@@ -2512,7 +2136,6 @@ function MugiHub:CreateWindow(cfg)
                     Custom:Create("UIGradient", { Color = Theme.AccentGradient(), Rotation = 90 }, cf)
                     Custom:Create("UIStroke", { Color = Theme.AccentPink, Thickness = 1.5, Transparency = 0.999 }, cf)
                     Custom:Create("UICorner", {}, cf)
-
                     optBtn.Activated:Connect(function()
                         CircleClick(optBtn, Player:GetMouse().X, Player:GetMouse().Y)
                         local alreadySel = table.find(dFuncs.Value, optName) ~= nil
@@ -2529,7 +2152,6 @@ function MugiHub:CreateWindow(cfg)
                         end
                         dFuncs:Set(dFuncs.Value)
                     end)
-
                     local function UpdateCanvas()
                         local off = 0
                         for _, ch in ipairs(scrollSel:GetChildren()) do
@@ -2542,7 +2164,6 @@ function MugiHub:CreateWindow(cfg)
                     UpdateCanvas()
                     DropCount += 1
                 end
-
                 function dFuncs:Refresh(list, selecting)
                     list = list or {}
                     selecting = selecting or {}
@@ -2552,62 +2173,43 @@ function MugiHub:CreateWindow(cfg)
                     dFuncs:Set(selecting)
                 end
                 dFuncs:Refresh(dFuncs.Options, dFuncs.Value)
-
                 ItemCount    += 1
                 CountDropdown += 1
                 return dFuncs
             end
-
             CountSection += 1
             return Item
         end
-
-        -- ── README / ABOUT PAGE ─────────────────────────────────
-        -- Creates a README-style block inside the current tab.
-        -- This is intentionally built from the existing Section + Paragraph
-        -- components so it inherits the library's current layout/theme.
         function Sections:AddReadme(cfg3)
             cfg3 = cfg3 or {}
-
             local sectionTitle = cfg3.SectionTitle
                 or cfg3.Section
                 or cfg3.Header
                 or cfg3[1]
                 or "About MugiHub?"
-
             local contentTitle = cfg3.ContentTitle
                 or cfg3.Title2
                 or cfg3.Heading
                 or cfg3[2]
                 or "What is MugiHub?"
-
             local content = cfg3.Content
                 or cfg3.Text
                 or cfg3.Description
                 or cfg3[3]
                 or ""
-
             local open = cfg3.Open
             if open == nil then open = true end
-
             local readmeSection = Sections:AddSection(sectionTitle, open)
             local readmeParagraph = readmeSection:AddParagraph({
                 Title = contentTitle,
                 Content = content,
             })
-
             return readmeParagraph
         end
-
-        -- Alias with the common camel-case spelling.
         Sections.AddREADME = Sections.AddReadme
-
         CountTab += 1
         return Sections
     end
--- ── FIXED MUGI THEME ───────────────────────────────────────
--- Preset colors are intentionally removed.
--- Kept as a compatibility method for existing scripts.
 function Tabs:SetTheme()
     for _, desc in pairs(Main:GetDescendants()) do
         if desc:IsA("UIGradient") then
@@ -2621,19 +2223,47 @@ function Tabs:SetTheme()
         end
     end
 end
-
-
-    -- ── SET THUMBNAIL GLOBAL (dari script luar) ───────────────
+    function Tabs:AddTag(text)
+        local value = tostring(text or "")
+        if value == "" then return nil end
+        for _, existing in ipairs(RawTags) do
+            if tostring(existing) == value then
+                BuildTopMeta()
+                return value
+            end
+        end
+        table.insert(RawTags, value)
+        BuildTopMeta()
+        return value
+    end
+    function Tabs:RemoveTag(text)
+        local value = tostring(text or "")
+        for i = #RawTags, 1, -1 do
+            if tostring(RawTags[i]) == value then
+                table.remove(RawTags, i)
+            end
+        end
+        BuildTopMeta()
+    end
+    function Tabs:SetTags(tags)
+        RawTags = {}
+        if typeof(tags) == "table" then
+            for _, value in ipairs(tags) do
+                if value ~= nil and tostring(value) ~= "" then
+                    table.insert(RawTags, tostring(value))
+                end
+            end
+        elseif tags ~= nil and tostring(tags) ~= "" then
+            table.insert(RawTags, tostring(tags))
+        end
+        BuildTopMeta()
+    end
     function Tabs:SetThumbnail(url)
         SetThumbForTab(url or "")
     end
-
-    -- ── SET THUMBNAIL PER TAB (dari script luar) ──────────────
     function Tabs:SetTabThumbnail(tabIndex, url)
         TabThumbnails[tabIndex] = url or ""
     end
-
     return Tabs
 end
-
 return MugiHub

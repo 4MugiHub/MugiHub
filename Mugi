@@ -1,7 +1,7 @@
 --[[
     MugiHub UI Library
-    Based on Speed Hub X V5.0
-    Modified by: Dino / Doz Y / Violence District
+    Emerald template / Mugi systems
+    MugiHub
     
     Features:
     - Adaptive DPI Scaling (HP, Tablet, PC konsisten)
@@ -144,7 +144,6 @@ local Theme = {}
 Theme.AccentPink      = Color3.fromRGB(255, 105, 180)
 Theme.AccentMid       = Color3.fromRGB(255, 160, 210)
 Theme.AccentWhite     = Color3.fromRGB(255, 255, 255)
-Theme.AccentPink     = Theme.AccentPink -- compatibility alias
 Theme.BG              = Color3.fromRGB(13, 13, 18)
 Theme.BGSecondary     = Color3.fromRGB(22, 18, 28)
 Theme.BGItem          = Color3.fromRGB(32, 28, 40)
@@ -262,7 +261,7 @@ local function MakeOpenCloseButton()
         BackgroundColor3       = Theme.BGItem,
         BackgroundTransparency = 0,
         BorderSizePixel        = 0,
-        Image                  = "rbxassetid://72876614672836",
+        Image                  = "rbxassetid://136893287430224",
         ImageColor3            = Theme.AccentPink,
         ScaleType              = Enum.ScaleType.Fit,
         Position               = DPI:U2(0.05, 0, 0.05, 0),
@@ -560,7 +559,7 @@ function MugiHub:CreateWindow(cfg)
     local iconSize   = DPI:S(20)
     local iconPad    = DPI:S(8)
     local rightPad   = DPI:S(60)
-    local CfgIcon    = cfg.Icon or "rbxassetid://72876614672836"
+    local CfgIcon    = cfg.Icon or "rbxassetid://136893287430224"
 
     -- Window Icon (kiri topbar)
     local WindowIcon = Custom:Create("ImageLabel", {
@@ -2293,48 +2292,23 @@ function MugiHub:CreateWindow(cfg)
         CountTab += 1
         return Sections
     end
-    -- ── FIXED MUGI THEME ───────────────────────────────────────
-    -- Preset colors were intentionally removed. This method is kept
-    -- only for API compatibility and always restores Mugi Pink/White.
-    function Tabs:SetTheme()
-        for _, desc in pairs(Main:GetDescendants()) do
-            if desc:IsA("UIGradient") then
-                pcall(function()
-                    desc.Color = Theme.AccentGradient()
-                end)
-            end
-            if desc:IsA("UIStroke") then
-                pcall(function()
-                    desc.Color = Theme.AccentPink
-                end)
-            end
+-- ── FIXED MUGI THEME ───────────────────────────────────────
+-- Preset colors are intentionally removed.
+-- Kept as a compatibility method for existing scripts.
+function Tabs:SetTheme()
+    for _, desc in pairs(Main:GetDescendants()) do
+        if desc:IsA("UIGradient") then
+            pcall(function()
+                desc.Color = Theme.AccentGradient()
+            end)
+        elseif desc:IsA("UIStroke") then
+            pcall(function()
+                desc.Color = Theme.AccentPink
+            end)
         end
-        Theme.AccentPink  = Theme.AccentPink
-        Theme.AccentWhite  = Theme.AccentWhite
-        Theme.StrokeActive = Theme.AccentPink
     end
-            if desc:IsA("UIStroke") then
-                pcall(function()
-                    if desc.Color ~= Theme.BG and desc.Color ~= Theme.Stroke then
-                        desc.Color = Theme.AccentPink
-                    end
-                end)
-            end
-            if desc:IsA("Frame") or desc:IsA("ImageLabel") then
-                pcall(function()
-                    local c = desc.BackgroundColor3
-                    -- hanya update yang warnanya accent lama
-                    if c == Theme.AccentPink then
-                        desc.BackgroundColor3 = Theme.Accent
-                    end
-                end)
-            end
-        end
-        -- Update accent color di theme global
-        Theme.AccentPink  = Theme.Accent
-        Theme.AccentWhite  = Theme.AccentWhite
-        Theme.StrokeActive = Theme.Accent
-    end
+end
+
 
     -- ── SET THUMBNAIL GLOBAL (dari script luar) ───────────────
     function Tabs:SetThumbnail(url)

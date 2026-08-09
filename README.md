@@ -1,611 +1,559 @@
-<div align="center">
+# MugiHub UI Library
 
-# 🌸 MugiHub
+Roblox/Luau UI Library dengan desain **Pink → White**, sementara seluruh text tetap **solid white**.
 
-**Modern Roblox UI Library**
+MugiHub menggunakan sistem Window dengan:
+- original icon `121046122671218`
+- floating open button
+- topbar: icon, title, description, tags, minimize, close
+- sidebar search
+- icon tabs
+- active-tab indicator
+- avatar + `Welcome, username`
+- accordion/section
+- universal Readme/Info cards
+- Button
+- Toggle
+- Slider
+- Input
+- KeyBind
+- Single Dropdown
+- Multi Dropdown
+- Separator
+- Line
+- close confirmation
 
-*Clean UI · Pink & White Gradient · Adaptive DPI · Asset ID Support*
-
-</div>
+> Reference UI digunakan untuk **struktur Window/UI**, bukan untuk menyalin fitur gameplay.
 
 ---
 
-## Overview
+## 1. Installation
 
-**MugiHub** is a lightweight Roblox UI Library designed for clean, responsive interfaces across mobile, tablet, and PC.
+Upload `MugiHub_Updated.lua` ke repository GitHub kamu.
 
-It provides a simple API for building windows, tabs, sections, controls, notifications, keybinds, thumbnails, and README-style About pages.
+Contoh:
 
----
+```text
+MugiHub/
+├── MugiHub.lua
+└── README.md
+```
 
-## Installation
+Buka file Lua di GitHub → **Raw**.
+
+Kemudian load:
 
 ```lua
-local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"
+local MugiHub = loadstring(game:HttpGet(
+    "YOUR_RAW_GITHUB_URL"
 ))()
 ```
 
-## Create a Window
+Contoh format URL:
+
+```text
+https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/MugiHub.lua
+```
+
+---
+
+# 2. Create Window
 
 ```lua
-local Window = Library:CreateWindow({
-    Title = "My Script",
-    Description = "My Game",
-    Theme = "Pink",
-    Icon = "rbxassetid://72876614672836",
+local Window = MugiHub:CreateWindow({
+    Title = "MugiHub",
+    Description = "My Script",
+
+    Tags = {
+        "Free",
+        "Beta"
+    },
+
+    Icon = "rbxassetid://121046122671218",
+
+    WelcomeText = "Welcome, Dino"
 })
 ```
 
-| Property | Description |
-|---|---|
-| `Title` | Main window title |
-| `Description` | Secondary window description |
-| `Theme` | Accent theme |
-| `Icon` | Window icon / Roblox Asset ID |
-| `Thumbnail` | Optional thumbnail |
+### Window properties
+
+| Property | Type | Keterangan |
+|---|---|---|
+| `Title` | string | Judul Window |
+| `Description` | string | Deskripsi di topbar |
+| `Icon` | string | Icon Window |
+| `Logo` | string | Alias icon |
+| `Tags` | table/string | Tag topbar |
+| `Tag` | table/string | Alias Tags |
+| `SearchIcon` | string | Icon Search |
+| `WelcomeText` | string | Text profile |
+| `Size` | UDim2 | Ukuran Window |
+
+Default icon:
+
+```lua
+"rbxassetid://121046122671218"
+```
+
+Icon tersebut **tidak diberi tint pink** oleh library.
 
 ---
 
-# Tabs
+# 3. Tab
 
 ```lua
-local Tab = Window:CreateTab({
-    Name = "Main",
-    Icon = "rbxassetid://10723407389",
+local Main = Window:CreateTab({
+    "Main",
+    "rbxassetid://ICON_ID"
 })
 ```
 
-Supported properties:
+Tab mendukung:
+- icon
+- active indicator
+- sidebar search
+- content page
 
-- `Name`
-- `Icon`
-- `Thumbnail`
-
-Asset IDs may be supplied as either:
-
-```lua
-Icon = 123456789
-```
-
-or:
-
-```lua
-Icon = "rbxassetid://123456789"
-```
+Search otomatis mencari berdasarkan nama Tab.
 
 ---
 
-# Sections / Accordion
+# 4. Accordion / Section
+
+MugiHub memiliki accordion-style container.
+
+API lama:
 
 ```lua
-local Section = Tab:AddSection("Player", true)
+local Section = Main:AddSection("General", true)
 ```
 
-`true` opens the section by default. Use `false` to start collapsed.
+API baru yang lebih jelas:
+
+```lua
+local Accordion = Main:AddAccordion("General", true)
+```
+
+Keduanya menggunakan sistem yang sama.
+
+`true`:
+
+```lua
+Main:AddAccordion("General", true)
+```
+
+= terbuka ketika dibuat.
+
+`false`:
+
+```lua
+Main:AddAccordion("General", false)
+```
+
+= tertutup ketika dibuat.
 
 ---
 
-# Toggle
+# 5. Readme / Info Card
+
+Readme adalah **card tersendiri**, bukan Button dan bukan bagian dari Button.
+
+## Di dalam Accordion
 
 ```lua
-Section:AddToggle({
-    "God Mode",
-    "Enable protection.",
-    false,
+local Info = Main:AddAccordion("About", true)
 
-    function(value)
-        print("Enabled:", value)
-    end
+Info:AddReadme({
+    Title = "What is MugiHub?",
+    Content = "MugiHub is a personal UI Library project."
 })
 ```
 
-The callback receives a boolean.
+Readme otomatis:
+- masuk ke dalam Accordion
+- mengikuti ukuran Accordion
+- ikut tersembunyi ketika Accordion ditutup
+- ikut muncul ketika Accordion dibuka
+- menyesuaikan tinggi berdasarkan panjang text
+
+Alias:
+
+```lua
+Info:AddInfo({
+    Title = "Information",
+    Content = "This is an informational card."
+})
+```
+
+## Bisa di Accordion mana pun
+
+```lua
+local Survivor = Main:AddAccordion("Survivor", true)
+
+Survivor:AddReadme({
+    Title = "Survivor Information",
+    Content = "Information khusus untuk bagian Survivor."
+})
+```
+
+Jadi Readme **tidak dibatasi pada Info/Main Menu**.
 
 ---
 
-# Button
+# 6. Paragraph
+
+```lua
+Section:AddParagraph({
+    Title = "Title",
+    Content = "Description..."
+})
+```
+
+---
+
+# 7. Button
 
 ```lua
 Section:AddButton({
-    "Execute",
-    "Run the selected action.",
-    "rbxassetid://10723407389",
+    Title = "Test",
+    Content = "Run something.",
+    Icon = "rbxassetid://7734010488",
 
-    function()
-        print("Clicked!")
+    Callback = function()
+        print("Clicked")
     end
 })
 ```
 
-Use `""` when no icon is required.
-
 ---
 
-# Slider
+# 8. Toggle
 
 ```lua
-local Speed = Section:AddSlider({
-    "WalkSpeed",
-    "Adjust movement speed.",
-    1,
-    0,
-    100,
-    16,
+local Toggle = Section:AddToggle({
+    Title = "Enabled",
+    Content = "Enable the system.",
+    Default = false,
 
-    function(value)
-        print("Speed:", value)
+    Callback = function(Value)
+        print(Value)
     end
 })
-
-Speed:Set(50)
 ```
 
-Parameters:
+Set dari code:
 
-| Position | Meaning |
-|---|---|
-| `1` | Title |
-| `2` | Description |
-| `3` | Increment |
-| `4` | Minimum |
-| `5` | Maximum |
-| `6` | Default |
-| `7` | Callback |
+```lua
+Toggle:Set(true)
+```
 
 ---
 
-# Input
+# 9. Slider
+
+```lua
+local Slider = Section:AddSlider({
+    Title = "Walk Speed",
+    Content = "Choose a value.",
+    Increment = 1,
+    Min = 1,
+    Max = 100,
+    Default = 16,
+
+    Callback = function(Value)
+        print(Value)
+    end
+})
+```
+
+---
+
+# 10. Input
 
 ```lua
 local Input = Section:AddInput({
-    "Player Name",
-    "Enter a username...",
-    "",
+    Title = "Username",
+    Content = "Enter username.",
+    Default = "",
 
-    function(value)
-        print("Input:", value)
+    Callback = function(Value)
+        print(Value)
     end
 })
+```
 
+Set dari code:
+
+```lua
 Input:Set("Dino")
 ```
 
 ---
 
-# Dropdown
+# 11. KeyBind
+
+```lua
+local Keybind = Section:AddKeybind({
+    Title = "Toggle UI",
+    Content = "Press a key.",
+    Default = Enum.KeyCode.RightShift,
+
+    Callback = function(Key)
+        print(Key.Name)
+    end
+})
+```
+
+User dapat menekan box KeyBind lalu menekan keyboard key baru.
+
+---
+
+# 12. Single Dropdown
 
 ```lua
 local Dropdown = Section:AddDropdown({
-    "Target",
-    "Select a target.",
-    false,
-    {
-        "Player 1",
-        "Player 2",
-        "Player 3"
+    Title = "Select",
+    Content = "Choose one.",
+
+    Multi = false,
+
+    Options = {
+        "Option A",
+        "Option B",
+        "Option C"
     },
-    {},
-    function(value)
-        print(value[1])
+
+    Default = {
+        "Option A"
+    },
+
+    Callback = function(Value)
+        print(Value)
     end
 })
 ```
 
-Use:
-
-```lua
-false
-```
-
-for single selection, or:
-
-```lua
-true
-```
-
-for multi-selection.
-
-### Dropdown API
-
-```lua
-Dropdown:Set({"Player 1"})
-Dropdown:Refresh({"New 1", "New 2"}, {})
-Dropdown:AddOption("New 3")
-Dropdown:Clear()
-```
-
 ---
 
-# KeyBind
+# 13. Multi Dropdown
 
-MugiHub supports keyboard keybind controls.
+Multi Dropdown tetap didukung.
 
 ```lua
-local Bind = Section:AddKeybind({
-    Title = "Toggle Menu",
-    Content = "Press a key to activate.",
-    Default = Enum.KeyCode.RightShift,
+local Dropdown = Section:AddDropdown({
+    Title = "Select Multiple",
+    Content = "Choose multiple options.",
 
-    Callback = function(key)
-        print("Pressed:", key.Name)
+    Multi = true,
+
+    Options = {
+        "A",
+        "B",
+        "C",
+        "D"
+    },
+
+    Default = {
+        "A",
+        "C"
+    },
+
+    Callback = function(Value)
+        print(Value)
     end
 })
 ```
 
-The alternative capitalization is also supported:
+`Value` berupa table ketika `Multi = true`.
+
+### Refresh
 
 ```lua
-Section:AddKeyBind({
-    Title = "Example",
-    Default = Enum.KeyCode.Insert,
-
-    Callback = function(key)
-        print(key.Name)
-    end
+Dropdown:Refresh({
+    "New A",
+    "New B",
+    "New C"
+}, {
+    "New A"
 })
-```
-
-Change the key:
-
-```lua
-Bind:Set(Enum.KeyCode.Insert)
 ```
 
 ---
 
-# Paragraph
+# 14. Separator
 
-```lua
-Section:AddParagraph({
-    "Information",
-    "This is an informational paragraph."
-})
-```
-
-Useful for instructions, About pages, descriptions, and status information.
-
----
-
-# Separator
+API yang tersedia:
 
 ```lua
 Section:AddSeperator({
-    "Advanced"
+    Title = "Advanced"
 })
 ```
 
-> The API name is `AddSeperator` as implemented by the library.
+> Nama `AddSeperator` dipertahankan agar kompatibel dengan API library saat ini.
 
 ---
 
-# Line
+# 15. Line
 
 ```lua
 Section:AddLine()
 ```
 
-Adds a visual divider.
-
 ---
 
-# Notifications
+# 16. Contoh Lengkap
 
 ```lua
-Library:SetNotification({
-    "MugiHub",
-    "Loaded!",
-    "Script successfully initialized.",
-    nil,
-    0.35,
-    5,
-})
-```
-
-| Position | Description |
-|---|---|
-| `1` | Title |
-| `2` | Subtitle |
-| `3` | Message |
-| `4` | Optional value |
-| `5` | Animation duration |
-| `6` | Auto-close time |
-
----
-
-# Thumbnail
-
-Global thumbnail:
-
-```lua
-Window:SetThumbnail("https://example.com/image.png")
-```
-
-Tab thumbnail:
-
-```lua
-Window:SetTabThumbnail(
-    0,
-    "https://example.com/image.png"
-)
-```
-
----
-
-# README / About Page
-
-MugiHub supports README-style information directly inside the UI.
-
-```lua
-local Info = Window:CreateTab({
-    Name = "About",
-    Icon = ""
-})
-
-Info:AddReadme({
-    SectionTitle = "About MugiHub?",
-    Title = "What is MugiHub?",
-
-    Content = [[
-MugiHub is a modern Roblox UI Library.
-
-It provides:
-• Responsive UI
-• Asset ID icons
-• Tabs and sections
-• Dropdowns
-• Sliders
-• Inputs
-• KeyBinds
-• Notifications
-]]
-})
-```
-
-Alias:
-
-```lua
-Info:AddREADME({
-    SectionTitle = "About",
-    Title = "MugiHub",
-    Content = "Modern Roblox UI Library."
-})
-```
-
----
-
-# Topbar Tags
-
-```lua
-Window:AddTag(
-    "v1.0",
-    Color3.fromRGB(80, 60, 100)
-)
-```
-
-Multiple tags are supported:
-
-```lua
-Window:AddTag("Beta", Color3.fromRGB(60, 80, 120))
-Window:AddTag("Free", Color3.fromRGB(80, 60, 100))
-```
-
-Executor information may also be displayed as a topbar tag when supported by the runtime environment.
-
----
-
-# Minimize & Restore
-
-MugiHub supports minimizing the window and restoring it through the small floating button.
-
-```text
-Window
-  ↓
-Minimize
-  ↓
-Floating restore button
-  ↓
-Window restored
-```
-
-The `X` button is separate from minimize and closes the interface.
-
----
-
-# Search
-
-MugiHub includes a search interface for navigating supported UI entries.
-
-When the search field is cleared, the normal interface is restored.
-
----
-
-# Complete Example
-
-```lua
-local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"
+local MugiHub = loadstring(game:HttpGet(
+    "YOUR_RAW_GITHUB_URL"
 ))()
 
-local Window = Library:CreateWindow({
-    Title = "MyScript",
-    Description = "My Game",
-    Theme = "Pink",
-    Icon = "rbxassetid://72876614672836",
-})
+local Window = MugiHub:CreateWindow({
+    Title = "MugiHub",
+    Description = "Example Project",
 
-Window:AddTag("v1.0", Color3.fromRGB(80, 60, 100))
+    Tags = {
+        "Free",
+        "Beta"
+    },
 
-Library:SetNotification({
-    "MyScript",
-    "Loaded!",
-    "MugiHub initialized successfully.",
-    nil,
-    0.35,
-    4,
+    Icon = "rbxassetid://121046122671218"
 })
 
 local Main = Window:CreateTab({
-    Name = "Main",
-    Icon = "rbxassetid://10723407389",
+    "Main",
+    "rbxassetid://ICON_ID"
 })
 
-local Section = Main:AddSection("Features", true)
-
-Section:AddToggle({
-    "Example Toggle",
-    "Enable the example feature.",
-    false,
-
-    function(value)
-        print("Toggle:", value)
-    end
-})
-
-Section:AddButton({
-    "Example Button",
-    "Run an example action.",
-    "rbxassetid://10723407389",
-
-    function()
-        print("Clicked!")
-    end
-})
-
-Section:AddSlider({
-    "Speed",
-    "Example slider.",
-    1,
-    0,
-    100,
-    16,
-
-    function(value)
-        print("Value:", value)
-    end
-})
-
-Section:AddDropdown({
-    "Mode",
-    "Select a mode.",
-    false,
-    {
-        "Normal",
-        "Fast",
-        "Extreme"
-    },
-    {},
-    function(value)
-        print("Selected:", value[1])
-    end
-})
-
-Section:AddInput({
-    "Username",
-    "Enter a username...",
-    "",
-    function(value)
-        print("Username:", value)
-    end
-})
-
-Section:AddKeybind({
-    Title = "Example Key",
-    Content = "Press a key.",
-    Default = Enum.KeyCode.RightShift,
-
-    Callback = function(key)
-        print("Key:", key.Name)
-    end
-})
-
-local About = Window:CreateTab({
-    Name = "About",
-    Icon = ""
-})
+local About = Main:AddAccordion("About", true)
 
 About:AddReadme({
-    SectionTitle = "About MugiHub?",
-    Title = "Modern Roblox UI Library",
-    Content = [[
-MugiHub is built for clean and responsive Roblox interfaces.
-
-Thank you for using MugiHub.
-]]
+    Title = "What is MugiHub?",
+    Content = "MugiHub is a clean and modular Roblox UI Library."
 })
+
+About:AddButton({
+    Title = "Test Button",
+    Content = "Click me.",
+
+    Callback = function()
+        print("Button clicked")
+    end
+})
+
+About:AddToggle({
+    Title = "Example Toggle",
+    Content = "Enable or disable something.",
+    Default = false,
+
+    Callback = function(Value)
+        print("Toggle:", Value)
+    end
+})
+
+local Settings = Main:AddAccordion("Settings", false)
+
+Settings:AddSlider({
+    Title = "Value",
+    Content = "Adjust the value.",
+    Increment = 1,
+    Min = 0,
+    Max = 100,
+    Default = 50,
+
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+Settings:AddDropdown({
+    Title = "Options",
+    Content = "Select multiple options.",
+
+    Multi = true,
+
+    Options = {
+        "A",
+        "B",
+        "C"
+    },
+
+    Default = {
+        "A"
+    },
+
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+Settings:AddKeybind({
+    Title = "Keybind",
+    Content = "Change activation key.",
+    Default = Enum.KeyCode.RightShift,
+
+    Callback = function(Key)
+        print("Pressed:", Key.Name)
+    end
+})
+```
+
+---
+
+# 17. Recommended Structure
+
+```text
+MugiHub Window
+│
+├── Topbar
+│   ├── Original Icon
+│   ├── Title
+│   ├── Description
+│   ├── Tags
+│   ├── Minimize
+│   └── Close
+│
+├── Sidebar
+│   ├── Search
+│   ├── Tabs
+│   └── Avatar / Welcome
+│
+└── Content
+    └── Tab
+        └── Accordion
+            ├── Readme
+            ├── Paragraph
+            ├── Button
+            ├── Toggle
+            ├── Slider
+            ├── Input
+            ├── KeyBind
+            ├── Dropdown
+            ├── Separator
+            └── Line
 ```
 
 ---
 
 # Compatibility
 
-MugiHub uses Roblox Luau and executor-side HTTP loading through `game:HttpGet`.
-
-Compatibility can change as executors and their environments are updated.
-
-| Executor | Status |
-|---|---|
-| Delta | ✅ |
-| Arceus X | ✅ |
-| Fluxus | ✅ |
-| Hydrogen | ✅ |
-| Solara | ✅ |
-| Synapse X | ⚠️ Legacy / availability varies |
-| Krnl | ⚠️ Availability varies |
-
-> Compatibility is not guaranteed permanently. Executor updates may change supported APIs, rendering behavior, or HTTP behavior.
-
----
-
-# Design
-
-MugiHub focuses on:
-
-- 🌸 Pink + White gradient styling
-- 📱 Adaptive DPI scaling
-- 🖥️ Mobile, tablet, and PC layouts
-- 🖼️ Roblox Asset ID icons
-- 🧩 Modular UI components
-- 🔍 Search navigation
-- ⌨️ KeyBind support
-- 🔔 Notification system
-- 📑 README / About pages
-- 🏷️ Topbar tags
-- 🖱️ Minimize and restore controls
-
----
-
-# API Summary
-
-| Component | API |
-|---|---|
-| Window | `Library:CreateWindow()` |
-| Notification | `Library:SetNotification()` |
-| Tab | `Window:CreateTab()` |
-| Section | `Tab:AddSection()` |
-| Toggle | `Section:AddToggle()` |
-| Button | `Section:AddButton()` |
-| Slider | `Section:AddSlider()` |
-| Input | `Section:AddInput()` |
-| Dropdown | `Section:AddDropdown()` |
-| KeyBind | `Section:AddKeybind()` |
-| KeyBind Alias | `Section:AddKeyBind()` |
-| Paragraph | `Section:AddParagraph()` |
-| Separator | `Section:AddSeperator()` |
-| Line | `Section:AddLine()` |
-| README | `Tab:AddReadme()` |
-| README Alias | `Tab:AddREADME()` |
-| Tag | `Window:AddTag()` |
-| Thumbnail | `Window:SetThumbnail()` |
+- `AddSection()` tetap tersedia.
+- `AddAccordion()` adalah alias resmi untuk sistem Accordion.
+- `Accordion:AddReadme()` didukung.
+- `Accordion:AddInfo()` didukung sebagai alias.
+- Readme dapat digunakan di Accordion mana pun.
+- Multi Dropdown tetap tersedia.
+- KeyBind tetap tersedia.
+- Search tetap tersedia.
+- Active Tab indicator tetap tersedia.
+- Close confirmation tetap tersedia.
+- Text tetap solid white.
+- Original icon tidak diberi tint.
+- Fitur gameplay dari UI referensi tidak disalin.
 
 ---
 
 ## License
 
-**MugiHub · MIT License**
-
-<div align="center">
-
-🌸 **Built with MugiHub**
-
-</div>
+Tambahkan license pilihanmu sebelum repository dipublikasikan.

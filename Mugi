@@ -2770,7 +2770,6 @@ function MugiHub_Library:CreateWindow(Config)
       end
 
       -- /// README / Deskripsi Konten
-      -- /// README / Deskripsi Konten
       -- Style: "Accordion" (collapsible, ada chevron) | "Plain" (statis, di luar accordion) | "Badge" (ringkas dekat tombol)
       function Item:AddReadMe(Config)
         local Title = Config[1] or Config.Title or "README"
@@ -2972,7 +2971,10 @@ function MugiHub_Library:CreateWindow(Config)
     return Sections
   end
 
-  return Tabs
+  -- Gabungkan CreateTab ke Funcs supaya Window punya SEMUA method
+  -- (Tags, SetTitle, SetDescription, DAN CreateTab) dalam satu tabel yang sama.
+  Funcs.CreateTab = Tabs.CreateTab
+  return Funcs
 end
 
 

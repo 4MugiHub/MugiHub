@@ -1,823 +1,470 @@
-# MugiHub
+# 🩷 MugiHub
 
-<p align="center">
-  <strong>A clean, modular, and developer-friendly Roblox UI Library.</strong>
-</p>
+**A modern, lightweight, and fully self-contained UI Library for Roblox Executors.**
 
-<p align="center">
-  Built for interfaces that feel organized, modern, responsive, and easy to maintain.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/MugiHub-Pink%20%7C%20White-ff69b4?style=for-the-badge" alt="MugiHub">
-  <img src="https://img.shields.io/badge/Platform-Roblox-111111?style=for-the-badge" alt="Roblox">
-  <img src="https://img.shields.io/badge/Language-Luau-00A2FF?style=for-the-badge" alt="Luau">
-</p>
+Soft Pink & White themed · Search-driven navigation · Real-time tags · Stacked notifications · Zero dependencies
 
 ---
 
-## ✦ About
+## 📖 Table of Contents
 
-**MugiHub** is a modular UI Library designed to make Roblox/Luau interfaces easier to build, organize, and maintain.
-
-The library focuses on a structured Window system rather than forcing every project into the same layout. Developers can combine **Tabs, Accordions, Readme cards, Buttons, Toggles, Sliders, Inputs, KeyBinds, Dropdowns, and other controls** to create an interface that fits their project.
-
-### Design principles
-
-- **Clean** — information is separated into clear visual groups.
-- **Readable** — text uses solid white for strong contrast and easier scanning.
-- **Organized** — Tabs and Accordion containers keep large interfaces manageable.
-- **Flexible** — informational content does not have to live in one special tab.
-- **Developer-friendly** — controls expose straightforward callbacks and common methods.
-- **Consistent** — the same visual language is used throughout the Window.
-
-> MugiHub uses a **Pink → White** visual theme for UI surfaces while keeping interface text **solid white**. The original MugiHub icon is displayed without a pink tint.
+1. [About MugiHub](#-about-mugihub)
+2. [Credits](#-credits)
+3. [Installation](#-installation)
+4. [Quick Start](#-quick-start)
+5. [Feature List](#-feature-list)
+6. [API Reference](#-api-reference)
+   - [MugiHub:CreateWindow()](#mugihubcreatewindowconfig)
+   - [Window.Tags](#windowtags)
+   - [Window:CreateTab()](#windowcreatetabconfig)
+   - [Tab:AddSection()](#tabaddsectiontitle-opensection)
+   - [Section Elements](#section-elements)
+   - [MugiHub:SetNotification()](#mugihubsetnotificationconfig)
+7. [Theming](#-theming)
+8. [Search System](#-search-system)
+9. [Exit Confirmation](#-exit-confirmation)
+10. [Best Practices](#-best-practices)
+11. [Troubleshooting](#-troubleshooting)
+12. [License](#-license)
 
 ---
 
-# ✦ Installation
+## 🌸 About MugiHub
 
-MugiHub can be loaded directly from the project's canonical raw GitHub endpoint.
+**MugiHub** is a purpose-built graphical interface library for the Roblox Executor ecosystem. It was engineered from the ground up to give script developers a clean, elegant, and highly interactive control panel that feels native, responsive, and — most importantly — *pleasant to look at*.
 
-### Load the Library
+Unlike many UI kits that overload developers with configuration or lock them into rigid themes, MugiHub keeps things intentionally simple: **one cohesive Soft Pink + White identity**, a fully searchable interface, and an API designed to be picked up in minutes.
+
+MugiHub is not a fork — it is an original, from-scratch implementation, built and refined iteratively with a strong focus on real-world usability: things like notification spam-safety, accordion-based documentation blocks, live-updating tags, and an exit-confirmation flow are not afterthoughts, they are core design decisions.
+
+---
+
+## 👑 Credits
+
+| Role | Name |
+|---|---|
+| 🎨 UI Library Creator | **DinoIjoNPC** |
+| 👤 Also known as | **dinooo** |
+| 📦 Library Name | **MugiHub** |
+
+MugiHub is built and maintained independently. If you use MugiHub in your own script, a small credit back to **DinoIjoNPC / dinooo** is always appreciated — it helps the project grow and keeps development active. ✨
+
+---
+
+## 📦 Installation
+
+MugiHub is loaded entirely through a single `loadstring`. No additional files, no dependencies, no setup steps.
 
 ```lua
-local MugiHub = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"
-))()
+local MugiHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
 ```
 
-### Recommended loader with error handling
-
-```lua
-local URL = "https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"
-
-print("[MugiHub] Loading library...")
-
-local Success, Library = pcall(function()
-    return loadstring(game:HttpGet(URL))()
-end)
-
-if not Success then
-    warn("[MugiHub] LOAD ERROR")
-    warn("[MugiHub] " .. tostring(Library))
-    return
-end
-
-if type(Library) ~= "table" or type(Library.CreateWindow) ~= "function" then
-    warn("[MugiHub] API ERROR: CreateWindow is unavailable")
-    return
-end
-
-print("[MugiHub] Library loaded successfully!")
-print("[MugiHub] Test SUCCESS")
-```
-
-This loader separates **download/runtime errors** from **API validation errors**, making problems easier to diagnose.
+> ⚠️ **Note:** Make sure your executor has HTTP requests enabled (`game:HttpGet` must not be sandboxed/blocked). Almost all modern executors support this by default.
 
 ---
 
-# ✦ Quick Start
+## 🚀 Quick Start
 
-A minimal MugiHub Window can be created like this:
+Below is the smallest possible working example — a window with one tab, one section, and one button.
 
 ```lua
+local MugiHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
+
 local Window = MugiHub:CreateWindow({
-    Title = "MugiHub",
-    Description = "My Project",
-    Icon = "rbxassetid://121046122671218",
-
-    Tags = {
-        "Free",
-        "Beta"
-    },
-
-    WelcomeText = "Welcome, username"
+    Title       = "MugiHub",
+    Description = "My Script",
+    Icon        = "rbxassetid://135368942844516",
+    Tags        = {"v1.0", "Free"}
 })
-```
 
-Create a Tab:
+local MainTab     = Window:CreateTab({"Main", ""})
+local MainSection = MainTab:AddSection("General", true)
 
-```lua
-local Main = Window:CreateTab({
-    "Main",
-    "rbxassetid://ICON_ID"
-})
-```
-
-Create an Accordion:
-
-```lua
-local General = Main:AddAccordion("General", false)
-```
-
-Then add controls:
-
-```lua
-General:AddButton({
-    Title = "Test Button",
-    Content = "Run a test action.",
-
+MainSection:AddButton({
+    Title    = "Hello World",
+    Content  = "Click me to say hi",
     Callback = function()
-        print("Button clicked")
+        MugiHub:SetNotification({
+            Title       = "Hi!",
+            Description = "It works",
+            Content     = "MugiHub is now running.",
+            Time        = 0.35,
+            Delay       = 4
+        })
     end
 })
 ```
 
+That's it — no `:Init()`, no manual GUI parenting, no cleanup boilerplate. MugiHub handles all of it internally.
+
 ---
 
-# ✦ Window System
+## ✅ Feature List
 
-The Window is the primary container for the library.
+MugiHub ships with the following built-in systems, all working out of the box:
 
-It provides a compact topbar and organized content area with support for:
+### 🪟 Window System
+- Fully draggable window (drag from the top bar)
+- Minimize → collapses into a small draggable floating icon, click it again to restore
+- Close button with a built-in **exit confirmation popup** (prevents accidental closing)
+- Structured header: **Icon → Title → Separator → Description → Tags**
+- Title & Description are editable at runtime (`Window:SetTitle()`, `Window:SetDescription()`)
+- Global **KeyBind** to toggle the whole UI on/off (default: `RightControl`, fully configurable)
 
-| Component | Purpose |
+### 🏷️ Tag System
+- Static text tags (`Window.Tags:Add("Free")`)
+- **Real-time / dynamic tags** — values computed live from a function, not hardcoded text (`Window.Tags:AddDynamic(...)`)
+- Built-in **executor auto-detection tag** (`Window.Tags:AddExecutorTag()`) using `identifyexecutor()`
+- Tags can be edited (`:Set()`) or removed (`:Remove()`) at any time
+- No hard limit on tag count
+
+### 👤 Identity
+- Avatar automatically pulled from the local player's real Roblox thumbnail
+- Username automatically **censored** (first 3 letters + `***`) for privacy in screenshots/streams
+
+### 🔍 Search System
+- Every single element you add (buttons, toggles, sliders, dropdowns, keybinds, paragraphs, README blocks) is **automatically indexed**
+- Typing in the search bar shows a floating result popup — the tab list itself never changes or gets replaced
+- Clicking a result: switches to the correct tab → opens the correct section → scrolls to the element → draws a temporary highlight ring around it
+
+### 🗂️ Navigation
+- Unlimited Tabs, each with its own icon
+- Unlimited collapsible Sections (accordion-style) per tab
+
+### 🧩 Section Elements
+| Element | Purpose |
 |---|---|
-| **Icon** | Displays the MugiHub/project icon |
-| **Title** | Identifies the interface |
-| **Description** | Adds contextual information beside the title |
-| **Tags** | Displays compact status/category labels |
-| **Search** | Quickly finds Tabs |
-| **Tabs** | Separates major areas of the interface |
-| **Active Indicator** | Clearly identifies the current Tab |
-| **Avatar** | Displays the user's profile image |
-| **Welcome Text** | Shows a personalized greeting |
-| **Minimize** | Temporarily hides the main Window |
-| **Floating Button** | Reopens the minimized interface |
-| **Close Confirmation** | Prevents accidental closing |
+| `AddParagraph` | Static title + description text block |
+| `AddSeperator` | Labeled divider line |
+| `AddLine` | Plain decorative divider |
+| `AddButton` | Clickable action button |
+| `AddToggle` | On/off switch |
+| `AddSlider` | Draggable numeric slider with manual text input |
+| `AddInput` | Free-text input box |
+| `AddDropdown` | Single or multi-select dropdown with built-in search |
+| `AddKeybind` | User-rebindable keybind element |
+| `AddReadMe` | Documentation block — 3 styles: **Accordion**, **Plain**, **Badge** |
 
-### Original Icon
+### 🔔 Notification System
+- Non-blocking — call it as many times as you want, back-to-back, with **zero risk of errors**
+- Automatic vertical **stacking** powered by Roblox's native `UIListLayout` (no manual position math, scales to any amount of spam)
+- Built-in **countdown bar** that visually depletes over the notification's lifetime
+- Slide in / slide out animation
+- Each notification is fully independent — closing one never affects another
 
-MugiHub's original icon asset is:
+### 🎨 Visual Identity
+- Single accent color: **Pink Muda (Soft Pink) + White**
+- Solid pink is used for text, icons, and fills
+- Gradient (Pink → White) is reserved specifically for line/stroke-shaped elements (dividers, bars, borders) for visual depth
+- No preset theme system — one consistent, deliberate identity
 
-```text
-121046122671218
-```
-
-The library does **not** recolor this asset.
-
----
-
-# ✦ Tabs
-
-Tabs are the highest-level navigation layer inside the Window.
-
-```lua
-local Main = Window:CreateTab({
-    "Main",
-    "rbxassetid://ICON_ID"
-})
-```
-
-Use Tabs to separate major categories such as:
-
-```text
-Main
-Settings
-Visual
-Utility
-About
-```
-
-The sidebar Search can filter the available Tabs by name.
+### 🖥️ Compatibility
+- Works on Roblox Executors (`gethui()` / `cloneref()` supported, hidden from most detection methods)
+- Automatic fallback to `Player.PlayerGui` when running inside Roblox Studio
+- Full support for both **Mouse** and **Touch** (mobile) input
 
 ---
 
-# ✦ Accordion System
+## 📚 API Reference
 
-MugiHub supports an accordion-style container for grouping related controls.
+### `MugiHub:CreateWindow(Config)`
 
-### Standard API
+Creates and returns the main window. This is always the first function you call.
 
-```lua
-local Section = Main:AddSection("General", false)
-```
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `Title` | `string` | `""` | Window title text (rendered in pink) |
+| `Description` | `string` | `""` | Subtitle text (rendered in dark grey) |
+| `["Tab Width"]` | `number` | `105` | Width in pixels of the left sidebar |
+| `SizeUi` | `UDim2` | `480x275` | Overall window size |
+| `Keybind` | `Enum.KeyCode` | `RightControl` | Key that toggles the whole UI visible/hidden |
+| `Icon` | `string` (rbxassetid) | `""` | Icon shown before the Title — rendered **with no color tint**, at avatar-thumbnail size |
+| `Tags` | `table<string>` | `{}` | Initial list of static tags |
 
-### Explicit Accordion API
-
-```lua
-local Accordion = Main:AddAccordion("General", false)
-```
-
-Both APIs use the same underlying system.
-
-`false` means the Accordion starts **closed**.
+**Returns:** `Window` — a table containing `:CreateTab()`, `:SetTitle()`, `:SetDescription()`, and `.Tags`.
 
 ```lua
-Main:AddAccordion("General", false)
+local Window = MugiHub:CreateWindow({
+    Title       = "MugiHub",
+    Description = "Test Build",
+    ["Tab Width"] = 105,
+    SizeUi      = UDim2.fromOffset(480, 275),
+    Keybind     = Enum.KeyCode.RightControl,
+    Icon        = "rbxassetid://135368942844516",
+    Tags        = {"v1.0", "Free", "Test Mode"}
+})
 ```
 
-`true` means it starts **open**.
+#### `Window:SetTitle(NewTitle: string)`
+Changes the window title at runtime. Automatically repositions the separator, description, and tags.
 
-```lua
-Main:AddAccordion("General", true)
-```
-
-### Why use Accordions?
-
-Accordions are useful when a Tab contains many controls. Instead of showing everything at once, related controls can be grouped into expandable sections.
-
-Example:
-
-```text
-Main
-│
-├── General       [Closed]
-├── Appearance    [Closed]
-├── Advanced      [Closed]
-└── Information   [Closed]
-```
-
-This keeps large interfaces easier to navigate.
+#### `Window:SetDescription(NewDescription: string)`
+Changes the window description at runtime. Automatically repositions the tags.
 
 ---
 
-# ✦ Readme / Information Cards
+### `Window.Tags`
 
-One of MugiHub's flexible components is the **Readme card**.
-
-A Readme is an independent information block. It is **not a Button**, and it does not require a special `Info` tab.
-
-### Basic usage
+#### `Window.Tags:Add(Text: string) → TagHandle`
+Adds a static text tag. Returns a handle with `:Set(NewText)` and `:Remove()`.
 
 ```lua
-local Info = Main:AddAccordion("About", false)
-
-Info:AddReadme({
-    Title = "What is MugiHub?",
-    Content = "MugiHub is a clean and modular Roblox UI Library."
-})
+local FreeTag = Window.Tags:Add("Free")
+FreeTag:Set("Premium") -- edit later
+FreeTag:Remove()       -- or remove entirely
 ```
 
-### Alias
-
-`AddInfo()` is also available:
+#### `Window.Tags:AddDynamic(Label: string, ValueFn: function, RefreshInterval: number?) → TagHandle`
+Adds a **real-time** tag. Instead of a fixed string, the tag's value comes from `ValueFn()`, evaluated immediately and — if `RefreshInterval` is provided — re-evaluated automatically on that interval (in seconds).
 
 ```lua
-Info:AddInfo({
-    Title = "Information",
-    Content = "Additional information for this section."
-})
+-- Static example:  "Free"
+-- Dynamic example:  "Executor: Delta"  (detected LIVE, not typed manually)
+
+Window.Tags:AddDynamic("Ping", function()
+    return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) .. "ms"
+end, 5) -- refreshes every 5 seconds
 ```
 
-### Readme can be used anywhere
-
-Readme cards are intentionally not restricted to one location.
-
-For example:
+#### `Window.Tags:AddExecutorTag(RefreshInterval: number?) → TagHandle`
+A ready-made shortcut that detects the real executor name via `identifyexecutor()` and displays it as `Executor: <name>`. Falls back to `Executor: Unknown` if the executor doesn't support `identifyexecutor`.
 
 ```lua
-local Settings = Main:AddAccordion("Settings", false)
-
-Settings:AddReadme({
-    Title = "Settings",
-    Content = "Configure the available options in this section."
-})
+Window.Tags:AddExecutorTag() -- one-time detection
+Window.Tags:AddExecutorTag(10) -- re-checks every 10 seconds
 ```
-
-The same pattern can be used in any Accordion/Section.
-
-### Accordion behavior
-
-Because the Readme is inserted into the Accordion's content area, it follows the Accordion's state:
-
-```text
-Accordion CLOSED
-└── Readme hidden
-
-Accordion OPEN
-└── Readme visible
-```
-
-This makes documentation, explanations, warnings, and section descriptions easy to place exactly where they are needed.
 
 ---
 
-# ✦ Components
+### `Window:CreateTab(Config)`
 
-## Button
+| Index | Field | Description |
+|---|---|---|
+| `[1]` / `Name` | `string` | Tab name |
+| `[2]` / `Icon` | `string` (rbxassetid) | Tab icon, optional |
 
-Use Buttons for actions.
+```lua
+local MainTab = Window:CreateTab({"Main", "rbxassetid://0"})
+```
 
+**Returns:** `Tab` — a table containing `:AddSection()`.
+
+---
+
+### `Tab:AddSection(Title, OpenSection)`
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Title` | `string` | Section header text |
+| `OpenSection` | `boolean` | Whether the section starts expanded |
+
+```lua
+local Section = MainTab:AddSection("General", true)
+```
+
+**Returns:** `Section` — a table containing all element methods below.
+
+---
+
+### Section Elements
+
+#### `Section:AddParagraph({Title, Content}) → Handle`
+```lua
+Section:AddParagraph({"Welcome", "This is a static info block."})
+```
+`Handle:Set({Title, Content})` — updates the text.
+
+#### `Section:AddSeperator({Title}) → Handle`
+```lua
+Section:AddSeperator({"Category Name"})
+```
+
+#### `Section:AddLine()`
+A plain decorative divider line, no parameters.
+
+#### `Section:AddButton({Title, Content, Icon, Callback}) → Handle`
 ```lua
 Section:AddButton({
-    Title = "Execute",
-    Content = "Run the selected action.",
-
-    Callback = function()
-        print("Executed")
-    end
+    Title    = "Click Me",
+    Content  = "Does a thing",
+    Callback = function() print("clicked") end
 })
 ```
 
----
-
-## Toggle
-
-Use Toggles for persistent on/off states.
-
+#### `Section:AddToggle({Title, Content, Default, Callback}) → Handle`
 ```lua
-local Toggle = Section:AddToggle({
-    Title = "Enabled",
-    Content = "Enable or disable the option.",
-    Default = false,
-
-    Callback = function(Value)
-        print("Enabled:", Value)
-    end
+local MyToggle = Section:AddToggle({
+    Title    = "Fast Walk",
+    Content  = "Enable extra speed",
+    Default  = false,
+    Callback = function(Value) print(Value) end
 })
+MyToggle:Set(true) -- toggle programmatically
 ```
 
-You can update it programmatically:
-
+#### `Section:AddSlider({Title, Content, Increment, Min, Max, Default, Callback}) → Handle`
 ```lua
-Toggle:Set(true)
-```
-
----
-
-## Slider
-
-Sliders are useful for numeric settings.
-
-```lua
-local Slider = Section:AddSlider({
-    Title = "Value",
-    Content = "Choose a value from 0 to 100.",
-
-    Min = 0,
-    Max = 100,
+Section:AddSlider({
+    Title     = "Walk Speed",
+    Content   = "Adjust movement speed",
     Increment = 1,
-    Default = 50,
-
-    Callback = function(Value)
-        print("Value:", Value)
-    end
+    Min       = 16,
+    Max       = 100,
+    Default   = 16,
+    Callback  = function(Value) print(Value) end
 })
 ```
 
-The callback receives the current numeric value.
-
----
-
-## Input
-
-Use Input controls when users need to enter text.
-
+#### `Section:AddInput({Title, Content, Default, Callback}) → Handle`
 ```lua
-local Input = Section:AddInput({
-    Title = "Username",
-    Content = "Enter a username.",
-    Default = "",
-
-    Callback = function(Value)
-        print("Input:", Value)
-    end
+Section:AddInput({
+    Title    = "Display Name",
+    Default  = "MugiHub User",
+    Callback = function(Value) print(Value) end
 })
 ```
 
-Set the value programmatically:
-
-```lua
-Input:Set("Dino")
-```
-
----
-
-## KeyBind
-
-KeyBind allows users to select a keyboard key for an action.
-
-```lua
-local Keybind = Section:AddKeybind({
-    Title = "Toggle UI",
-    Content = "Press a key to activate the action.",
-    Default = Enum.KeyCode.RightShift,
-
-    Callback = function(Key)
-        print("Key:", Key.Name)
-    end
-})
-```
-
-The user can select the control and press another key to change the binding.
-
----
-
-# ✦ Dropdowns
-
-MugiHub supports both **Single Dropdown** and **Multi Dropdown**.
-
-## Single Dropdown
-
-Use this when only one option should be selected.
-
+#### `Section:AddDropdown({Title, Content, Multi, Options, Default, Callback}) → Handle`
 ```lua
 local Dropdown = Section:AddDropdown({
-    Title = "Quality",
-    Content = "Choose one quality level.",
-
-    Multi = false,
-
-    Options = {
-        "Low",
-        "Medium",
-        "High"
-    },
-
-    Default = {
-        "Medium"
-    },
-
-    Callback = function(Value)
-        print("Selected:", Value)
-    end
+    Title    = "ESP Target",
+    Multi    = true,
+    Options  = {"Player", "Item", "NPC"},
+    Default  = {"Player"},
+    Callback = function(Value) print(table.concat(Value, ", ")) end
 })
+Dropdown:Refresh({"Player", "Item", "NPC", "Vehicle"}, {"Player"})
+Dropdown:AddOption("Chest")
+Dropdown:Clear()
 ```
 
-## Multi Dropdown
-
-Use this when multiple options can be selected at the same time.
-
+#### `Section:AddKeybind({Title, Content, Default, Callback}) → Handle`
+Creates a user-rebindable keybind. Clicking the bound-key button lets the user press any key to rebind it live.
 ```lua
-local Dropdown = Section:AddDropdown({
-    Title = "Features",
-    Content = "Select multiple features.",
-
-    Multi = true,
-
-    Options = {
-        "ESP",
-        "Notifications",
-        "Auto Save",
-        "Statistics"
-    },
-
-    Default = {
-        "ESP",
-        "Statistics"
-    },
-
-    Callback = function(Value)
-        print("Selected options:", Value)
-    end
+Section:AddKeybind({
+    Title    = "Toggle Fast Walk",
+    Default  = Enum.KeyCode.F,
+    Callback = function(Key) print("pressed:", Key.Name) end
 })
 ```
 
-### Refresh options
+#### `Section:AddReadMe({Title, Content, Style}) → Handle`
+Three distinct display styles for documentation/description content:
 
-Dropdown options can be refreshed:
-
-```lua
-Dropdown:Refresh(
-    {
-        "New A",
-        "New B",
-        "New C"
-    },
-    {
-        "New A"
-    }
-)
-```
-
----
-
-# ✦ Paragraph
-
-Paragraphs are useful for simple descriptive content.
-
-```lua
-Section:AddParagraph({
-    Title = "Information",
-    Content = "This is a descriptive paragraph."
-})
-```
-
-For larger documentation-style content, prefer **Readme**.
-
----
-
-# ✦ Separator
-
-Separators visually divide related controls.
-
-```lua
-Section:AddSeperator({
-    Title = "Advanced"
-})
-```
-
-> The spelling `AddSeperator` is intentionally preserved for API compatibility.
-
----
-
-# ✦ Line
-
-A simple line can be inserted with:
-
-```lua
-Section:AddLine()
-```
-
----
-
-# ✦ Complete Example
-
-The following example demonstrates the major MugiHub systems together:
-
-```lua
-local MugiHub = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"
-))()
-
-local Window = MugiHub:CreateWindow({
-    Title = "MugiHub",
-    Description = "Complete UI Test",
-
-    Icon = "rbxassetid://121046122671218",
-
-    Tags = {
-        "TEST",
-        "BETA"
-    },
-
-    WelcomeText = "Welcome, username"
-})
-
--- Main
-local Main = Window:CreateTab({
-    "Main",
-    "rbxassetid://121046122671218"
-})
-
-local General = Main:AddAccordion("General", false)
-
-General:AddReadme({
-    Title = "What is MugiHub?",
-    Content = "A clean and modular Roblox UI Library."
-})
-
-General:AddParagraph({
-    Title = "Overview",
-    Content = "This section demonstrates the core components."
-})
-
-General:AddButton({
-    Title = "Test Button",
-    Content = "Run the test callback.",
-
-    Callback = function()
-        print("[MugiHub] Button clicked")
-    end
-})
-
-General:AddToggle({
-    Title = "Test Toggle",
-    Content = "Toggle a test state.",
-    Default = false,
-
-    Callback = function(Value)
-        print("[MugiHub] Toggle:", Value)
-    end
-})
-
--- Controls
-local Controls = Window:CreateTab({
-    "Controls",
-    "rbxassetid://121046122671218"
-})
-
-local ControlSection = Controls:AddAccordion("Controls", false)
-
-ControlSection:AddSlider({
-    Title = "Test Slider",
-    Content = "Adjust a numeric value.",
-    Min = 0,
-    Max = 100,
-    Increment = 1,
-    Default = 50,
-
-    Callback = function(Value)
-        print("[MugiHub] Slider:", Value)
-    end
-})
-
-ControlSection:AddInput({
-    Title = "Test Input",
-    Content = "Enter text.",
-    Default = "",
-
-    Callback = function(Value)
-        print("[MugiHub] Input:", Value)
-    end
-})
-
--- Dropdowns
-local DropdownTab = Window:CreateTab({
-    "Dropdown",
-    "rbxassetid://121046122671218"
-})
-
-local DropdownSection = DropdownTab:AddAccordion("Dropdown Tests", false)
-
-DropdownSection:AddDropdown({
-    Title = "Single",
-    Content = "Choose one.",
-    Multi = false,
-
-    Options = {
-        "A",
-        "B",
-        "C"
-    },
-
-    Default = {
-        "A"
-    },
-
-    Callback = function(Value)
-        print("[MugiHub] Single:", Value)
-    end
-})
-
-DropdownSection:AddDropdown({
-    Title = "Multiple",
-    Content = "Choose multiple.",
-    Multi = true,
-
-    Options = {
-        "A",
-        "B",
-        "C",
-        "D"
-    },
-
-    Default = {
-        "A",
-        "C"
-    },
-
-    Callback = function(Value)
-        print("[MugiHub] Multi:", Value)
-    end
-})
-
--- KeyBind
-local KeybindTab = Window:CreateTab({
-    "KeyBind",
-    "rbxassetid://121046122671218"
-})
-
-local KeybindSection = KeybindTab:AddAccordion("KeyBind Test", false)
-
-KeybindSection:AddKeybind({
-    Title = "Test Key",
-    Content = "Change the activation key.",
-    Default = Enum.KeyCode.RightShift,
-
-    Callback = function(Key)
-        print("[MugiHub] Key:", Key.Name)
-    end
-})
-
-print("[MugiHub] Complete test loaded successfully!")
-```
-
----
-
-# ✦ Recommended UI Architecture
-
-For larger projects, a structure like this keeps the interface maintainable:
-
-```text
-MugiHub Window
-│
-├── Topbar
-│   ├── Icon
-│   ├── Title
-│   ├── Description
-│   ├── Tags
-│   ├── Minimize
-│   └── Close
-│
-├── Sidebar
-│   ├── Search
-│   ├── Tabs
-│   └── Avatar / Welcome
-│
-└── Content
-    │
-    └── Tab
-        │
-        ├── Accordion
-        │   ├── Readme
-        │   ├── Paragraph
-        │   ├── Button
-        │   └── Toggle
-        │
-        └── Accordion
-            ├── Slider
-            ├── Input
-            ├── KeyBind
-            └── Dropdown
-```
-
-### Why this structure works
-
-**Tabs** represent broad categories.
-
-**Accordions** represent groups within those categories.
-
-**Readme cards** explain the purpose of a group.
-
-**Controls** perform the actual interaction.
-
-This hierarchy prevents a large UI from becoming one long, difficult-to-navigate list.
-
----
-
-# ✦ API Overview
-
-| API | Role |
+| Style | Behavior |
 |---|---|
-| `CreateWindow()` | Creates the main Window |
-| `CreateTab()` | Creates a navigation Tab |
-| `AddSection()` | Creates an Accordion-style section |
-| `AddAccordion()` | Explicit Accordion API |
-| `AddReadme()` | Adds an information card |
-| `AddInfo()` | Alias for Readme |
-| `AddParagraph()` | Adds descriptive text |
-| `AddButton()` | Adds an action Button |
-| `AddToggle()` | Adds an on/off control |
-| `AddSlider()` | Adds a numeric slider |
-| `AddInput()` | Adds a text input |
-| `AddKeybind()` | Adds a keyboard binding |
-| `AddDropdown()` | Adds Single/Multi Dropdown |
-| `AddSeperator()` | Adds a labeled separator |
-| `AddLine()` | Adds a simple line |
+| `"Accordion"` (default) | Collapsible block with a rotating chevron |
+| `"Plain"` | Always-visible, static block — no collapsing |
+| `"Badge"` | Small compact pill, ideal for credits/version info near buttons |
+
+```lua
+Section:AddReadMe({"About", "Full description text...", "Accordion"})
+Section:AddReadMe({"Note", "Always-visible text.", "Plain"})
+Section:AddReadMe({"MugiHub", "by DinoIjoNPC", "Badge"})
+```
+`Handle:Set(NewContent)` and `Handle:SetTitle(NewTitle)` are available on all three styles.
 
 ---
 
-# ✦ Compatibility Notes
+### `MugiHub:SetNotification(Config)`
 
-MugiHub intentionally keeps several existing API names and behaviors for compatibility.
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `Title` | `string` | `""` | Bold header text |
+| `Description` | `string` | `""` | Accent-colored subtitle, shown next to Title |
+| `Content` | `string` | `""` | Body text, wraps automatically |
+| `Time` | `number` | `0.35` | Slide in/out animation duration (seconds) |
+| `Delay` | `number` | `5` | How long the notification stays visible before auto-closing (seconds) |
 
-- `AddSection()` remains supported.
-- `AddAccordion()` is available as the explicit Accordion API.
-- `AddReadme()` works inside any returned Section/Accordion.
-- `AddInfo()` is an alias for `AddReadme()`.
-- Multi Dropdown is supported.
-- KeyBind is supported.
-- Slider, Input, Toggle, Button, Paragraph, Separator, and Line remain available.
-- Search and Active Tab indication are part of the Window navigation.
-- The Close button uses a confirmation step.
-- The original icon is not recolored.
-- Interface text remains solid white.
-- The library includes a safe GUI-parent fallback for different runtime environments.
+> 💡 Always use **named keys** (`Title = ...`, `Delay = ...`) rather than positional array values — the 4th positional slot is intentionally reserved and skipped internally, so positional calls can silently shift `Time`/`Delay` into the wrong fields.
 
----
-
-# ✦ Project Structure
-
-A clean repository layout is recommended:
-
-```text
-MugiHub/
-│
-├── Mugi
-├── README.md
-└── Examples/
-    └── CompleteTest.lua
+```lua
+MugiHub:SetNotification({
+    Title       = "Success",
+    Description = "Saved",
+    Content     = "Your settings have been saved.",
+    Time        = 0.35,
+    Delay       = 5
+})
 ```
 
-The canonical library endpoint is:
-
-```text
-https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi
-```
+This function is **non-blocking** — call it repeatedly in a loop and every notification will stack correctly with zero risk of errors, no matter how fast or how many times you call it.
 
 ---
 
-# ✦ Final Notes
+## 🎨 Theming
 
-MugiHub is designed around a simple idea:
+MugiHub uses one deliberate, fixed visual identity — there is no preset/theme switcher.
 
-> **Good UI should make a project easier to understand, not harder.**
+- **Pink Muda (Soft Pink)** `RGB(255, 153, 204)` — used solid for text, icons, and fills
+- **White → Pink Muda gradient** — reserved exclusively for line/stroke-shaped elements: dividers, progress/countdown bars, tab indicators, card borders
 
-Use **Tabs** for navigation, **Accordions** for organization, **Readme cards** for context, and controls for interaction.
-
-Keep sections focused, use descriptive titles, and avoid placing too many unrelated controls into a single group.
-
-That approach keeps the interface clean for users and the codebase easier for developers to maintain.
+This distinction keeps text and content easy to read while still giving structural elements (lines, bars, borders) a bit of visual depth.
 
 ---
 
-<p align="center">
-  <strong>Built with MugiHub</strong>
-</p>
+## 🔍 Search System
 
-<p align="center">
-  Clean • Modular • Readable • Flexible
-</p>
+Every element added through `Section:AddXXX(...)` is automatically registered into a global search index the moment it's created — you don't need to do anything extra.
+
+1. Type into the sidebar's search box
+2. A floating popup appears below it listing every match — **the tab list itself is never replaced or altered**
+3. Click a result and MugiHub will automatically:
+   - Switch to the correct Tab
+   - Expand the correct Section (if collapsed)
+   - Scroll the element into view
+   - Draw a temporary pink highlight ring around it, which fades out after ~1.5 seconds
+
+---
+
+## ⚠️ Exit Confirmation
+
+Clicking the **X (Close)** button no longer closes the window instantly. Instead, a small centered confirmation dialog appears:
+
+> **"Are you sure you want to exit windows?"**
+> `[Cancel]` (grey) &nbsp;&nbsp; `[Exit]` (red)
+
+- **Cancel** dismisses the popup, the window stays open
+- **Exit** closes the window for good
+
+This prevents accidental closures from a stray click.
+
+---
+
+## 💡 Best Practices
+
+- Always wrap `identifyexecutor`, `gethui`, and other executor-specific globals in `pcall` if you're extending MugiHub yourself — different executors implement different subsets of the API.
+- Prefer **named keys** (`Title = ...`) over positional array arguments for anything with more than 2–3 fields — it's more readable and avoids index-order mistakes.
+- Use `AddReadMe` with `"Badge"` style for lightweight credits/version info instead of cluttering the header with too many tags.
+- Group related settings under the same `Section` — accordions keep long tabs manageable.
+
+---
+
+## 🛠️ Troubleshooting
+
+**"attempt to index nil with 'X'" right after `CreateWindow`**
+Make sure you're loading the *latest* raw file — GitHub raw content can be cached briefly by its CDN after an update. Wait a minute and re-run.
+
+**Tabs/sections don't appear at all**
+This almost always means an error occurred somewhere *between* `CreateWindow` and your `CreateTab` calls, which halts the rest of the script. Check your executor's console for the actual red error line (the text just above `Stack End` — `Stack End` itself is not the error, it's just the trace footer).
+
+**Notifications don't show / show in the wrong position**
+Make sure you're not manually destroying `MugiHub`'s ScreenGui elsewhere in your script — the notification container is created once and reused for the whole session.
+
+**Icons appear as a broken/red image**
+Double-check the `rbxassetid://` you provided is valid and public. An icon field left as `""` renders as blank (safe) rather than broken.
+
+---
+
+## 📜 License
+
+MugiHub is provided as-is for personal and script-development use.
+Please keep credit to **DinoIjoNPC (dinooo)** — the original creator of MugiHub — intact when redistributing or building on top of this library.
+
+---
+
+<div align="center">
+
+**MugiHub** — made with 🩷 by **DinoIjoNPC**
+
+</div>

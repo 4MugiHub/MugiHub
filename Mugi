@@ -6,10 +6,11 @@ local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 
 local Custom = {} do
-  -- Warna aksen tunggal: Pink + Putih (gradient), tanpa sistem preset theme
-  Custom.ColorRGB = Color3.fromRGB(255, 105, 180) -- fallback solid pink (untuk properti yang tidak mendukung gradient)
+  -- Warna aksen tunggal: Pink Muda + Putih (gradient), tanpa sistem preset theme.
+  -- Pink Muda dipakai SOLID untuk teks/isi/ikon; gradient (Pink Muda -> Putih) khusus untuk elemen "garis" (divider, bar, stroke).
+  Custom.ColorRGB = Color3.fromRGB(255, 153, 204) -- Pink Muda (soft pink), senada dengan ring avatar
   Custom.GradientPinkWhite = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)), -- Pink
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 153, 204)), -- Pink Muda
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))  -- Putih
   })
 
@@ -57,7 +58,7 @@ local function OpenClose()
     BackgroundTransparency = 1,
     Position = UDim2.new(0.1021, 0, 0.0743, 0),
     Size = UDim2.new(0, 59, 0, 49),
-    Image = "rbxassetid://136890595976124",
+    Image = "rbxassetid://135368942844516", -- murni tanpa tint warna tambahan
     Visible = false,
   }, ScreenGui)
 
@@ -271,7 +272,6 @@ function MugiHub_Library:SetNotification(Config)
     Size = UDim2.new(1, -(TitleLabel.TextBounds.X + 46), 0, 14),
     Name = "DescLabel"
   }, Card)
-  Custom:AddGradient(DescLabel)
 
   local CloseButton = Custom:Create("TextButton", {
     Font = Enum.Font.GothamBold,
@@ -434,7 +434,7 @@ function MugiHub_Library:CreateWindow(Config)
   local TextLabel = Custom:Create("TextLabel", {
     Font = Enum.Font.GothamBold,
     Text = Title,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
+    TextColor3 = Custom.ColorRGB,
     TextSize = 14,
     TextXAlignment = Enum.TextXAlignment.Left,
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -447,21 +447,19 @@ function MugiHub_Library:CreateWindow(Config)
 
   Custom:Create("UICorner", {}, Top)
 
-  -- /// Icon (opsional) di depan Title
+  -- /// Icon (opsional) di depan Title — MURNI tanpa tint warna tambahan, sebesar avatar thumbnail
   local IconWidth = 0
   if Icon ~= "" then
-    IconWidth = 20
+    IconWidth = 34
     Custom:Create("ImageLabel", {
       Image = Icon,
-      ImageColor3 = Custom.ColorRGB,
       AnchorPoint = Vector2.new(0, 0.5),
       BackgroundTransparency = 1,
       BorderSizePixel = 0,
-      Position = UDim2.new(0, 10, 0.5, 0),
-      Size = UDim2.new(0, 16, 0, 16),
+      Position = UDim2.new(0, 8, 0.5, 0),
+      Size = UDim2.new(0, 28, 0, 28),
       Name = "Icon"
     }, Top)
-    Custom:AddGradient(Top.Icon)
     TextLabel.Position = UDim2.new(0, 10 + IconWidth, 0, 0)
   end
 
@@ -479,11 +477,12 @@ function MugiHub_Library:CreateWindow(Config)
     Name = "Separator"
   }, Top)
 
+  -- /// Description — font & warna beda dari Title (lebih kecil, abu-abu gelap, tanpa gradient pink)
   local TextLabel1 = Custom:Create("TextLabel", {
-    Font = Enum.Font.GothamBold,
+    Font = Enum.Font.Gotham,
     Text = Description,
-    TextColor3 = Custom.ColorRGB,
-    TextSize = 14,
+    TextColor3 = Color3.fromRGB(120, 120, 120),
+    TextSize = 12,
     TextXAlignment = Enum.TextXAlignment.Left,
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 0.9990000128746033,
@@ -492,12 +491,6 @@ function MugiHub_Library:CreateWindow(Config)
     Size = UDim2.new(0, 300, 1, 0),
     Position = UDim2.new(0, Separator.Position.X.Offset + 14, 0, 0)
   }, Top)
-
-  Custom:AddGradient(TextLabel1)
-  Custom:AddGradient(Custom:Create("UIStroke", {
-    Color = Custom.ColorRGB,
-    Thickness = 0.4
-  }, TextLabel1))
 
   -- /// Tags (pill label) — bisa ditambah & diedit lewat Funcs.Tags
   local TagsFuncs = {}
@@ -547,7 +540,7 @@ function MugiHub_Library:CreateWindow(Config)
     local TagEntry = {Frame = TagFrame, Label = TagLabel}
     table.insert(TagList, TagEntry)
 
-    local TagItemFuncs = {}
+    local TagItemFuncs = {Frame = TagFrame}
     function TagItemFuncs:Set(NewText)
       TagLabel.Text = NewText
       TagFrame.Size = UDim2.new(0, TagLabel.TextBounds.X + 16, 0, 20)
@@ -563,6 +556,46 @@ function MugiHub_Library:CreateWindow(Config)
 
     TagItemFuncs:Set(Text)
     return TagItemFuncs
+  end
+
+  -- /// Tag REAL-TIME — nilainya dihitung lewat fungsi (ValueFn), bukan teks statis.
+  -- Contoh: Tags:AddDynamic("Executor", function() return identifyexecutor() end)
+  -- RefreshInterval (opsional, dalam detik) bikin tag ini auto-update berkala.
+  function TagsFuncs:AddDynamic(Label, ValueFn, RefreshInterval)
+    Label = Label or ""
+    ValueFn = ValueFn or function() return "" end
+
+    local function ComputeText()
+      local Ok, Value = pcall(ValueFn)
+      Value = (Ok and Value ~= nil and tostring(Value)) or "Unknown"
+      return (Label ~= "" and (Label .. ": " .. Value)) or Value
+    end
+
+    local TagItemFuncs = TagsFuncs:Add("● " .. ComputeText())
+
+    if RefreshInterval then
+      task.spawn(function()
+        while TagItemFuncs.Frame and TagItemFuncs.Frame.Parent do
+          task.wait(RefreshInterval)
+          if not (TagItemFuncs.Frame and TagItemFuncs.Frame.Parent) then break end
+          TagItemFuncs:Set("● " .. ComputeText())
+        end
+      end)
+    end
+
+    return TagItemFuncs
+  end
+
+  -- /// Shortcut siap-pakai: tag "Executor: <nama>" yang otomatis mendeteksi executor asli
+  -- via fungsi identifyexecutor() bawaan kebanyakan Roblox Executor. Fallback ke "Unknown" jika tidak didukung.
+  function TagsFuncs:AddExecutorTag(RefreshInterval)
+    return TagsFuncs:AddDynamic("Executor", function()
+      if identifyexecutor then
+        local Name = identifyexecutor()
+        return Name or "Unknown"
+      end
+      return "Unknown"
+    end, RefreshInterval)
   end
 
   if Config.Tags or Config[7] then
@@ -586,34 +619,42 @@ function MugiHub_Library:CreateWindow(Config)
   end
 
   local Close = Custom:Create("TextButton", {
-    Font = Enum.Font.SourceSans,
+    Font = Enum.Font.GothamBold,
     Text = "X",
     TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 18,
+    TextSize = 15,
     AnchorPoint = Vector2.new(1, 0.5),
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 0.9990000128746033,
     BorderColor3 = Color3.fromRGB(0, 0, 0),
     BorderSizePixel = 0,
     Position = UDim2.new(1, -8, 0.5, 0),
-    Size = UDim2.new(0, 25, 0, 25),
+    Size = UDim2.new(0, 30, 0, 26),
     Name = "Close"
   }, Top)
 
+  Custom:Create("UICorner", {
+    CornerRadius = UDim.new(0, 5)
+  }, Close)
+
   local Min = Custom:Create("TextButton", {
-    Font = Enum.Font.SourceSans,
-    Text = "-", 
+    Font = Enum.Font.GothamBold,
+    Text = "—", 
     TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 18,
+    TextSize = 15,
     AnchorPoint = Vector2.new(1, 0.5),
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 0.9990000128746033,
     BorderColor3 = Color3.fromRGB(0, 0, 0),
     BorderSizePixel = 0,
-    Position = UDim2.new(1, -42, 0.5, 0),
-    Size = UDim2.new(0, 25, 0, 25),
+    Position = UDim2.new(1, -46, 0.5, 0),
+    Size = UDim2.new(0, 38, 0, 26),
     Name = "Min"
 }, Top)
+
+  Custom:Create("UICorner", {
+    CornerRadius = UDim.new(0, 5)
+  }, Min)
 
   local LayersTab = Custom:Create("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -652,60 +693,27 @@ function MugiHub_Library:CreateWindow(Config)
   }, SearchBox)
 
   Custom:Create("UIPadding", {
-    PaddingLeft = UDim.new(0, 22)
+    PaddingLeft = UDim.new(0, 24)
   }, SearchBox)
 
-  -- /// Icon Search (dibuat dari vector shape: lingkaran + gagang, bukan asset gambar)
-  -- Ini supaya iconnya PASTI tampil benar, tanpa bergantung ID asset yang tidak bisa dipastikan valid.
-  local SearchIcon = Custom:Create("Frame", {
+  -- /// Icon Search — pakai asset image (id 76489185326992), tint abu-abu, nyala pink saat fokus
+  local SearchIcon = Custom:Create("ImageLabel", {
+    Image = "rbxassetid://76489185326992",
+    ImageColor3 = Color3.fromRGB(150, 150, 150),
     AnchorPoint = Vector2.new(0, 0.5),
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 7, 0.5, 0),
-    Size = UDim2.new(0, 11, 0, 11),
+    Size = UDim2.new(0, 13, 0, 13),
     ZIndex = 2,
     Name = "SearchIcon"
   }, SearchBox)
 
-  local SearchIconLens = Custom:Create("Frame", {
-    BackgroundTransparency = 1,
-    BorderSizePixel = 0,
-    Position = UDim2.new(0, 0, 0, 0),
-    Size = UDim2.new(0, 8, 0, 8),
-    Name = "Lens"
-  }, SearchIcon)
-
-  Custom:Create("UICorner", {
-    CornerRadius = UDim.new(1, 0)
-  }, SearchIconLens)
-
-  Custom:Create("UIStroke", {
-    Color = Color3.fromRGB(150, 150, 150),
-    Thickness = 1.4,
-  }, SearchIconLens)
-
-  local SearchIconHandle = Custom:Create("Frame", {
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundColor3 = Color3.fromRGB(150, 150, 150),
-    BorderSizePixel = 0,
-    Rotation = 45,
-    Position = UDim2.new(0, 9, 0, 9),
-    Size = UDim2.new(0, 1.6, 0, 5),
-    Name = "Handle"
-  }, SearchIcon)
-
-  Custom:Create("UICorner", {
-    CornerRadius = UDim.new(1, 0)
-  }, SearchIconHandle)
-
-  -- Icon ikut menyala (gradient pink+putih) saat SearchBox difokus, meredup saat tidak
   SearchBox.Focused:Connect(function()
-    TweenService:Create(SearchIconLens.UIStroke, TweenInfo.new(0.15), {Color = Custom.ColorRGB}):Play()
-    TweenService:Create(SearchIconHandle, TweenInfo.new(0.15), {BackgroundColor3 = Custom.ColorRGB}):Play()
+    TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Custom.ColorRGB}):Play()
   end)
   SearchBox.FocusLost:Connect(function()
-    TweenService:Create(SearchIconLens.UIStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(150, 150, 150)}):Play()
-    TweenService:Create(SearchIconHandle, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+    TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
   end)
 
   Custom:Create("Frame", {
@@ -1043,10 +1051,114 @@ function MugiHub_Library:CreateWindow(Config)
 		if Open_Close.Visible then Open_Close.Visible = false end
 	end)
 
+  -- /// Popup Konfirmasi Exit (muncul saat tombol Close/X ditekan)
+  local ExitConfirmBackdrop = Custom:Create("Frame", {
+    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+    BackgroundTransparency = 0.5,
+    BorderSizePixel = 0,
+    Size = UDim2.new(1, 0, 1, 0),
+    Visible = false,
+    ZIndex = 49,
+    Name = "ExitConfirmBackdrop"
+  }, MugiHubGui)
+
+  local ExitConfirm = Custom:Create("Frame", {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+    BorderSizePixel = 0,
+    Position = UDim2.new(0.5, 0, 0.5, 0),
+    Size = UDim2.new(0, 230, 0, 105),
+    Visible = false,
+    ZIndex = 50,
+    Name = "ExitConfirm"
+  }, MugiHubGui)
+
+  Custom:Create("UICorner", {
+    CornerRadius = UDim.new(0, 8)
+  }, ExitConfirm)
+
+  Custom:AddGradient(Custom:Create("UIStroke", {
+    Color = Custom.ColorRGB,
+    Thickness = 1,
+    Transparency = 0.5
+  }, ExitConfirm))
+
+  Custom:Create("TextLabel", {
+    Font = Enum.Font.GothamBold,
+    Text = "Are you sure you want to exit windows?",
+    TextColor3 = Color3.fromRGB(225, 225, 225),
+    TextSize = 13,
+    TextWrapped = true,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    TextYAlignment = Enum.TextYAlignment.Center,
+    BackgroundTransparency = 1,
+    ZIndex = 51,
+    Position = UDim2.new(0, 12, 0, 12),
+    Size = UDim2.new(1, -24, 0, 45),
+    Name = "ExitText"
+  }, ExitConfirm)
+
+  local CancelButton = Custom:Create("TextButton", {
+    Font = Enum.Font.GothamBold,
+    Text = "Cancel",
+    TextColor3 = Color3.fromRGB(225, 225, 225),
+    TextSize = 13,
+    BackgroundColor3 = Color3.fromRGB(65, 65, 65),
+    BorderSizePixel = 0,
+    ZIndex = 51,
+    Position = UDim2.new(0, 12, 1, -44),
+    Size = UDim2.new(0.5, -18, 0, 32),
+    Name = "CancelButton"
+  }, ExitConfirm)
+  Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, CancelButton)
+
+  local ExitButton = Custom:Create("TextButton", {
+    Font = Enum.Font.GothamBold,
+    Text = "Exit",
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    TextSize = 13,
+    BackgroundColor3 = Color3.fromRGB(210, 60, 60),
+    BorderSizePixel = 0,
+    ZIndex = 51,
+    Position = UDim2.new(0.5, 6, 1, -44),
+    Size = UDim2.new(0.5, -18, 0, 32),
+    Name = "ExitButton"
+  }, ExitConfirm)
+  Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, ExitButton)
+
+  local function ShowExitConfirm()
+    ExitConfirmBackdrop.Visible = true
+    ExitConfirm.Visible = true
+    ExitConfirm.Size = UDim2.new(0, 0, 0, 0)
+    TweenService:Create(ExitConfirm, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+      Size = UDim2.new(0, 230, 0, 105)
+    }):Play()
+  end
+
+  local function HideExitConfirm()
+    TweenService:Create(ExitConfirm, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+      Size = UDim2.new(0, 0, 0, 0)
+    }):Play()
+    task.wait(0.15)
+    ExitConfirm.Visible = false
+    ExitConfirmBackdrop.Visible = false
+  end
+
+  CancelButton.Activated:Connect(function()
+    CircleClick(CancelButton, Player:GetMouse().X, Player:GetMouse().Y)
+    HideExitConfirm()
+  end)
+
+  ExitButton.Activated:Connect(function()
+    CircleClick(ExitButton, Player:GetMouse().X, Player:GetMouse().Y)
+    HideExitConfirm()
+    if MugiHubGui then MugiHubGui:Destroy() end
+    if not MugiHub_Library.Unloaded then MugiHub_Library.Unloaded = true end
+  end)
+
   Close.Activated:Connect(function()
 		CircleClick(Close, Player:GetMouse().X, Player:GetMouse().Y)
-    if MugiHubGui then MugiHubGui:Destroy() end
-		if not MugiHub_Library.Unloaded then MugiHub_Library.Unloaded = true end
+    ShowExitConfirm()
 	end)
 
   DropShadowHolder.Size = UDim2.new(0, 115 + TextLabel.TextBounds.X + 1 + TextLabel1.TextBounds.X, 0, 310)
@@ -2031,7 +2143,6 @@ function MugiHub_Library:CreateWindow(Config)
         Custom:Create("UICorner", {
           CornerRadius = UDim.new(0, 2),
         }, SliderInput)
-        Custom:AddGradient(SliderInput, 90)
 
          
 				local TextBox = Custom:Create("TextBox", {
@@ -2085,11 +2196,10 @@ function MugiHub_Library:CreateWindow(Config)
 				}, SliderDraggable)
 
         Custom:Create("UICorner", {}, SliderCircle)
-        Custom:AddGradient(SliderCircle)
 
-        Custom:AddGradient(Custom:Create("UIStroke", {
+        Custom:Create("UIStroke", {
           Color = Custom.ColorRGB,
-        }, SliderCircle))
+        }, SliderCircle)
 
         local Dragging = false
 
@@ -2801,7 +2911,6 @@ function MugiHub_Library:CreateWindow(Config)
             Name = "BadgeIcon"
           }, Badge)
           Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, BadgeIcon)
-          Custom:AddGradient(BadgeIcon)
 
           local BadgeLabel = Custom:Create("TextLabel", {
             Font = Enum.Font.GothamBold,
@@ -2868,12 +2977,12 @@ function MugiHub_Library:CreateWindow(Config)
           Position = UDim2.new(0, 10, 0, 0),
           Size = UDim2.new(1, -40, 0, 30)
         }, ReadMe)
-        Custom:AddGradient(ReadMeTitle)
 
         local Chevron
         if IsAccordion then
           Chevron = Custom:Create("ImageLabel", {
             Image = "rbxassetid://125609963478878",
+            ImageColor3 = Custom.ColorRGB,
             AnchorPoint = Vector2.new(1, 0.5),
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
@@ -2882,7 +2991,6 @@ function MugiHub_Library:CreateWindow(Config)
             Size = UDim2.new(0, 12, 0, 12),
             Name = "Chevron"
           }, ReadMe)
-          Custom:AddGradient(Chevron)
         end
 
         local ReadMeContent = Custom:Create("TextLabel", {

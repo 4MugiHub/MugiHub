@@ -369,7 +369,7 @@ function MugiHub_Library:CreateWindow(Config)
   local TabWidth = Config[3] or Config["Tab Width"] or 105
   local SizeUi = Config[4] or Config.SizeUi or UDim2.fromOffset(480, 275)
   local Keybind = Config[5] or Config.Keybind or Enum.KeyCode.RightControl
-  local Icon = Config[6] or Config.Icon or ""
+  local Icon = Config[6] or Config.Icon or "rbxassetid://135368942844516" -- default icon resmi MugiHub
 
   local Funcs = {}
 
@@ -410,6 +410,7 @@ function MugiHub_Library:CreateWindow(Config)
     BackgroundTransparency = 0.1,
     BorderColor3 = Color3.fromRGB(0, 0, 0),
     BorderSizePixel = 0,
+    ClipsDescendants = true,
     Position = UDim2.new(0.5, 0, 0.5, 0),
     Size = SizeUi,
     Name = "Main"
@@ -696,24 +697,55 @@ function MugiHub_Library:CreateWindow(Config)
     PaddingLeft = UDim.new(0, 24)
   }, SearchBox)
 
-  -- /// Icon Search — pakai asset image (id 76489185326992), tint abu-abu, nyala pink saat fokus
-  local SearchIcon = Custom:Create("ImageLabel", {
-    Image = "rbxassetid://76489185326992",
-    ImageColor3 = Color3.fromRGB(150, 150, 150),
+  -- /// Icon Search — vector shape (lingkaran + gagang), TERBUKTI selalu render, tidak bergantung asset ID luar
+  local SearchIcon = Custom:Create("Frame", {
     AnchorPoint = Vector2.new(0, 0.5),
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 7, 0.5, 0),
-    Size = UDim2.new(0, 13, 0, 13),
+    Size = UDim2.new(0, 11, 0, 11),
     ZIndex = 2,
     Name = "SearchIcon"
   }, SearchBox)
 
+  local SearchIconLens = Custom:Create("Frame", {
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Position = UDim2.new(0, 0, 0, 0),
+    Size = UDim2.new(0, 8, 0, 8),
+    Name = "Lens"
+  }, SearchIcon)
+
+  Custom:Create("UICorner", {
+    CornerRadius = UDim.new(1, 0)
+  }, SearchIconLens)
+
+  Custom:Create("UIStroke", {
+    Color = Color3.fromRGB(150, 150, 150),
+    Thickness = 1.4,
+  }, SearchIconLens)
+
+  local SearchIconHandle = Custom:Create("Frame", {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    BackgroundColor3 = Color3.fromRGB(150, 150, 150),
+    BorderSizePixel = 0,
+    Rotation = 45,
+    Position = UDim2.new(0, 9, 0, 9),
+    Size = UDim2.new(0, 1.6, 0, 5),
+    Name = "Handle"
+  }, SearchIcon)
+
+  Custom:Create("UICorner", {
+    CornerRadius = UDim.new(1, 0)
+  }, SearchIconHandle)
+
   SearchBox.Focused:Connect(function()
-    TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Custom.ColorRGB}):Play()
+    TweenService:Create(SearchIconLens.UIStroke, TweenInfo.new(0.15), {Color = Custom.ColorRGB}):Play()
+    TweenService:Create(SearchIconHandle, TweenInfo.new(0.15), {BackgroundColor3 = Custom.ColorRGB}):Play()
   end)
   SearchBox.FocusLost:Connect(function()
-    TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+    TweenService:Create(SearchIconLens.UIStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(150, 150, 150)}):Play()
+    TweenService:Create(SearchIconHandle, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(150, 150, 150)}):Play()
   end)
 
   Custom:Create("Frame", {
@@ -863,7 +895,8 @@ function MugiHub_Library:CreateWindow(Config)
 
   -- /// Search Popup (hasil pencarian menyatu dengan gaya baris Tab, bukan kartu terpisah)
   local SearchPopup = Custom:Create("Frame", {
-    BackgroundTransparency = 1,
+    BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+    BackgroundTransparency = 0.02,
     BorderSizePixel = 0,
     ClipsDescendants = true,
     Position = UDim2.new(0, 0, 0, 30),
@@ -873,8 +906,18 @@ function MugiHub_Library:CreateWindow(Config)
     Name = "SearchPopup"
   }, LayersTab)
 
+  Custom:Create("UICorner", {
+    CornerRadius = UDim.new(0, 4)
+  }, SearchPopup)
+
+  Custom:Create("UIStroke", {
+    Color = Color3.fromRGB(60, 60, 60),
+    Thickness = 1,
+    Transparency = 0.3
+  }, SearchPopup)
+
   local SearchPopupList = Custom:Create("UIListLayout", {
-    Padding = UDim.new(0, 3),
+    Padding = UDim.new(0, 0),
     SortOrder = Enum.SortOrder.LayoutOrder
   }, SearchPopup)
 
@@ -942,6 +985,7 @@ function MugiHub_Library:CreateWindow(Config)
   local function HideSearchPopup()
     SearchPopup.Visible = false
     SearchPopup.Size = UDim2.new(1, 0, 0, 0)
+    ScrollTab.Visible = true
     ClearSearchPopup()
   end
 
@@ -960,22 +1004,31 @@ function MugiHub_Library:CreateWindow(Config)
 
     if #Matches == 0 then return end
 
+    ScrollTab.Visible = false
+
     for i, Entry in ipairs(Matches) do
       local ResultRow = Custom:Create("TextButton", {
         Font = Enum.Font.SourceSans,
         Text = "",
         AutoButtonColor = false,
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BackgroundTransparency = 0.92,
+        BackgroundTransparency = 1,
         BorderSizePixel = 0,
         LayoutOrder = i,
         Size = UDim2.new(1, 0, 0, 38),
         Name = "ResultRow"
       }, SearchPopup)
 
-      Custom:Create("UICorner", {
-        CornerRadius = UDim.new(0, 4)
-      }, ResultRow)
+      if i < #Matches then
+        Custom:Create("Frame", {
+          AnchorPoint = Vector2.new(0, 1),
+          BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+          BorderSizePixel = 0,
+          Position = UDim2.new(0, 8, 1, 0),
+          Size = UDim2.new(1, -16, 0, 1),
+          Name = "Divider"
+        }, ResultRow)
+      end
 
       local ResultAccent = Custom:Create("Frame", {
         BackgroundColor3 = Custom.ColorRGB,
@@ -1014,6 +1067,22 @@ function MugiHub_Library:CreateWindow(Config)
         Name = "ResultSubtitle"
       }, ResultRow)
 
+      local RowHighlight = Custom:Create("Frame", {
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = ResultRow.ZIndex - 1,
+        Name = "RowHighlight"
+      }, ResultRow)
+
+      ResultRow.MouseEnter:Connect(function()
+        TweenService:Create(RowHighlight, TweenInfo.new(0.12), {BackgroundTransparency = 0.94}):Play()
+      end)
+      ResultRow.MouseLeave:Connect(function()
+        TweenService:Create(RowHighlight, TweenInfo.new(0.12), {BackgroundTransparency = 1}):Play()
+      end)
+
       ResultRow.Activated:Connect(function()
         SearchBox.Text = ""
         HideSearchPopup()
@@ -1031,7 +1100,7 @@ function MugiHub_Library:CreateWindow(Config)
       end)
     end
 
-    SearchPopup.Size = UDim2.new(1, 0, 0, math.min(#Matches * 36, 220))
+    SearchPopup.Size = UDim2.new(1, 0, 0, math.min(#Matches * 38, 220))
     SearchPopup.Visible = true
   end
 
@@ -1051,51 +1120,86 @@ function MugiHub_Library:CreateWindow(Config)
 		if Open_Close.Visible then Open_Close.Visible = false end
 	end)
 
-  -- /// Popup Konfirmasi Exit (muncul saat tombol Close/X ditekan)
-  local ExitConfirmBackdrop = Custom:Create("Frame", {
+  -- /// Popup Konfirmasi Exit (muncul saat tombol Close/X ditekan) — TANPA backdrop hitam transparan
+  local ExitShadow = Custom:Create("Frame", {
+    AnchorPoint = Vector2.new(0.5, 0.5),
     BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-    BackgroundTransparency = 0.5,
+    BackgroundTransparency = 0.55,
     BorderSizePixel = 0,
-    Size = UDim2.new(1, 0, 1, 0),
+    Position = UDim2.new(0.5, 0, 0.5, 5),
+    Size = UDim2.new(0, 240, 0, 150),
     Visible = false,
     ZIndex = 49,
-    Name = "ExitConfirmBackdrop"
+    Name = "ExitShadow"
   }, MugiHubGui)
+  Custom:Create("UICorner", {CornerRadius = UDim.new(0, 12)}, ExitShadow)
 
   local ExitConfirm = Custom:Create("Frame", {
     AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+    BackgroundColor3 = Color3.fromRGB(24, 24, 24),
     BorderSizePixel = 0,
     Position = UDim2.new(0.5, 0, 0.5, 0),
-    Size = UDim2.new(0, 230, 0, 105),
+    Size = UDim2.new(0, 240, 0, 150),
     Visible = false,
     ZIndex = 50,
     Name = "ExitConfirm"
   }, MugiHubGui)
 
   Custom:Create("UICorner", {
-    CornerRadius = UDim.new(0, 8)
+    CornerRadius = UDim.new(0, 10)
   }, ExitConfirm)
 
   Custom:AddGradient(Custom:Create("UIStroke", {
     Color = Custom.ColorRGB,
-    Thickness = 1,
-    Transparency = 0.5
+    Thickness = 1.2,
+    Transparency = 0.35
   }, ExitConfirm))
+
+  -- Badge ikon "!" di atas, biar nggak polos
+  local ExitIconBadge = Custom:Create("Frame", {
+    AnchorPoint = Vector2.new(0.5, 0),
+    BackgroundColor3 = Custom.ColorRGB,
+    BorderSizePixel = 0,
+    Position = UDim2.new(0.5, 0, 0, 16),
+    Size = UDim2.new(0, 32, 0, 32),
+    ZIndex = 51,
+    Name = "ExitIconBadge"
+  }, ExitConfirm)
+  Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, ExitIconBadge)
+
+  Custom:Create("TextLabel", {
+    Font = Enum.Font.GothamBold,
+    Text = "!",
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    TextSize = 18,
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 1, 0),
+    ZIndex = 52,
+    Name = "ExitIconMark"
+  }, ExitIconBadge)
 
   Custom:Create("TextLabel", {
     Font = Enum.Font.GothamBold,
     Text = "Are you sure you want to exit windows?",
-    TextColor3 = Color3.fromRGB(225, 225, 225),
+    TextColor3 = Color3.fromRGB(230, 230, 230),
     TextSize = 13,
     TextWrapped = true,
     TextXAlignment = Enum.TextXAlignment.Center,
-    TextYAlignment = Enum.TextYAlignment.Center,
+    TextYAlignment = Enum.TextYAlignment.Top,
     BackgroundTransparency = 1,
     ZIndex = 51,
-    Position = UDim2.new(0, 12, 0, 12),
-    Size = UDim2.new(1, -24, 0, 45),
+    Position = UDim2.new(0, 16, 0, 58),
+    Size = UDim2.new(1, -32, 0, 34),
     Name = "ExitText"
+  }, ExitConfirm)
+
+  Custom:Create("Frame", {
+    BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+    BorderSizePixel = 0,
+    Position = UDim2.new(0, 16, 0, 100),
+    Size = UDim2.new(1, -32, 0, 1),
+    ZIndex = 51,
+    Name = "ExitDivider"
   }, ExitConfirm)
 
   local CancelButton = Custom:Create("TextButton", {
@@ -1103,14 +1207,15 @@ function MugiHub_Library:CreateWindow(Config)
     Text = "Cancel",
     TextColor3 = Color3.fromRGB(225, 225, 225),
     TextSize = 13,
-    BackgroundColor3 = Color3.fromRGB(65, 65, 65),
+    BackgroundColor3 = Color3.fromRGB(55, 55, 55),
     BorderSizePixel = 0,
     ZIndex = 51,
-    Position = UDim2.new(0, 12, 1, -44),
-    Size = UDim2.new(0.5, -18, 0, 32),
+    Position = UDim2.new(0, 16, 0, 112),
+    Size = UDim2.new(0.5, -20, 0, 32),
     Name = "CancelButton"
   }, ExitConfirm)
   Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, CancelButton)
+  Custom:Create("UIStroke", {Color = Color3.fromRGB(80, 80, 80), Thickness = 1, Transparency = 0.5}, CancelButton)
 
   local ExitButton = Custom:Create("TextButton", {
     Font = Enum.Font.GothamBold,
@@ -1120,28 +1225,35 @@ function MugiHub_Library:CreateWindow(Config)
     BackgroundColor3 = Color3.fromRGB(210, 60, 60),
     BorderSizePixel = 0,
     ZIndex = 51,
-    Position = UDim2.new(0.5, 6, 1, -44),
-    Size = UDim2.new(0.5, -18, 0, 32),
+    Position = UDim2.new(0.5, 4, 0, 112),
+    Size = UDim2.new(0.5, -20, 0, 32),
     Name = "ExitButton"
   }, ExitConfirm)
   Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, ExitButton)
 
   local function ShowExitConfirm()
-    ExitConfirmBackdrop.Visible = true
+    ExitShadow.Visible = true
     ExitConfirm.Visible = true
+    ExitShadow.Size = UDim2.new(0, 0, 0, 0)
     ExitConfirm.Size = UDim2.new(0, 0, 0, 0)
+    TweenService:Create(ExitShadow, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+      Size = UDim2.new(0, 240, 0, 150)
+    }):Play()
     TweenService:Create(ExitConfirm, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-      Size = UDim2.new(0, 230, 0, 105)
+      Size = UDim2.new(0, 240, 0, 150)
     }):Play()
   end
 
   local function HideExitConfirm()
+    TweenService:Create(ExitShadow, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+      Size = UDim2.new(0, 0, 0, 0)
+    }):Play()
     TweenService:Create(ExitConfirm, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
       Size = UDim2.new(0, 0, 0, 0)
     }):Play()
     task.wait(0.15)
     ExitConfirm.Visible = false
-    ExitConfirmBackdrop.Visible = false
+    ExitShadow.Visible = false
   end
 
   CancelButton.Activated:Connect(function()
@@ -1403,7 +1515,11 @@ function MugiHub_Library:CreateWindow(Config)
         end
   
         local _TabT = TweenService:Create(Tab, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {BackgroundTransparency = 0.92})
-        local _FTween = TweenService:Create(FrameChoose, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { Position = UDim2.new(0, 2, 0, 9 + (33 * Tab.LayoutOrder)) })
+
+        -- Hitung posisi target dari posisi ASLI (AbsolutePosition) relatif ke parent FrameChoose,
+        -- bukan dari rumus hardcoded — supaya presisi pixel-perfect di semua tab, bukan cuma yang pertama.
+        local TargetY = (Tab.AbsolutePosition.Y - FrameChoose.Parent.AbsolutePosition.Y) + 9
+        local _FTween = TweenService:Create(FrameChoose, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { Position = UDim2.new(0, 2, 0, TargetY) })
 
         _TabT:Play()
         _FTween:Play()

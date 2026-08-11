@@ -178,7 +178,7 @@ Creates and returns the main window. This is always the first function you call.
 | `["Tab Width"]` | `number` | `105` | Width in pixels of the left sidebar |
 | `SizeUi` | `UDim2` | `480x275` | Overall window size |
 | `Keybind` | `Enum.KeyCode` | `RightControl` | Key that toggles the whole UI visible/hidden |
-| `Icon` | `string` (rbxassetid) | `""` | Icon shown before the Title — rendered **with no color tint**, at avatar-thumbnail size |
+| `Icon` | `string` (rbxassetid) | `"rbxassetid://135368942844516"` | Icon shown before the Title — rendered **with no color tint**, at avatar-thumbnail size. Set to `""` to hide it entirely |
 | `Tags` | `table<string>` | `{}` | Initial list of static tags |
 
 **Returns:** `Window` — a table containing `:CreateTab()`, `:SetTitle()`, `:SetDescription()`, and `.Tags`.

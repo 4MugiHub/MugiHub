@@ -494,12 +494,24 @@ function MugiHub_Library:CreateWindow(Config)
   }, Top)
 
   -- /// Tags (pill label) — bisa ditambah & diedit lewat Funcs.Tags
+  -- Diposisikan dari KANAN, menempel dekat tombol Minimize (bukan dari kiri dgn celah kosong)
+  local Close, Min -- forward-declare, diisi di bawah — dipakai RelayoutTags utk anchor kanan
   local TagsFuncs = {}
-  local TagOffsetX = TextLabel1.Position.X.Offset + TextLabel1.TextBounds.X + 12
   local TagList = {}
+  local MAX_TAGS = 4
 
   local function RelayoutTags()
-    local OffsetX = TextLabel1.Position.X.Offset + TextLabel1.TextBounds.X + 12
+    local TotalWidth = 0
+    for i, TagData in ipairs(TagList) do
+      TotalWidth = TotalWidth + TagData.Frame.Size.X.Offset
+      if i < #TagList then TotalWidth = TotalWidth + 6 end
+    end
+
+    local DescEndX = TextLabel1.Position.X.Offset + TextLabel1.TextBounds.X + 12
+    local MinLeftX = Min and ((Min.AbsolutePosition.X - Top.AbsolutePosition.X) - 10) or (DescEndX + TotalWidth)
+    local StartX = math.max(DescEndX, MinLeftX - TotalWidth)
+
+    local OffsetX = StartX
     for _, TagData in ipairs(TagList) do
       TagData.Frame.Position = UDim2.new(0, OffsetX, 0.5, 0)
       OffsetX = OffsetX + TagData.Frame.Size.X.Offset + 6
@@ -507,13 +519,18 @@ function MugiHub_Library:CreateWindow(Config)
   end
 
   function TagsFuncs:Add(Text)
+    if #TagList >= MAX_TAGS then
+      warn("[MugiHub] Maksimal " .. MAX_TAGS .. " tag — tag baru diabaikan: " .. tostring(Text))
+      return {Frame = nil, Set = function() end, Remove = function() end}
+    end
+
     Text = Text or "Tag"
     local TagFrame = Custom:Create("Frame", {
       AnchorPoint = Vector2.new(0, 0.5),
       BackgroundColor3 = Color3.fromRGB(255, 255, 255),
       BackgroundTransparency = 0.9,
       BorderSizePixel = 0,
-      Position = UDim2.new(0, TagOffsetX, 0.5, 0),
+      Position = UDim2.new(0, 0, 0.5, 0),
       Size = UDim2.new(0, 10, 0, 20),
       Name = "Tag"
     }, Top)
@@ -544,8 +561,16 @@ function MugiHub_Library:CreateWindow(Config)
     local TagItemFuncs = {Frame = TagFrame}
     function TagItemFuncs:Set(NewText)
       TagLabel.Text = NewText
-      TagFrame.Size = UDim2.new(0, TagLabel.TextBounds.X + 16, 0, 20)
-      RelayoutTags()
+
+      -- Resize langsung (estimasi cepat) LALU resize ulang 1 frame kemudian —
+      -- TextBounds kadang belum ke-update di frame yang sama saat Text baru diganti,
+      -- jadi background bisa lebih pendek dari teksnya kalau cuma dihitung sekali.
+      local function Resize()
+        TagFrame.Size = UDim2.new(0, TagLabel.TextBounds.X + 16, 0, 20)
+        RelayoutTags()
+      end
+      Resize()
+      task.defer(Resize)
     end
     function TagItemFuncs:Remove()
       for i, v in ipairs(TagList) do
@@ -599,12 +624,6 @@ function MugiHub_Library:CreateWindow(Config)
     end, RefreshInterval)
   end
 
-  if Config.Tags or Config[7] then
-    for _, TagText in ipairs(Config.Tags or Config[7]) do
-      TagsFuncs:Add(TagText)
-    end
-  end
-
   Funcs.Tags = TagsFuncs
 
   function Funcs:SetTitle(NewTitle)
@@ -619,7 +638,7 @@ function MugiHub_Library:CreateWindow(Config)
     RelayoutTags()
   end
 
-  local Close = Custom:Create("TextButton", {
+  Close = Custom:Create("TextButton", {
     Font = Enum.Font.GothamBold,
     Text = "X",
     TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -638,7 +657,7 @@ function MugiHub_Library:CreateWindow(Config)
     CornerRadius = UDim.new(0, 5)
   }, Close)
 
-  local Min = Custom:Create("TextButton", {
+  Min = Custom:Create("TextButton", {
     Font = Enum.Font.GothamBold,
     Text = "—", 
     TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -657,6 +676,13 @@ function MugiHub_Library:CreateWindow(Config)
     CornerRadius = UDim.new(0, 5)
   }, Min)
 
+  -- Tambahkan tag awal SETELAH Min dibuat, supaya RelayoutTags bisa langsung anchor ke posisi Min yang benar
+  if Config.Tags or Config[7] then
+    for _, TagText in ipairs(Config.Tags or Config[7]) do
+      TagsFuncs:Add(TagText)
+    end
+  end
+
   local LayersTab = Custom:Create("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 0.9990000128746033,
@@ -671,31 +697,20 @@ function MugiHub_Library:CreateWindow(Config)
     CornerRadius = UDim.new(0, 2)
   }, LayersTab)
 
-  -- /// Search Box
-  local SearchBox = Custom:Create("TextBox", {
-    Font = Enum.Font.GothamBold,
-    PlaceholderText = "Search...",
-    PlaceholderColor3 = Color3.fromRGB(120, 120, 120),
-    Text = "",
-    TextColor3 = Color3.fromRGB(230, 230, 230),
-    TextSize = 12,
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ClearTextOnFocus = false,
+  -- /// Search Box — container terpisah dari TextBox, supaya icon & teks TIDAK PERNAH bertabrakan
+  -- (sebelumnya pakai UIPadding yang kadang tidak konsisten menggeser teks TextBox)
+  local SearchBoxContainer = Custom:Create("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 0.92,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 0, 0, 0),
     Size = UDim2.new(1, 0, 0, 24),
-    Name = "SearchBox"
+    Name = "SearchBoxContainer"
   }, LayersTab)
 
   Custom:Create("UICorner", {
     CornerRadius = UDim.new(0, 4)
-  }, SearchBox)
-
-  Custom:Create("UIPadding", {
-    PaddingLeft = UDim.new(0, 24)
-  }, SearchBox)
+  }, SearchBoxContainer)
 
   -- /// Icon Search — vector shape (lingkaran + gagang), TERBUKTI selalu render, tidak bergantung asset ID luar
   local SearchIcon = Custom:Create("Frame", {
@@ -706,7 +721,7 @@ function MugiHub_Library:CreateWindow(Config)
     Size = UDim2.new(0, 11, 0, 11),
     ZIndex = 2,
     Name = "SearchIcon"
-  }, SearchBox)
+  }, SearchBoxContainer)
 
   local SearchIconLens = Custom:Create("Frame", {
     BackgroundTransparency = 1,
@@ -738,6 +753,24 @@ function MugiHub_Library:CreateWindow(Config)
   Custom:Create("UICorner", {
     CornerRadius = UDim.new(1, 0)
   }, SearchIconHandle)
+
+  -- TextBox transparan, dimulai TEPAT setelah icon (Position eksplisit, bukan lewat padding)
+  local SearchBox = Custom:Create("TextBox", {
+    Font = Enum.Font.GothamBold,
+    PlaceholderText = "Search...",
+    PlaceholderColor3 = Color3.fromRGB(120, 120, 120),
+    Text = "",
+    TextColor3 = Color3.fromRGB(230, 230, 230),
+    TextSize = 12,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ClearTextOnFocus = false,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ZIndex = 2,
+    Position = UDim2.new(0, 24, 0, 0),
+    Size = UDim2.new(1, -30, 1, 0),
+    Name = "SearchBox"
+  }, SearchBoxContainer)
 
   SearchBox.Focused:Connect(function()
     TweenService:Create(SearchIconLens.UIStroke, TweenInfo.new(0.15), {Color = Custom.ColorRGB}):Play()
@@ -2327,12 +2360,23 @@ function MugiHub_Library:CreateWindow(Config)
           return Result
         end
         
-        function Funcs_Slider:Set(Value)
+        -- Animate=false dipakai SAAT DRAG (langsung, tanpa tween) biar smooth di mobile —
+        -- bikin Tween baru di SETIAP pixel gerakan jari itu berat & bikin patah-patah.
+        -- Animate=true dipakai untuk update terprogram (Set manual, submit dari TextBox, dsb).
+        function Funcs_Slider:Set(Value, Animate)
           Value = math.clamp(Round(Value, Increment), Min, Max)
           Funcs_Slider.Value = Value
-          TextBox.Text = tostring(Value)
-            
-          TweenService:Create(SliderDraggable, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.fromScale((Value - Min) / (Max - Min), 1) }):Play()
+
+          if TextBox.Text ~= tostring(Value) then
+            TextBox.Text = tostring(Value)
+          end
+
+          local TargetSize = UDim2.fromScale((Value - Min) / (Max - Min), 1)
+          if Animate then
+            TweenService:Create(SliderDraggable, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = TargetSize }):Play()
+          else
+            SliderDraggable.Size = TargetSize
+          end
         end
         
         SliderFrame.InputBegan:Connect(function(Input)
@@ -2350,13 +2394,13 @@ function MugiHub_Library:CreateWindow(Config)
       
         local _LastX = nil
         UserInputService.InputChanged:Connect(function(Input)
-          if Dragging then
+          if Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
             local CurrPosX = Input.Position.X
             if CurrPosX ~= _LastX then
               _LastX = CurrPosX
       
               local SizeScale = math.clamp((CurrPosX - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
-              Funcs_Slider:Set(Min + ((Max - Min) * SizeScale))
+              Funcs_Slider:Set(Min + ((Max - Min) * SizeScale), false)
             end
           end
         end)
@@ -2365,7 +2409,9 @@ function MugiHub_Library:CreateWindow(Config)
           local Valid = TextBox.Text:gsub("[^%d]", "")
           if Valid ~= "" then
             local ValidNumber = math.min(tonumber(Valid), Max)
-            TextBox.Text = tostring(ValidNumber)
+            if TextBox.Text ~= tostring(ValidNumber) then
+              TextBox.Text = tostring(ValidNumber)
+            end
           else
             TextBox.Text = "0"
           end
@@ -2373,15 +2419,15 @@ function MugiHub_Library:CreateWindow(Config)
         
         TextBox.FocusLost:Connect(function()
           if TextBox.Text ~= "" then
-            Funcs_Slider:Set(tonumber(TextBox.Text))
+            Funcs_Slider:Set(tonumber(TextBox.Text), true)
             Callback(Funcs_Slider.Value)
           else
-            Funcs_Slider:Set(0)
+            Funcs_Slider:Set(0, true)
             Callback(Funcs_Slider.Value)
           end
         end)
         
-        Funcs_Slider:Set(tonumber(Default))
+        Funcs_Slider:Set(tonumber(Default), true)
         Callback(Funcs_Slider.Value)
 
         RegisterSearch(Title, Slider, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
@@ -2993,6 +3039,150 @@ function MugiHub_Library:CreateWindow(Config)
 
         ItemCount += 1
         return Funcs_Keybind
+      end
+
+      -- /// Social / Support Link — dengan tombol Copy (setclipboard), auto revert ke "Copy" setelah 3 detik
+      function Item:AddSocial(Config)
+        local PlatformIcon = Config[1] or Config.Icon or ""
+        local Title = Config[2] or Config.Title or ""
+        local Code = Config[3] or Config.Code or ""
+        local Funcs_Social = {}
+
+        local Social = Custom:Create("Frame", {
+          Name = "Social",
+          BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+          BackgroundTransparency = 0.935,
+          BorderSizePixel = 0,
+          LayoutOrder = ItemCount,
+          Size = UDim2.new(1, 0, 0, 40)
+        }, SectionAdd)
+
+        Custom:Create("UICorner", {CornerRadius = UDim.new(0, 4)}, Social)
+
+        local IconGap = 0
+        if PlatformIcon ~= "" then
+          IconGap = 26
+          Custom:Create("ImageLabel", {
+            Image = PlatformIcon,
+            BackgroundTransparency = 1,
+            AnchorPoint = Vector2.new(0, 0.5),
+            Position = UDim2.new(0, 10, 0.5, 0),
+            Size = UDim2.new(0, 20, 0, 20),
+            Name = "PlatformIcon"
+          }, Social)
+        end
+
+        Custom:Create("TextLabel", {
+          Font = Enum.Font.GothamBold,
+          Text = Title,
+          TextColor3 = Color3.fromRGB(230, 230, 230),
+          TextSize = 13,
+          TextXAlignment = Enum.TextXAlignment.Left,
+          BackgroundTransparency = 1,
+          AnchorPoint = Vector2.new(0, 0.5),
+          Position = UDim2.new(0, 10 + IconGap, 0.5, 0),
+          Size = UDim2.new(1, -(94 + IconGap), 0, 18),
+          Name = "SocialTitle"
+        }, Social)
+
+        -- /// Tombol Copy (kanan) — icon vector ala lucide "copy" (2 kotak rounded overlap)
+        local CopyButton = Custom:Create("TextButton", {
+          Font = Enum.Font.SourceSans,
+          Text = "",
+          AutoButtonColor = false,
+          BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+          BackgroundTransparency = 0.9,
+          BorderSizePixel = 0,
+          AnchorPoint = Vector2.new(1, 0.5),
+          Position = UDim2.new(1, -8, 0.5, 0),
+          Size = UDim2.new(0, 76, 0, 26),
+          Name = "CopyButton"
+        }, Social)
+        Custom:Create("UICorner", {CornerRadius = UDim.new(0, 5)}, CopyButton)
+
+        local CopyIcon = Custom:Create("Frame", {
+          AnchorPoint = Vector2.new(0, 0.5),
+          BackgroundTransparency = 1,
+          Position = UDim2.new(0, 8, 0.5, 0),
+          Size = UDim2.new(0, 12, 0, 12),
+          Name = "CopyIcon"
+        }, CopyButton)
+
+        local CopyBack = Custom:Create("Frame", {
+          BackgroundTransparency = 1,
+          Position = UDim2.new(0, 0, 0, 0),
+          Size = UDim2.new(0, 8, 0, 8),
+          Name = "Back"
+        }, CopyIcon)
+        Custom:Create("UICorner", {CornerRadius = UDim.new(0, 2)}, CopyBack)
+        local CopyBackStroke = Custom:Create("UIStroke", {
+          Color = Color3.fromRGB(200, 200, 200),
+          Thickness = 1.3
+        }, CopyBack)
+
+        local CopyFront = Custom:Create("Frame", {
+          BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+          BackgroundTransparency = 0,
+          Position = UDim2.new(0, 4, 0, 4),
+          Size = UDim2.new(0, 8, 0, 8),
+          Name = "Front"
+        }, CopyIcon)
+        Custom:Create("UICorner", {CornerRadius = UDim.new(0, 2)}, CopyFront)
+        local CopyFrontStroke = Custom:Create("UIStroke", {
+          Color = Color3.fromRGB(200, 200, 200),
+          Thickness = 1.3
+        }, CopyFront)
+
+        local CopyLabel = Custom:Create("TextLabel", {
+          Font = Enum.Font.GothamBold,
+          Text = "Copy",
+          TextColor3 = Color3.fromRGB(220, 220, 220),
+          TextSize = 12,
+          TextXAlignment = Enum.TextXAlignment.Left,
+          BackgroundTransparency = 1,
+          Position = UDim2.new(0, 24, 0, 0),
+          Size = UDim2.new(1, -28, 1, 0),
+          Name = "CopyLabel"
+        }, CopyButton)
+
+        local ClickGen = 0
+        CopyButton.Activated:Connect(function()
+          CircleClick(CopyButton, Player:GetMouse().X, Player:GetMouse().Y)
+
+          pcall(function()
+            if setclipboard then setclipboard(Code) end
+          end)
+
+          ClickGen += 1
+          local ThisGen = ClickGen
+
+          CopyLabel.Text = "Copied"
+          TweenService:Create(CopyBackStroke, TweenInfo.new(0.12), {Transparency = 1}):Play()
+          TweenService:Create(CopyFrontStroke, TweenInfo.new(0.12), {Transparency = 1}):Play()
+
+          task.delay(0.15, function()
+            if ThisGen == ClickGen then
+              TweenService:Create(CopyBackStroke, TweenInfo.new(0.12), {Transparency = 0}):Play()
+              TweenService:Create(CopyFrontStroke, TweenInfo.new(0.12), {Transparency = 0}):Play()
+            end
+          end)
+
+          -- Balik ke "Copy" otomatis setelah 3 detik (kecuali sudah di-klik ulang duluan)
+          task.delay(3, function()
+            if ThisGen == ClickGen then
+              CopyLabel.Text = "Copy"
+            end
+          end)
+        end)
+
+        function Funcs_Social:SetCode(NewCode)
+          Code = NewCode
+        end
+
+        RegisterSearch(Title, Social, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
+
+        ItemCount += 1
+        return Funcs_Social
       end
 
       -- /// README / Deskripsi Konten

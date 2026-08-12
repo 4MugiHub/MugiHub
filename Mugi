@@ -2567,9 +2567,23 @@ function MugiHub_Library:CreateWindow(Config)
         local Title = Config[1] or Config.Title or ""
         local Content = Config[2] or Config.Content or ""
         local Multi = Config[3] or Config.Multi or false
-        local Options = Config[4] or Config.Options or {}
+        -- "Options" alias "List" (typo umum yang sering dipakai developer script)
+        local Options = Config[4] or Config.Options or Config.List or {}
         local Default = Config[5] or Config.Default or {}
         local Callback = Config[6] or Config.Callback or function() end
+
+        -- Defensif: kalau Default dikasih string tunggal (bukan table), bungkus otomatis
+        -- supaya tidak crash saat table.insert/table.concat/table.find dipanggil di bawah.
+        if type(Default) == "string" then
+          Default = {Default}
+        elseif type(Default) ~= "table" then
+          Default = {}
+        end
+
+        -- Defensif: Options juga wajib table
+        if type(Options) ~= "table" then
+          Options = {}
+        end
 
         local Funcs_Dropdown = {Value = Default, Options = Options}
 
@@ -2775,7 +2789,14 @@ function MugiHub_Library:CreateWindow(Config)
         end
         
         function Funcs_Dropdown:Set(Value)
-          Funcs_Dropdown.Value = Value or Funcs_Dropdown.Value
+          Value = Value or Funcs_Dropdown.Value
+          -- Defensif: kalau dikasih string tunggal, bungkus jadi table biar tidak crash di table.find/table.concat
+          if type(Value) == "string" then
+            Value = {Value}
+          elseif type(Value) ~= "table" then
+            Value = {}
+          end
+          Funcs_Dropdown.Value = Value
 
           for _, Drop in pairs(ScrollSelect:GetChildren()) do
             if Drop.Name ~= "UIListLayout" and Drop.Name ~= "SearchBar" then
@@ -2908,6 +2929,7 @@ function MugiHub_Library:CreateWindow(Config)
 
         function Funcs_Dropdown:Refresh(RefreshList, Selecting)
           RefreshList = RefreshList or {}
+          if type(RefreshList) ~= "table" then RefreshList = {} end
           Selecting = Selecting or {}
           
           Funcs_Dropdown:Clear()

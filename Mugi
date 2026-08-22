@@ -11,11 +11,9 @@ local Custom = {} do
 		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 153, 204)),
 		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
 	})
-	-- Gradient ungu -> pink untuk bar notifikasi
-	Custom.GradientPurplePink = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 82, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 153, 204))
-	})
+
+	-- Fallback icon jika Image kosong / "rbxassetid://0" (auto-generate thumbnail default)
+	Custom.DefaultIcon = "rbxassetid://135368942844516"
 
 	function Custom:Create(Name, Properties, Parent)
 		local inst = Instance.new(Name)
@@ -41,11 +39,12 @@ local Custom = {} do
 		}, inst)
 	end
 
-	function Custom:AddPurplePinkGradient(inst)
-		return Custom:Create("UIGradient", {
-			Color = Custom.GradientPurplePink,
-			Rotation = 0,
-		}, inst)
+	-- Resolve icon: kosong atau "rbxassetid://0" -> pakai DefaultIcon
+	function Custom:ResolveIcon(Icon)
+		if Icon == nil or Icon == "" or Icon == "rbxassetid://0" or Icon == "rbxassetid://" then
+			return Custom.DefaultIcon
+		end
+		return Icon
 	end
 end
 
@@ -197,6 +196,8 @@ end
 		Time = 0.25,                            -- durasi animasi slide (default 0.25)
 	})
 	Mengembalikan { Close = function }
+
+	Style: card abu-abu terang, tanpa stroke/line, bar pink solid.
 ]]
 function MugiHub_Library:SetNotification(Config)
 	EnsureNotifGui()
@@ -211,41 +212,43 @@ function MugiHub_Library:SetNotification(Config)
 	local BarTween = nil
 	local NotifFuncs = {}
 
-	-- Slot (UIListLayout yang atur posisi)
+	-- Ukur teks LEBIH DULU pakai TextService, supaya tidak ada frame kosong / bug teks hilang
+	local TextService = game:GetService("TextService")
+	local TextSize = TextService:GetTextSize(
+		Text,
+		13,
+		Enum.Font.GothamBold,
+		Vector2.new(1000, 100)
+	)
+	local CardW = math.max(TextSize.X + 28, 90)
+	local CardH = 36
+
+	-- Slot (UIListLayout yang atur posisi) — ukuran langsung final, tidak nunggu defer
 	local Slot = Custom:Create("Frame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = NotifCounter,
-		-- Lebar & tinggi di-set setelah teks diukur
-		Size = UDim2.new(0, 10, 0, 34),
+		Size = UDim2.new(0, CardW, 0, CardH),
 		Name = "NotifSlot"
 	}, NotifContainer)
 
-	-- Card utama
+	-- Card utama — abu-abu terang, TANPA stroke/line
 	local Card = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
-		BackgroundColor3 = Color3.fromRGB(18, 18, 22),
-		BackgroundTransparency = 0.08,
+		BackgroundColor3 = Color3.fromRGB(45, 45, 48),
+		BackgroundTransparency = 0.05,
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
-		-- Mulai dari kanan (slide in)
-		Position = UDim2.new(1, 320, 0, 0),
+		Position = UDim2.new(1, CardW + 20, 0, 0),
 		Size = UDim2.new(1, 0, 1, 0),
 		Name = "Card"
 	}, Slot)
 
-	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, Card)
+	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 8)}, Card)
 
-	-- Stroke tipis
-	local Stroke = Custom:Create("UIStroke", {
-		Color = Color3.fromRGB(140, 82, 255),
-		Thickness = 1,
-		Transparency = 0.55
-	}, Card)
-
-	-- Label teks — monospace bold, warna putih
-	local Label = Custom:Create("TextLabel", {
-		Font = Enum.Font.Code,
+	-- Label teks — bold, putih, teks langsung ada (tidak nunggu defer)
+	Custom:Create("TextLabel", {
+		Font = Enum.Font.GothamBold,
 		Text = Text,
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 13,
@@ -254,48 +257,36 @@ function MugiHub_Library:SetNotification(Config)
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 12, 0, 0),
-		Size = UDim2.new(1, -16, 1, -4),
+		Size = UDim2.new(1, -16, 1, -6),
 		Name = "Label"
 	}, Card)
 
-	-- Ukur lebar teks lalu set ukuran slot & card
-	-- (TextBounds valid setelah 1 frame render)
-	task.defer(function()
-		local TextW = Label.TextBounds.X
-		local CardW = math.max(TextW + 28, 80)
-		local CardH = 34
+	-- Bar countdown — pink solid (standar Mugi), rounded, di bawah card
+	local Bar = Custom:Create("Frame", {
+		AnchorPoint = Vector2.new(0, 1),
+		BackgroundColor3 = Custom.ColorRGB,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 0, 1, -2),
+		Size = UDim2.new(1, 0, 0, 3),
+		Name = "Bar"
+	}, Card)
+	Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, Bar)
 
-		Slot.Size = UDim2.new(0, CardW, 0, CardH)
-		Card.Size = UDim2.new(1, 0, 1, 0)
+	-- Slide in
+	TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Position = UDim2.new(1, 0, 0, 0)
+	}):Play()
 
-		-- Bar countdown — gradient ungu → pink, di bawah card
-		local Bar = Custom:Create("Frame", {
-			AnchorPoint = Vector2.new(0, 1),
-			BackgroundColor3 = Color3.fromRGB(140, 82, 255),
-			BorderSizePixel = 0,
-			Position = UDim2.new(0, 0, 1, 0),
-			Size = UDim2.new(1, 0, 0, 3),
-			Name = "Bar"
-		}, Card)
-		Custom:Create("UICorner", {CornerRadius = UDim.new(0, 2)}, Bar)
-		Custom:AddPurplePinkGradient(Bar)
-
-		-- Slide in
-		TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-			Position = UDim2.new(1, 0, 0, 0)
-		}):Play()
-
-		-- Bar shrink
-		task.spawn(function()
-			BarTween = TweenService:Create(Bar, TweenInfo.new(Delay, Enum.EasingStyle.Linear), {
-				Size = UDim2.new(0, 0, 0, 3)
-			})
-			BarTween:Play()
-			BarTween.Completed:Connect(function(State)
-				if State == Enum.PlaybackState.Completed and not Closed then
-					NotifFuncs:Close()
-				end
-			end)
+	-- Bar shrink
+	task.spawn(function()
+		BarTween = TweenService:Create(Bar, TweenInfo.new(Delay, Enum.EasingStyle.Linear), {
+			Size = UDim2.new(0, 0, 0, 3)
+		})
+		BarTween:Play()
+		BarTween.Completed:Connect(function(State)
+			if State == Enum.PlaybackState.Completed and not Closed then
+				NotifFuncs:Close()
+			end
 		end)
 	end)
 
@@ -305,7 +296,7 @@ function MugiHub_Library:SetNotification(Config)
 		if BarTween then pcall(function() BarTween:Cancel() end) end
 
 		local Out = TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-			Position = UDim2.new(1, 320, 0, 0)
+			Position = UDim2.new(1, CardW + 20, 0, 0)
 		})
 		Out:Play()
 		Out.Completed:Wait()
@@ -440,7 +431,7 @@ function MugiHub_Library:CreateWindow(Config)
 	local Close, Min
 	local TagsFuncs = {}
 	local TagList = {}
-	local MAX_TAGS = 4
+	local MAX_TAGS = 3 -- lebih dari 3 bisa menyebabkan error/overflow layout
 
 	local function RelayoutTags()
 		local TotalWidth = 0
@@ -911,80 +902,146 @@ function MugiHub_Library:CreateWindow(Config)
 		if Open_Close.Visible then Open_Close.Visible = false end
 	end)
 
-	-- Exit Confirm
-	local ExitShadow = Custom:Create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-		BackgroundTransparency = 0.55, BorderSizePixel = 0,
-		Position = UDim2.new(0.5, 0, 0.5, 5), Size = UDim2.new(0, 240, 0, 150),
-		Visible = false, ZIndex = 49, Name = "ExitShadow"
-	}, MugiHubGui)
-	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 12)}, ExitShadow)
+	-- /// Close Window Popup — DI DALAM Main (bukan di root ScreenGui), style flat sesuai referensi
+	-- Backdrop menutupi seluruh Main, popup di tengah, tanpa warna lain selain Putih-Pink standar Mugi
+	local ExitBackdrop = Custom:Create("Frame", {
+		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+		BackgroundTransparency = 0.45,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 1, 0),
+		Visible = false,
+		ZIndex = 49,
+		Name = "ExitBackdrop"
+	}, Main)
 
 	local ExitConfirm = Custom:Create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-		BorderSizePixel = 0, Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(0, 240, 0, 150), Visible = false, ZIndex = 50, Name = "ExitConfirm"
-	}, MugiHubGui)
-	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 10)}, ExitConfirm)
-	Custom:AddGradient(Custom:Create("UIStroke", {Color = Custom.ColorRGB, Thickness = 1.2, Transparency = 0.35}, ExitConfirm))
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		Size = UDim2.new(0, 260, 0, 118),
+		Visible = false,
+		ZIndex = 50,
+		Name = "ExitConfirm"
+	}, Main)
+	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 8)}, ExitConfirm)
 
-	local ExitIconBadge = Custom:Create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0), BackgroundColor3 = Custom.ColorRGB, BorderSizePixel = 0,
-		Position = UDim2.new(0.5, 0, 0, 16), Size = UDim2.new(0, 32, 0, 32), ZIndex = 51, Name = "ExitIconBadge"
-	}, ExitConfirm)
-	Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, ExitIconBadge)
-	Custom:Create("TextLabel", {
-		Font = Enum.Font.GothamBold, Text = "!", TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 18, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), ZIndex = 52
-	}, ExitIconBadge)
-	Custom:Create("TextLabel", {
-		Font = Enum.Font.GothamBold, Text = "Are you sure you want to exit windows?",
-		TextColor3 = Color3.fromRGB(230, 230, 230), TextSize = 13, TextWrapped = true,
-		TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Top,
-		BackgroundTransparency = 1, ZIndex = 51, Position = UDim2.new(0, 16, 0, 58), Size = UDim2.new(1, -32, 0, 34)
-	}, ExitConfirm)
-	Custom:Create("Frame", {
-		BackgroundColor3 = Color3.fromRGB(50, 50, 50), BorderSizePixel = 0,
-		Position = UDim2.new(0, 16, 0, 100), Size = UDim2.new(1, -32, 0, 1), ZIndex = 51
+	-- Header: Title (kiri) + X (kanan) — flat, tanpa aksen warna
+	local ExitHeader = Custom:Create("Frame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 34),
+		ZIndex = 51,
+		Name = "ExitHeader"
 	}, ExitConfirm)
 
+	Custom:Create("TextLabel", {
+		Font = Enum.Font.GothamBold,
+		Text = "Close Window",
+		TextColor3 = Color3.fromRGB(235, 235, 235),
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 1, 0),
+		ZIndex = 51,
+		Name = "ExitTitle"
+	}, ExitHeader)
+
+	local ExitCloseX = Custom:Create("TextButton", {
+		Font = Enum.Font.GothamBold,
+		Text = "×",
+		TextColor3 = Color3.fromRGB(220, 220, 220),
+		TextSize = 18,
+		AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(1, -10, 0.5, 0),
+		Size = UDim2.new(0, 24, 0, 24),
+		ZIndex = 52,
+		Name = "ExitCloseX"
+	}, ExitHeader)
+
+	-- Deskripsi
+	Custom:Create("TextLabel", {
+		Font = Enum.Font.GothamBold,
+		Text = "WANT TO CLOSE THIS SCRIPT?",
+		TextColor3 = Color3.fromRGB(160, 160, 160),
+		TextSize = 12,
+		TextWrapped = true,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 12, 0, 40),
+		Size = UDim2.new(1, -24, 0, 30),
+		ZIndex = 51,
+		Name = "ExitDesc"
+	}, ExitConfirm)
+
+	-- Tombol: Cancel (kiri, flat abu) + Close (kanan, flat pink)
 	local CancelButton = Custom:Create("TextButton", {
-		Font = Enum.Font.GothamBold, Text = "Cancel", TextColor3 = Color3.fromRGB(225, 225, 225),
-		TextSize = 13, BackgroundColor3 = Color3.fromRGB(55, 55, 55), BorderSizePixel = 0,
-		ZIndex = 51, Position = UDim2.new(0, 16, 0, 112), Size = UDim2.new(0.5, -20, 0, 32)
+		Font = Enum.Font.GothamBold,
+		Text = "Cancel",
+		TextColor3 = Color3.fromRGB(225, 225, 225),
+		TextSize = 13,
+		BackgroundColor3 = Color3.fromRGB(45, 45, 45),
+		BorderSizePixel = 0,
+		ZIndex = 51,
+		Position = UDim2.new(0, 12, 1, -42),
+		Size = UDim2.new(0.5, -18, 0, 30),
+		Name = "CancelButton"
 	}, ExitConfirm)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, CancelButton)
-	Custom:Create("UIStroke", {Color = Color3.fromRGB(80, 80, 80), Thickness = 1, Transparency = 0.5}, CancelButton)
 
 	local ExitButton = Custom:Create("TextButton", {
-		Font = Enum.Font.GothamBold, Text = "Exit", TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 13, BackgroundColor3 = Color3.fromRGB(210, 60, 60), BorderSizePixel = 0,
-		ZIndex = 51, Position = UDim2.new(0.5, 4, 0, 112), Size = UDim2.new(0.5, -20, 0, 32)
+		Font = Enum.Font.GothamBold,
+		Text = "Close",
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextSize = 13,
+		BackgroundColor3 = Custom.ColorRGB,
+		BorderSizePixel = 0,
+		ZIndex = 51,
+		Position = UDim2.new(0.5, 6, 1, -42),
+		Size = UDim2.new(0.5, -18, 0, 30),
+		Name = "ExitButton"
 	}, ExitConfirm)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, ExitButton)
 
 	local function ShowExitConfirm()
-		ExitShadow.Visible = true; ExitConfirm.Visible = true
-		ExitShadow.Size = UDim2.new(0, 0, 0, 0); ExitConfirm.Size = UDim2.new(0, 0, 0, 0)
-		TweenService:Create(ExitShadow, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 150)}):Play()
-		TweenService:Create(ExitConfirm, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 150)}):Play()
+		ExitBackdrop.Visible = true
+		ExitConfirm.Visible = true
+		ExitBackdrop.BackgroundTransparency = 1
+		ExitConfirm.Size = UDim2.new(0, 0, 0, 0)
+		TweenService:Create(ExitBackdrop, TweenInfo.new(0.2), {BackgroundTransparency = 0.45}):Play()
+		TweenService:Create(ExitConfirm, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 260, 0, 118)}):Play()
 	end
 	local function HideExitConfirm()
-		TweenService:Create(ExitShadow, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
-		TweenService:Create(ExitConfirm, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
-		task.wait(0.15); ExitConfirm.Visible = false; ExitShadow.Visible = false
+		TweenService:Create(ExitBackdrop, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+		local Shrink = TweenService:Create(ExitConfirm, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
+		Shrink:Play()
+		Shrink.Completed:Wait()
+		ExitConfirm.Visible = false
+		ExitBackdrop.Visible = false
 	end
 
 	CancelButton.Activated:Connect(function()
-		CircleClick(CancelButton, Player:GetMouse().X, Player:GetMouse().Y); HideExitConfirm()
+		CircleClick(CancelButton, Player:GetMouse().X, Player:GetMouse().Y)
+		task.spawn(HideExitConfirm)
+	end)
+	ExitCloseX.Activated:Connect(function()
+		CircleClick(ExitCloseX, Player:GetMouse().X, Player:GetMouse().Y)
+		task.spawn(HideExitConfirm)
 	end)
 	ExitButton.Activated:Connect(function()
-		CircleClick(ExitButton, Player:GetMouse().X, Player:GetMouse().Y); HideExitConfirm()
-		if MugiHubGui then MugiHubGui:Destroy() end
-		if not MugiHub_Library.Unloaded then MugiHub_Library.Unloaded = true end
+		CircleClick(ExitButton, Player:GetMouse().X, Player:GetMouse().Y)
+		task.spawn(function()
+			HideExitConfirm()
+			if MugiHubGui then MugiHubGui:Destroy() end
+			if not MugiHub_Library.Unloaded then MugiHub_Library.Unloaded = true end
+		end)
 	end)
 	Close.Activated:Connect(function()
-		CircleClick(Close, Player:GetMouse().X, Player:GetMouse().Y); ShowExitConfirm()
+		CircleClick(Close, Player:GetMouse().X, Player:GetMouse().Y)
+		ShowExitConfirm()
 	end)
 
 	DropShadowHolder.Size = UDim2.new(0, 115 + TextLabel.TextBounds.X + 1 + TextLabel1.TextBounds.X, 0, 310)
@@ -1058,7 +1115,7 @@ function MugiHub_Library:CreateWindow(Config)
 
 	function Tabs:CreateTab(Config)
 		local _Name = Config[1] or Config.Name or ""
-		local Icon  = Config[2] or Config.Icon or ""
+		local Icon  = Custom:ResolveIcon(Config[2] or Config.Icon)
 
 		local ScrolLayers = Custom:Create("ScrollingFrame", {
 			ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80),
@@ -1331,7 +1388,10 @@ function MugiHub_Library:CreateWindow(Config)
 			function Item:AddButton(Config)
 				local Title    = Config[1] or Config.Title    or ""
 				local Content  = Config[2] or Config.Content  or ""
-				local Icon     = Config[3] or Config.Icon     or "rbxassetid://7734010488"
+				local Icon     = Custom:ResolveIcon(Config[3] or Config.Icon) 
+				if Icon == Custom.DefaultIcon and not (Config[3] or Config.Icon) then
+					Icon = "rbxassetid://7734010488" -- default khusus tombol jika sama sekali tidak diisi
+				end
 				local Callback = Config[4] or Config.Callback or function() end
 				local SF = {}
 
@@ -1742,12 +1802,20 @@ function MugiHub_Library:CreateWindow(Config)
 					if type(Value) == "string" then Value = {Value}
 					elseif type(Value) ~= "table" then Value = {} end
 					FD.Value = Value
+					local ti = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
 					for _, Drop in pairs(SS:GetChildren()) do
 						if Drop.Name ~= "UIListLayout" and Drop.Name ~= "SearchBar" then
-							local found = table.find(FD.Value, Drop.OptionText.Text)
-							local ti = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
-							TweenService:Create(Drop.ChooseFrame, ti, {Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)}):Play()
-							TweenService:Create(Drop.ChooseFrame.UIStroke, ti, {Transparency = found and 0 or 0.999}):Play()
+							local found = table.find(FD.Value, Drop.OptionText.Text) ~= nil
+
+							-- Cancel tween lama pada frame ini sebelum mulai yang baru,
+							-- supaya klik cepat berturut-turut tidak bikin state visual desync
+							local ChooseFrame = Drop.ChooseFrame
+							if ChooseFrame:FindFirstChild("_ActiveTween") then
+								pcall(function() ChooseFrame._ActiveTween.Value:Cancel() end)
+							end
+
+							TweenService:Create(ChooseFrame, ti, {Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)}):Play()
+							TweenService:Create(ChooseFrame.UIStroke, ti, {Transparency = found and 0 or 0.999}):Play()
 							TweenService:Create(Drop, ti, {BackgroundTransparency = found and 0.935 or 0.999}):Play()
 						end
 					end
@@ -1786,16 +1854,19 @@ function MugiHub_Library:CreateWindow(Config)
 					Custom:Create("UICorner", {}, CF)
 					OB.Activated:Connect(function()
 						CircleClick(OB, Player:GetMouse().X, Player:GetMouse().Y)
-						local sel = O.BackgroundTransparency > 0.95
+						-- Source of truth = FD.Value (bukan baca BackgroundTransparency yang bisa stale saat tween masih jalan)
+						local currentlySelected = table.find(FD.Value, OptionName) ~= nil
 						if Multi then
-							if sel then
-								if not table.find(FD.Value, OptionName) then table.insert(FD.Value, OptionName) end
-							else
+							if currentlySelected then
 								for i, v in ipairs(FD.Value) do
 									if v == OptionName then table.remove(FD.Value, i); break end
 								end
+							else
+								table.insert(FD.Value, OptionName)
 							end
-						else FD.Value = {OptionName} end
+						else
+							FD.Value = currentlySelected and {} or {OptionName}
+						end
 						FD:Set(FD.Value)
 					end)
 					local function UpdateCanvas()

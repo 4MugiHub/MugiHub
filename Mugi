@@ -157,11 +157,12 @@ local MugiHub_Library = {}
 MugiHub_Library.Unloaded = false
 
 -- ============================================================
--- /// NOTIFICATION SYSTEM — style baru (kanan atas, auto-width)
+-- /// NOTIFICATION SYSTEM — kanan atas, stack rapi, fixed-width container
 -- ============================================================
 local NotifGui
 local NotifContainer
 local NotifCounter = 0
+local NOTIF_WIDTH = 260 -- lebar tetap supaya stacking selalu rapi & sejajar
 
 local function EnsureNotifGui()
 	if NotifGui and NotifGui.Parent then return end
@@ -171,13 +172,13 @@ local function EnsureNotifGui()
 		ResetOnSpawn = false,
 	}, RunService:IsStudio() and Player.PlayerGui or (gethui and gethui() or cloneref and cloneref(game:GetService("CoreGui")) or game:GetService("CoreGui")))
 
-	-- Container: kanan atas, stack ke bawah
+	-- Container: kanan atas, lebar TETAP, stack ke bawah rapi
 	NotifContainer = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		Position = UDim2.new(1, -12, 0, 12),
-		Size = UDim2.new(0, 320, 1, -24),
+		Position = UDim2.new(1, -14, 0, 14),
+		Size = UDim2.new(0, NOTIF_WIDTH, 1, -28),
 		Name = "NotifContainer"
 	}, NotifGui)
 
@@ -185,7 +186,7 @@ local function EnsureNotifGui()
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		VerticalAlignment = Enum.VerticalAlignment.Top,
 		HorizontalAlignment = Enum.HorizontalAlignment.Right,
-		Padding = UDim.new(0, 6),
+		Padding = UDim.new(0, 8),
 	}, NotifContainer)
 end
 
@@ -197,7 +198,7 @@ end
 	})
 	Mengembalikan { Close = function }
 
-	Style: card abu-abu terang, tanpa stroke/line, bar pink solid.
+	Style: card abu-abu terang, corner halus, bar pink tipis, stacking konsisten (lebar tetap).
 ]]
 function MugiHub_Library:SetNotification(Config)
 	EnsureNotifGui()
@@ -212,75 +213,79 @@ function MugiHub_Library:SetNotification(Config)
 	local BarTween = nil
 	local NotifFuncs = {}
 
-	-- Ukur teks LEBIH DULU pakai TextService, supaya tidak ada frame kosong / bug teks hilang
+	-- Slot: lebar TETAP (NOTIF_WIDTH), tinggi menyesuaikan jumlah baris teks
 	local TextService = game:GetService("TextService")
 	local TextSize = TextService:GetTextSize(
-		Text,
-		13,
-		Enum.Font.GothamBold,
-		Vector2.new(1000, 100)
+		Text, 13, Enum.Font.GothamBold,
+		Vector2.new(NOTIF_WIDTH - 24, 1000)
 	)
-	local CardW = math.max(TextSize.X + 28, 90)
-	local CardH = 36
+	local CardH = math.max(TextSize.Y + 22, 34)
 
-	-- Slot (UIListLayout yang atur posisi) — ukuran langsung final, tidak nunggu defer
 	local Slot = Custom:Create("Frame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
+		ClipsDescendants = true, -- supaya slide-in card tidak "bocor" keluar slot dan merusak stacking
 		LayoutOrder = NotifCounter,
-		Size = UDim2.new(0, CardW, 0, CardH),
+		Size = UDim2.new(1, 0, 0, CardH),
 		Name = "NotifSlot"
 	}, NotifContainer)
 
-	-- Card utama — abu-abu terang, TANPA stroke/line
+	-- Card utama — abu-abu terang, corner halus (bukan terlalu bulat), tanpa stroke
 	local Card = Custom:Create("Frame", {
-		AnchorPoint = Vector2.new(1, 0),
-		BackgroundColor3 = Color3.fromRGB(45, 45, 48),
-		BackgroundTransparency = 0.05,
+		BackgroundColor3 = Color3.fromRGB(42, 42, 46),
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
-		ClipsDescendants = true,
-		Position = UDim2.new(1, CardW + 20, 0, 0),
+		Position = UDim2.new(1, NOTIF_WIDTH + 20, 0, 0), -- mulai di luar kanan, slide ke posisi 0
 		Size = UDim2.new(1, 0, 1, 0),
 		Name = "Card"
 	}, Slot)
+	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, Card)
 
-	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 8)}, Card)
-
-	-- Label teks — bold, putih, teks langsung ada (tidak nunggu defer)
+	-- Label teks
 	Custom:Create("TextLabel", {
 		Font = Enum.Font.GothamBold,
 		Text = Text,
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 13,
+		TextWrapped = true,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 12, 0, 0),
-		Size = UDim2.new(1, -16, 1, -6),
+		Size = UDim2.new(1, -20, 1, -8),
 		Name = "Label"
 	}, Card)
 
-	-- Bar countdown — pink solid (standar Mugi), rounded, di bawah card
-	local Bar = Custom:Create("Frame", {
+	-- Bar countdown — tipis, pink solid, corner kecil supaya menyatu rapi dengan card
+	local BarTrack = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(0, 1),
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		BackgroundTransparency = 0.9,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 1, -4),
+		Size = UDim2.new(1, -16, 0, 2),
+		Name = "BarTrack"
+	}, Card)
+	Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, BarTrack)
+
+	local Bar = Custom:Create("Frame", {
 		BackgroundColor3 = Custom.ColorRGB,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 0, 1, -2),
-		Size = UDim2.new(1, 0, 0, 3),
+		Size = UDim2.new(1, 0, 1, 0),
 		Name = "Bar"
-	}, Card)
+	}, BarTrack)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, Bar)
 
 	-- Slide in
-	TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Position = UDim2.new(1, 0, 0, 0)
+	TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0, 0, 0, 0)
 	}):Play()
 
 	-- Bar shrink
 	task.spawn(function()
 		BarTween = TweenService:Create(Bar, TweenInfo.new(Delay, Enum.EasingStyle.Linear), {
-			Size = UDim2.new(0, 0, 0, 3)
+			Size = UDim2.new(0, 0, 1, 0)
 		})
 		BarTween:Play()
 		BarTween.Completed:Connect(function(State)
@@ -296,7 +301,7 @@ function MugiHub_Library:SetNotification(Config)
 		if BarTween then pcall(function() BarTween:Cancel() end) end
 
 		local Out = TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-			Position = UDim2.new(1, CardW + 20, 0, 0)
+			Position = UDim2.new(1, NOTIF_WIDTH + 20, 0, 0)
 		})
 		Out:Play()
 		Out.Completed:Wait()
@@ -1137,21 +1142,36 @@ function MugiHub_Library:CreateWindow(Config)
 		local TabButton = Custom:Create("TextButton", {
 			Font = Enum.Font.GothamBold, Text = "", TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left,
-			BackgroundTransparency = 0.999, BorderSizePixel = 0,
+			BackgroundTransparency = 0.999, BorderSizePixel = 0, ZIndex = 1,
 			Size = UDim2.new(1, 0, 1, 0), Name = "TabButton"
 		}, Tab)
 
 		Custom:Create("TextLabel", {
 			Font = Enum.Font.GothamBold, Text = _Name, TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left,
-			BackgroundTransparency = 0.999, BorderSizePixel = 0,
+			BackgroundTransparency = 0.999, BorderSizePixel = 0, ZIndex = 2,
 			Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 30, 0, 0), Name = "TabName"
 		}, Tab)
 
-		Custom:Create("ImageLabel", {
-			Image = Icon, BackgroundTransparency = 0.999, BorderSizePixel = 0,
-			Position = UDim2.new(0, 9, 0, 7), Size = UDim2.new(0, 16, 0, 16), Name = "FeatureImg"
+		local TabIconImg = Custom:Create("ImageLabel", {
+			Image = Icon,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 9, 0.5, 0),
+			Size = UDim2.new(0, 16, 0, 16),
+			ZIndex = 2, -- eksplisit di atas TabButton/TabName supaya selalu terlihat
+			ScaleType = Enum.ScaleType.Fit,
+			Name = "FeatureImg"
 		}, Tab)
+
+		-- Verifikasi: kalau ID icon invalid/kosong/ke-delete, otomatis fallback ke icon default
+		-- (IsLoaded tidak selalu reliable lintas-executor, jadi kita cek ContentImageId kosong sebagai sinyal gagal load)
+		task.defer(function()
+			if TabIconImg.Image == "" or TabIconImg.Image == "rbxasset://textures/ui/GuiImagePlaceholder.png" then
+				TabIconImg.Image = Custom.DefaultIcon
+			end
+		end)
 
 		local function SelectTab()
 			local FrameChoose = nil

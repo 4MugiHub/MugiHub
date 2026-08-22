@@ -53,7 +53,7 @@ MugiHub is a single Luau module. Load it with `loadstring` + `HttpGet` and call 
 
 ```lua
 local MugiHub = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/4MugiHub/MugiHub/main/MugiHub.lua"
+    "https://raw.githubusercontent.com/4MugiHub/MugiHub/main/Mugi"
 ))()
 ```
 

@@ -1,500 +1,342 @@
 <div align="center">
 
-# 🌸 MugiHub
+# MugiHub
 
-### Lightweight, draggable UI library for Roblox scripts.
+**A clean, modern UI library for Roblox script hubs.**
 
-<p>
-  <strong>Draggable Window · Tab & Section Navigation · Live Search · Dynamic Tags · Stackable Notifications</strong>
-</p>
+Pink-and-white theme · Search-everything sidebar · Built-in notifications · Zero dependencies
+
+[![Lua](https://img.shields.io/badge/Lua-Luau-2C2D72?style=for-the-badge&logo=lua&logoColor=white)](https://luau-lang.org/)
+[![Roblox](https://img.shields.io/badge/Platform-Roblox-000000?style=for-the-badge&logo=roblox&logoColor=white)](https://www.roblox.com/)
+[![License](https://img.shields.io/badge/License-MIT-pink?style=for-the-badge)](#license)
 
 </div>
 
 ---
 
-MugiHub is a self-contained Luau UI library for Roblox script interfaces. One file, no external dependencies, no asset pack to install — `loadstring` it and start calling `CreateWindow`. It ships with a full component set (button, toggle, slider, input, dropdown, keybind, social/copy row, collapsible read-me block), a built-in search index that jumps straight to any element across tabs, and a notification system that stacks cleanly in the top-right corner.
-
-The visual identity is fixed: **white → soft pink (`#FF99CC`)** gradients and accents, dark rounded panels, monospace-free Gotham typography. There is no theme switcher — this is intentional, it keeps the UI visually consistent across every script that uses it.
-
----
-
 ## Table of Contents
 
+- [Overview](#overview)
+- [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Window](#window)
-- [Tags](#tags)
-- [Tabs & Sections](#tabs--sections)
+- [Window API](#window-api)
+- [Tags API](#tags-api)
+- [Tab & Section API](#tab--section-api)
 - [Components](#components)
-  - [AddButton](#addbutton)
-  - [AddToggle](#addtoggle)
-  - [AddSlider](#addslider)
-  - [AddInput](#addinput)
-  - [AddDropdown](#adddropdown)
-  - [AddKeybind](#addkeybind)
-  - [AddParagraph](#addparagraph)
-  - [AddSeperator](#addseperator)
-  - [AddLine](#addline)
-  - [AddSocial](#addsocial)
-  - [AddReadMe](#addreadme)
+  - [Button](#button)
+  - [Toggle](#toggle)
+  - [Slider](#slider)
+  - [Input](#input)
+  - [Dropdown](#dropdown)
+  - [Keybind](#keybind)
+  - [Paragraph](#paragraph)
+  - [Separator](#separator)
+  - [Line](#line)
+  - [Social](#social)
+  - [Copy Group](#copy-group)
+  - [ReadMe](#readme-component)
 - [Notifications](#notifications)
 - [Search](#search)
-- [Icons](#icons)
-- [Compatibility](#compatibility)
-- [Best Practices](#best-practices)
 - [Troubleshooting](#troubleshooting)
-- [Credits](#credits)
+- [License](#license)
 
 ---
+
+## Overview
+
+MugiHub is a single-file Luau UI library designed for building script hub interfaces on Roblox. It ships with a searchable sidebar, draggable window, minimize-to-bubble behavior, a stacked notification system, and a full set of ready-made components — all styled around a consistent pink-and-white accent theme.
+
+No external dependencies. No build step. Just `loadstring` one URL and start building.
+
+## Features
+
+- **Draggable window** with a minimize bubble that remembers its position
+- **Global search** — every component you add is searchable by title, jumps to its tab/section, and highlights it
+- **Dynamic + executor tags** in the header, auto-refreshing on an interval
+- **Stacked notifications** (top-right) with an auto-closing progress bar
+- **Full component set**: buttons, toggles, sliders (with decimal support), text inputs, single/multi-select dropdowns, keybinds, paragraphs, separators, dividers, social/copy links, copy groups, and collapsible ReadMe blocks
+- **Collapsible sections** with smooth expand/collapse animations
+- **Ripple click effect** on every interactive element
+- **Close confirmation dialog** to avoid accidental unloads
 
 ## Installation
 
-MugiHub is a single Luau module. Load it with `loadstring` + `HttpGet` and call it like any other library:
+Add this single line to the top of your script:
 
 ```lua
-local MugiHub = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/4MugiHub/MugiHub/main/Mugi"
-))()
+local Mugi = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
 ```
 
-> Replace the URL with wherever you're hosting `MugiHub.lua`. The script returns a single table (`MugiHub_Library`) with two entry points: `CreateWindow` and `SetNotification`.
+That's it — `Mugi` now holds the library table and is ready to use.
 
----
+> **Tip:** If you see `attempt to call a nil value` right after this line, it's almost always a briefly stale GitHub raw cache. Wait about a minute and run the script again.
 
 ## Quick Start
 
-Minimal working example:
-
 ```lua
-local Window = MugiHub:CreateWindow({
-    Title = "MugiHub",
-    Description = "Example script",
+local Mugi = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
+
+local Window = Mugi:CreateWindow({
+    Title       = "My Script",
+    Description = "A short tagline",
+    Tags        = {"v1.0", "FREE"}
 })
 
-local Tab = Window:CreateTab({ "Main" })
-local Section = Tab:AddSection("General", true) -- true = open by default
+local MainTab     = Window:CreateTab({"Main", "rbxassetid://135368942844516"})
+local MainSection = MainTab:AddSection("General", true)
 
-Section:AddButton({
-    "Say Hello",
-    "Prints a message to the console",
-    "rbxassetid://7734010488",
-    function()
-        print("Hello from MugiHub!")
-    end
-})
-```
-
-A slightly more complete window:
-
-```lua
-local Window = MugiHub:CreateWindow({
-    Title = "MugiHub",
-    Description = "Violence District",
-    ["Tab Width"] = 105,
-    SizeUi = UDim2.fromOffset(480, 275),
-    Keybind = Enum.KeyCode.RightControl,
-    Icon = "rbxassetid://135368942844516",
-    Tags = { "v2.0", "Beta" },
-})
-
-local Tab = Window:CreateTab({ "Killer", "rbxassetid://0" })
-local Section = Tab:AddSection("Skills", true)
-
-Section:AddToggle({
-    "Auto Skill Check",
-    "Automatically hits skill checks",
-    false,
-    function(value)
-        print("Auto Skill Check:", value)
+MainSection:AddToggle({
+    Title    = "Example Toggle",
+    Content  = "Does a thing when switched on",
+    Default  = false,
+    Callback = function(value)
+        print("Toggle is now:", value)
     end
 })
 
-Section:AddSlider({
-    "Skill Check Delay",
-    "Reaction delay in milliseconds",
-    1, 0, 500, 50,
-    function(value)
-        print("Delay set to", value)
-    end
+Mugi:SetNotification({
+    Title       = "Loaded",
+    Description = "Everything is ready",
+    Delay       = 3
 })
 ```
 
-Every `Add*` call accepts either **positional arguments** (`Config[1]`, `Config[2]`, ...) or **named fields** (`Config.Title`, `Config.Content`, ...) — both work interchangeably, shown throughout this document.
-
----
-
-## Window
+## Window API
 
 ```lua
-MugiHub:CreateWindow(Config) -> Funcs
+local Window = Mugi:CreateWindow({
+    Title       = "Window Title",      -- string
+    Description = "Subtitle text",     -- string
+    ["Tab Width"] = 105,                -- sidebar width in pixels
+    SizeUi      = UDim2.fromOffset(480, 275),
+    Keybind     = Enum.KeyCode.RightControl, -- show/hide shortcut
+    Icon        = "rbxassetid://...",  -- header icon, "" to disable
+    Tags        = {"TAG1", "TAG2"}      -- up to 3 static tags
+})
 ```
 
-| Field | Positional | Type | Default | Description |
-|---|---|---|---|---|
-| Title | `[1]` | `string` | `""` | Window title, shown top-left |
-| Description | `[2]` | `string` | `""` | Subtitle, shown after a `\|` separator |
-| Tab Width | `[3]` | `number` | `105` | Width of the left sidebar |
-| SizeUi | `[4]` | `UDim2` | `UDim2.fromOffset(480, 275)` | Overall window size |
-| Keybind | `[5]` | `Enum.KeyCode` | `RightControl` | Show/hide toggle key |
-| Icon | `[6]` | `string` | `rbxassetid://135368942844516` | Icon shown next to the title |
-| Tags | `[7]` / `Config.Tags` | `table<string>` | — | Initial tag pills (max 3, see [Tags](#tags)) |
+| Method | Description |
+|---|---|
+| `Window:SetTitle(text)` | Updates the header title |
+| `Window:SetDescription(text)` | Updates the header subtitle |
+| `Window:CreateTab({name, icon})` | Creates a new tab, returns a Tab object |
 
-`CreateWindow` returns a `Funcs` table with:
+## Tags API
+
+Accessible via `Window.Tags`.
 
 ```lua
-Funcs:SetTitle(NewTitle: string)
-Funcs:SetDescription(NewDescription: string)
-Funcs:CreateTab(Config) -> Sections
-Funcs.Tags -- see below
+local tag = Window.Tags:Add("LIVE")
+tag:Set("UPDATED")
+tag:Remove()
+
+local dynamicTag = Window.Tags:AddDynamic("Players", function()
+    return #game:GetService("Players"):GetPlayers()
+end, 2) -- refreshes every 2 seconds
+
+Window.Tags:AddExecutorTag(5) -- shows the current executor name, refreshes every 5s
 ```
 
-**Window behavior:**
-- Dragged from the top bar (`Top` frame).
-- **Minimize** (`—` button) shrinks the window to a small floating icon that can itself be dragged around and clicked to restore.
-- **Close** (`X` button) opens a confirmation popup *inside* the window itself (not a separate floating GUI) — title "Close Window", description "WANT TO CLOSE THIS SCRIPT?", with **Cancel** and **Close** buttons. Closing destroys the entire GUI and sets `MugiHub_Library.Unloaded = true`.
-- The configured `Keybind` toggles window visibility at any time.
-- An AFK-prevention loop (`VirtualUser`) is started automatically as soon as the library loads — this runs independently of any window.
-
----
-
-## Tags
-
-Small pill labels displayed in the top bar, next to the description. **Maximum 3 tags** — a 4th `Add()` call is silently ignored (returns a no-op table) to prevent layout overflow.
+## Tab & Section API
 
 ```lua
-Window.Tags:Add(Text: string) -> TagItem
-Window.Tags:AddDynamic(Label: string, ValueFn: () -> any, RefreshInterval: number?) -> TagItem
-Window.Tags:AddExecutorTag(RefreshInterval: number?) -> TagItem
+local Tab = Window:CreateTab({"Tab Name", "rbxassetid://..."})
+local Section = Tab:AddSection("Section Title", true) -- true = open by default
 ```
 
-`TagItem` exposes:
-
-```lua
-TagItem:Set(NewText: string)
-TagItem:Remove()
-```
-
-**Static tag:**
-
-```lua
-Window.Tags:Add("v2.0")
-```
-
-**Dynamic tag** (re-evaluates on an interval, prefixed with `●`):
-
-```lua
-Window.Tags:AddDynamic("Ping", function()
-    return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) .. "ms"
-end, 2)
-```
-
-**Executor tag** — a convenience wrapper around `AddDynamic` that calls `identifyexecutor()` if it exists in the environment, falling back to `"Unknown"`:
-
-```lua
-Window.Tags:AddExecutorTag(5)
-```
-
----
-
-## Tabs & Sections
-
-```lua
-Window:CreateTab(Config) -> Sections
-```
-
-| Field | Positional | Type | Default |
-|---|---|---|---|
-| Name | `[1]` / `Config.Name` | `string` | `""` |
-| Icon | `[2]` / `Config.Icon` | `string` | resolved automatically — see [Icons](#icons) |
-
-```lua
-local Tab = Window:CreateTab({ "Survivor", "rbxassetid://0" })
-```
-
-The first tab created is automatically selected. Each tab is fully indexed by [Search](#search).
-
-```lua
-Tab:AddSection(Title: string, OpenByDefault: boolean?) -> Item
-```
-
-Sections are collapsible groups inside a tab. Clicking the section header expands/collapses it with a rotating chevron and animated height. `Item` is the object every component method below is called on.
-
-```lua
-local Section = Tab:AddSection("Combat", true)
-```
-
----
+Every component below is added through a `Section` object.
 
 ## Components
 
-All components live under a `Section` (the `Item` table returned by `AddSection`). Every component call registers itself with the search index automatically.
-
-### AddButton
-
-```lua
-Section:AddButton({ Title, Content, Icon, Callback })
-```
-
-| Arg | Type | Default |
-|---|---|---|
-| Title | `string` | `""` |
-| Content | `string` | `""` |
-| Icon | `string` | `rbxassetid://7734010488` |
-| Callback | `function()` | no-op |
+### Button
 
 ```lua
 Section:AddButton({
-    "Reset Character",
-    "Respawns your character",
-    "rbxassetid://7734010488",
-    function()
-        Player.Character:BreakJoints()
-    end
+    Title    = "Do Something",
+    Content  = "Runs a callback on click",
+    Icon     = "rbxassetid://...", -- optional
+    Callback = function() end
 })
 ```
 
-### AddToggle
+### Toggle
 
 ```lua
-Section:AddToggle({ Title, Content, Default, Callback }) -> Funcs_Toggle
+local Toggle = Section:AddToggle({
+    Title    = "Feature",
+    Content  = "Enables the feature",
+    Default  = false,
+    Callback = function(value) end
+})
+
+Toggle:Set(true) -- set programmatically
+print(Toggle.Value)
 ```
 
-`Callback(value: boolean)` fires immediately once with the default value, then again on every switch. Returned `Funcs_Toggle` exposes `:Set(value)` and `.Value`.
+### Slider
+
+Supports decimal `Increment` values (e.g. `0.05`, `0.1`) as well as whole numbers, including manual entry in the numeric box.
 
 ```lua
-local AutoFarm = Section:AddToggle({
-    "Auto Farm", "Automatically collects nearby items", false,
-    function(value) print("Auto Farm:", value) end
+local Slider = Section:AddSlider({
+    Title     = "Intensity",
+    Content   = "0 to 1, step 0.1",
+    Increment = 0.1,
+    Min       = 0,
+    Max       = 1,
+    Default   = 0.5,
+    Callback  = function(value) end
 })
 ```
 
-### AddSlider
+### Input
 
 ```lua
-Section:AddSlider({ Title, Content, Increment, Min, Max, Default, Callback }) -> Funcs_Slider
-```
-
-Draggable track + editable number box, synced both ways. `Callback(value: number)` fires on release and on manual text entry.
-
-```lua
-Section:AddSlider({
-    "Field of View", "Camera FOV", 1, 70, 120, 90,
-    function(value) workspace.CurrentCamera.FieldOfView = value end
+local Input = Section:AddInput({
+    Title    = "Message",
+    Content  = "Free text field",
+    Default  = "",
+    Callback = function(value) end
 })
 ```
 
-### AddInput
+### Dropdown
 
 ```lua
-Section:AddInput({ Title, Content, Default, Callback }) -> Funcs_Input
-```
-
-`Callback(value: string)` fires on `FocusLost`.
-
-```lua
-Section:AddInput({
-    "Webhook URL", "Paste your Discord webhook", "",
-    function(value) print("Webhook set:", value) end
+local Dropdown = Section:AddDropdown({
+    Title    = "Mode",
+    Content  = "Pick one",
+    Multi    = false, -- true for multi-select
+    Options  = {"Option A", "Option B", "Option C"},
+    Default  = "Option A",
+    Callback = function(values) print(values[1]) end
 })
+
+Dropdown:Set({"Option B"})
+Dropdown:AddOption("Option D")
+Dropdown:Refresh({"New", "List"}, {"New"})
+Dropdown:Clear()
 ```
 
-### AddDropdown
-
-```lua
-Section:AddDropdown({ Title, Content, Multi, Options, Default, Callback }) -> Funcs_Dropdown
-```
-
-| Arg | Type | Notes |
-|---|---|---|
-| Multi | `boolean` | allow multiple selections |
-| Options | `table<string>` | also accepts `Config.List` as an alias |
-| Default | `table<string>` or `string` | single strings are auto-wrapped into a table |
-
-```lua
-local Target = Section:AddDropdown({
-    "Target Priority", "Who to prioritize", false,
-    { "Closest", "Lowest HP", "Random" }, "Closest",
-    function(value) print("Selected:", value[1]) end
-})
-```
-
-`Funcs_Dropdown` methods:
-
-```lua
-Funcs_Dropdown:Set(Value: table<string>)
-Funcs_Dropdown:AddOption(OptionName: string)
-Funcs_Dropdown:Clear()
-Funcs_Dropdown:Refresh(List: table<string>, Selecting: table<string>?)
-```
-
-Options open in a shared overlay panel with a built-in search box for filtering long lists.
-
-### AddKeybind
-
-```lua
-Section:AddKeybind({ Title, Content, Default, Callback }) -> Funcs_Keybind
-```
-
-Click the keybind button, then press any key to rebind. `Callback(key: Enum.KeyCode)` fires every time the bound key is pressed while the window isn't consuming input.
+### Keybind
 
 ```lua
 Section:AddKeybind({
-    "Toggle ESP", "", Enum.KeyCode.E,
-    function() print("ESP key pressed") end
+    Title    = "Toggle Key",
+    Content  = "Press to trigger",
+    Default  = Enum.KeyCode.E,
+    Callback = function(key) end
 })
 ```
 
-### AddParagraph
+### Paragraph
 
 ```lua
-Section:AddParagraph({ Title, Content }) -> Funcs
+local Paragraph = Section:AddParagraph({
+    Title   = "Note",
+    Content = "Explanatory text that can wrap across multiple lines."
+})
+
+Paragraph:Set({"New Title", "New content"})
 ```
 
-Static text block, auto-wraps and resizes. `Funcs:Set({ Title, Content })` updates it later.
+### Separator
 
-### AddSeperator
+A plain text label used to visually group components within a section. Styled in the library's pink accent color.
 
 ```lua
-Section:AddSeperator({ Title })
+Section:AddSeperator({Title = "Advanced"})
 ```
 
-A labeled divider bar between groups of components.
+### Line
 
-### AddLine
+A thin horizontal divider with no text.
 
 ```lua
 Section:AddLine()
 ```
 
-A thin decorative spacer bar with no text.
+### Social
 
-### AddSocial
+A labeled row with a one-click "Copy" button — useful for Discord invites, usernames, etc.
 
 ```lua
-Section:AddSocial({ Icon, Title, Code }) -> Funcs
+local Social = Section:AddSocial({
+    "rbxassetid://...",       -- platform icon
+    "Join our Discord",       -- title
+    "discord.gg/example"      -- text copied to clipboard
+})
+
+Social:SetCode("discord.gg/updated")
 ```
 
-A row with an optional platform icon, a label, and a **Copy** button (uses `setclipboard` if available in the executor). The button label flips to "Copied" for 3 seconds after a click.
+### Copy Group
+
+A flexible grid of copy buttons. Pass a layout where each row is a list of `{Label, Code}` pairs — a row with one item spans the full width, a row with two or more items splits evenly.
 
 ```lua
-Section:AddSocial({
-    "rbxassetid://0", "Join our Discord", "discord.gg/example"
+Section:AddCopyGroup({
+    Layout = {
+        {{"Copy1", "value-one"}, {"Copy2", "value-two"}}, -- two buttons, one row
+        {{"Copy3 (full width)", "value-three"}}            -- one button, full width
+    }
 })
 ```
 
-`Funcs:SetCode(NewCode: string)` updates the copied value.
+### ReadMe Component
 
-### AddReadMe
-
-```lua
-Section:AddReadMe({ Title, Content, Style, Open }) -> Funcs
-```
-
-| Style | Behavior |
-|---|---|
-| `"Accordion"` (default) | Collapsible block with a rotating chevron |
-| `"Plain"` | Always expanded, no header button |
-| `"Badge"` | Compact one-line pill: `Title \| Content` |
+Three display styles: `"Accordion"` (collapsible), `"Plain"` (always expanded), `"Badge"` (compact single-line pill).
 
 ```lua
-Section:AddReadMe({
-    "About", "This script is provided as-is for educational purposes.", "Accordion", false
+local ReadMe = Section:AddReadMe({
+    "Getting Started",
+    "Click to expand this section for setup instructions.",
+    "Accordion",
+    false -- start collapsed
 })
+
+ReadMe:Set({"New Title", "New content"})
+ReadMe:SetTitle("Updated Title")
+ReadMe:SetOpen(true)
 ```
-
-`Funcs` exposes `:Set(NewContent)`, `:SetTitle(NewTitle)`, and `:SetOpen(bool)` (Accordion style only).
-
----
 
 ## Notifications
 
-```lua
-MugiHub:SetNotification({ Text, Delay, Time }) -> { Close: function }
-```
-
-| Field | Type | Default |
-|---|---|---|
-| Text | `string` | `""` |
-| Delay | `number` | `3` — seconds visible before auto-dismiss |
-| Time | `number` | `0.25` — slide in/out animation duration |
+Notifications stack in the top-right corner and close automatically after `Delay` seconds, with a shrinking progress bar.
 
 ```lua
-MugiHub:SetNotification({ Text = "Auto Farm: enabled", Delay = 3 })
+Mugi:SetNotification({
+    Title       = "Saved",       -- optional, combined with Description below
+    Description = "Settings applied", -- optional
+    Content     = "Extra detail",     -- optional
+    Delay       = 3,             -- seconds before auto-close
+    Time        = 0.25           -- slide animation duration
+})
 ```
 
-Notifications render in a dedicated top-right `ScreenGui`, independent of any window — they work even before `CreateWindow` is called. Each notification is a fixed-width (260px) dark card with a thin pink progress bar that shrinks over `Delay` seconds and auto-closes. Cards stack downward and don't reflow when new ones stack width-wise, since width is fixed. Call `:Close()` on the returned table to dismiss early.
+`Title`, `Description`, and `Content` are joined automatically if provided; you can also pass a single `Text` field directly if you prefer full control over the string.
 
----
+```lua
+local notif = Mugi:SetNotification({Text = "Custom message", Delay = 5})
+notif:Close() -- dismiss early
+```
 
 ## Search
 
-Every component (`AddButton`, `AddToggle`, `AddSlider`, `AddInput`, `AddDropdown`, `AddKeybind`, `AddParagraph`, `AddSocial`, `AddReadMe`) auto-registers its title into a per-window search index. Typing into the sidebar search box:
-
-1. Filters matches by substring (case-insensitive), capped at 8 results.
-2. Shows a result list with the tab/section as a subtitle.
-3. Clicking a result switches to the correct tab, expands the correct section if needed, scrolls it into view, and briefly highlights it with a pink glow ring.
-
-No setup required — this is automatic for every component you add.
-
----
-
-## Icons
-
-Any `Icon` field across the library (window icon, tab icon, button icon) accepts a standard `rbxassetid://...` string. If you pass `""`, `nil`, or `"rbxassetid://0"`, it automatically resolves to MugiHub's default icon (`rbxassetid://135368942844516`) instead of rendering blank.
-
-```lua
-Tab.Icon = "rbxassetid://0" -- resolves to the default icon automatically
-```
-
----
-
-## Compatibility
-
-| Environment | Support |
-|---|---|
-| Roblox Executor (`gethui`/`cloneref`) | ✅ Parents to `gethui()`, falling back to `cloneref(CoreGui)`, then raw `CoreGui` |
-| Roblox Studio | ✅ Parents to `PlayerGui` (detected via `RunService:IsStudio()`) |
-| Touch / Mobile | ✅ All drag, button, and slider interactions handle `Enum.UserInputType.Touch` |
-| Mouse / Desktop | ✅ Standard `MouseButton1` / `MouseMovement` handling throughout |
-| Clipboard (`AddSocial`) | ⚠️ Requires `setclipboard` in the executor — wrapped in `pcall`, fails silently if unavailable |
-| Executor tag (`AddExecutorTag`) | ⚠️ Requires `identifyexecutor()` — falls back to `"Unknown"` if unavailable |
-
----
-
-## Best Practices
-
-- Prefer named config fields (`{ Title = "...", Callback = ... }`) over positional ones in larger scripts — it's more resistant to reordering mistakes as the library evolves.
-- Keep toggle/slider callbacks lightweight; they can fire on every frame of a drag (sliders) or immediately on creation (toggles).
-- Group related controls into their own `AddSection` rather than one long section — it keeps the sidebar scroll manageable.
-- Don't exceed 3 tags — a 4th call is a silent no-op, so check your tag count if one isn't appearing.
-- Use `SetNotification` for state changes and events, not for constant/spammy updates — each one runs its own slide + bar tween.
-- Pass `rbxassetid://0` (or omit `Icon` entirely) instead of guessing an ID when you don't have one — it resolves safely to the default icon.
-
----
+Every component registered through a section is automatically searchable from the sidebar search box. Typing a query jumps to the matching tab, opens its section if collapsed, scrolls it into view, and briefly highlights it — no extra setup required on your end.
 
 ## Troubleshooting
 
-**UI doesn't appear at all**
-Confirm the `loadstring(game:HttpGet(...))()` call succeeded and check your executor's console for HTTP errors. Also confirm you actually called `:CreateWindow(...)` — loading the module alone only registers `SetNotification` and internal AFK handling.
+**`attempt to call a nil value` right after the `loadstring` line**
+The library failed to load — this is almost always a stale GitHub raw CDN cache shortly after a push, or a restricted `loadstring`/HTTP function in your executor. Wait about 60 seconds and re-run. If it persists across multiple attempts and multiple minutes, try a different executor to confirm.
 
-**Tab icon is blank**
-Passing an empty string or `"rbxassetid://0"` is handled automatically via the icon fallback. If it's still blank, the asset ID itself may be invalid/deleted on Roblox's CDN — try `Custom.DefaultIcon`'s ID (`135368942844516`) to confirm the rendering path works, then swap in your real asset.
+**Tab icon doesn't show up**
+Double-check the asset ID is a real, public Image asset (not a Decal, Mesh, or a moderated/removed upload). The library will automatically fall back to a default icon if the given ID fails to load.
 
-**4th tag doesn't show up**
-This is expected — `MAX_TAGS` is hard-capped at 3 to prevent sidebar layout overflow. `Tags:Add()` beyond that returns a no-op object.
+**Slider won't accept decimals**
+Make sure you're on the latest version of the library — earlier builds stripped decimal points from manual slider input.
 
-**Dropdown selection looks out of sync**
-`Funcs_Dropdown:Set()` reads current selection state from its own `.Value` table, not from UI transparency — if you're mutating selection state outside of `:Set()`/`:AddOption()`, call `:Set(FD.Value)` afterward to force a re-render.
+## License
 
-**Clipboard button always shows "Copy" even after clicking**
-`setclipboard` isn't available in your executor. The click is wrapped in `pcall` so it fails silently rather than erroring — check your executor's clipboard API support.
-
-**Notifications don't fire before the window exists**
-They don't need to — `SetNotification` creates its own `ScreenGui` on first call, independent of `CreateWindow`.
-
----
-
-## Credits
-
-**MugiHub** — created by **DinoIjoNPC** (`dinooo`).
-
+MIT — use it, fork it, ship it.

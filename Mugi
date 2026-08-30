@@ -12,7 +12,6 @@ local Custom = {} do
 		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
 	})
 
-	-- Fallback icon jika Image kosong / "rbxassetid://0" (auto-generate thumbnail default)
 	Custom.DefaultIcon = "rbxassetid://135368942844516"
 
 	function Custom:Create(Name, Properties, Parent)
@@ -39,7 +38,6 @@ local Custom = {} do
 		}, inst)
 	end
 
-	-- Resolve icon: kosong atau "rbxassetid://0" -> pakai DefaultIcon
 	function Custom:ResolveIcon(Icon)
 		if Icon == nil or Icon == "" or Icon == "rbxassetid://0" or Icon == "rbxassetid://" then
 			return Custom.DefaultIcon
@@ -50,7 +48,6 @@ end
 
 Custom:EnabledAFK()
 
--- /// Open/Close button
 local function OpenClose()
 	local ScreenGui = Custom:Create("ScreenGui", {
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -61,14 +58,14 @@ local function OpenClose()
 		BorderColor3 = Color3.fromRGB(255, 0, 0),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0.1021, 0, 0.0743, 0),
-		Size = UDim2.new(0, 59, 0, 49),
+		Size = UDim2.new(0, 44, 0, 44),
 		Image = "rbxassetid://135368942844516",
 		Visible = false,
 	}, ScreenGui)
 
 	Custom:Create("UICorner", {
 		Name = "MainCorner",
-		CornerRadius = UDim.new(0, 9),
+		CornerRadius = UDim.new(1, 0),
 	}, Close_ImageButton)
 
 	local dragging, dragStart, startPos = false, nil, nil
@@ -96,7 +93,6 @@ end
 
 local Open_Close = OpenClose()
 
--- /// Draggable
 local function MakeDraggable(topbar, object)
 	local dragging, dragStart, startPos = false, nil, nil
 
@@ -119,7 +115,6 @@ local function MakeDraggable(topbar, object)
 	end)
 end
 
--- /// Circle ripple effect
 local function CircleClick(Button, X, Y)
 	task.spawn(function()
 		Button.ClipsDescendants = true
@@ -156,13 +151,10 @@ end
 local MugiHub_Library = {}
 MugiHub_Library.Unloaded = false
 
--- ============================================================
--- /// NOTIFICATION SYSTEM — kanan atas, stack rapi, fixed-width container
--- ============================================================
 local NotifGui
 local NotifContainer
 local NotifCounter = 0
-local NOTIF_WIDTH = 260 -- lebar tetap supaya stacking selalu rapi & sejajar
+local NOTIF_WIDTH = 260
 
 local function EnsureNotifGui()
 	if NotifGui and NotifGui.Parent then return end
@@ -172,7 +164,6 @@ local function EnsureNotifGui()
 		ResetOnSpawn = false,
 	}, RunService:IsStudio() and Player.PlayerGui or (gethui and gethui() or cloneref and cloneref(game:GetService("CoreGui")) or game:GetService("CoreGui")))
 
-	-- Container: kanan atas, lebar TETAP, stack ke bawah rapi
 	NotifContainer = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
 		BackgroundTransparency = 1,
@@ -190,20 +181,10 @@ local function EnsureNotifGui()
 	}, NotifContainer)
 end
 
---[[
-	SetNotification({
-		Text = "auto dodge crouch: enabled",   -- teks utama (wajib)
-		Delay = 3,                              -- durasi tampil (detik, default 3)
-		Time = 0.25,                            -- durasi animasi slide (default 0.25)
-	})
-	Mengembalikan { Close = function }
-
-	Style: card abu-abu terang, corner halus, bar pink tipis, stacking konsisten (lebar tetap).
-]]
 function MugiHub_Library:SetNotification(Config)
 	EnsureNotifGui()
 
-	local Text  = Config.Text  or Config[1] or ""
+	local Text  = Config.Content or Config[1] or ""
 	local Delay = tonumber(Config.Delay or Config[6]) or 3
 	local AnimT = tonumber(Config.Time  or Config[5]) or 0.25
 
@@ -213,7 +194,6 @@ function MugiHub_Library:SetNotification(Config)
 	local BarTween = nil
 	local NotifFuncs = {}
 
-	-- Slot: lebar TETAP (NOTIF_WIDTH), tinggi menyesuaikan jumlah baris teks
 	local TextService = game:GetService("TextService")
 	local TextSize = TextService:GetTextSize(
 		Text, 13, Enum.Font.GothamBold,
@@ -224,24 +204,22 @@ function MugiHub_Library:SetNotification(Config)
 	local Slot = Custom:Create("Frame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		ClipsDescendants = true, -- supaya slide-in card tidak "bocor" keluar slot dan merusak stacking
+		ClipsDescendants = true,
 		LayoutOrder = NotifCounter,
 		Size = UDim2.new(1, 0, 0, CardH),
 		Name = "NotifSlot"
 	}, NotifContainer)
 
-	-- Card utama — abu-abu terang, corner halus (bukan terlalu bulat), tanpa stroke
 	local Card = Custom:Create("Frame", {
 		BackgroundColor3 = Color3.fromRGB(42, 42, 46),
 		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
-		Position = UDim2.new(1, NOTIF_WIDTH + 20, 0, 0), -- mulai di luar kanan, slide ke posisi 0
+		Position = UDim2.new(1, NOTIF_WIDTH + 20, 0, 0),
 		Size = UDim2.new(1, 0, 1, 0),
 		Name = "Card"
 	}, Slot)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, Card)
 
-	-- Label teks
 	Custom:Create("TextLabel", {
 		Font = Enum.Font.GothamBold,
 		Text = Text,
@@ -257,7 +235,6 @@ function MugiHub_Library:SetNotification(Config)
 		Name = "Label"
 	}, Card)
 
-	-- Bar countdown — tipis, pink solid, corner kecil supaya menyatu rapi dengan card
 	local BarTrack = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(0, 1),
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -277,12 +254,10 @@ function MugiHub_Library:SetNotification(Config)
 	}, BarTrack)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, Bar)
 
-	-- Slide in
 	TweenService:Create(Card, TweenInfo.new(AnimT, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 		Position = UDim2.new(0, 0, 0, 0)
 	}):Play()
 
-	-- Bar shrink
 	task.spawn(function()
 		BarTween = TweenService:Create(Bar, TweenInfo.new(Delay, Enum.EasingStyle.Linear), {
 			Size = UDim2.new(0, 0, 1, 0)
@@ -315,9 +290,6 @@ function MugiHub_Library:SetNotification(Config)
 	return NotifFuncs
 end
 
--- ============================================================
--- /// WINDOW
--- ============================================================
 function MugiHub_Library:CreateWindow(Config)
 	local Title       = Config[1] or Config.Title       or ""
 	local Description = Config[2] or Config.Description or ""
@@ -432,11 +404,10 @@ function MugiHub_Library:CreateWindow(Config)
 		Position = UDim2.new(0, Separator.Position.X.Offset + 14, 0, 0)
 	}, Top)
 
-	-- Tags
 	local Close, Min
 	local TagsFuncs = {}
 	local TagList = {}
-	local MAX_TAGS = 3 -- lebih dari 3 bisa menyebabkan error/overflow layout
+	local MAX_TAGS = 3
 
 	local function RelayoutTags()
 		local TotalWidth = 0
@@ -505,13 +476,13 @@ function MugiHub_Library:CreateWindow(Config)
 			Value = (Ok and Value ~= nil and tostring(Value)) or "Unknown"
 			return (Label ~= "" and (Label .. ": " .. Value)) or Value
 		end
-		local TagItemFuncs = TagsFuncs:Add("● " .. ComputeText())
+		local TagItemFuncs = TagsFuncs:Add("* " .. ComputeText())
 		if RefreshInterval then
 			task.spawn(function()
 				while TagItemFuncs.Frame and TagItemFuncs.Frame.Parent do
 					task.wait(RefreshInterval)
 					if not (TagItemFuncs.Frame and TagItemFuncs.Frame.Parent) then break end
-					TagItemFuncs:Set("● " .. ComputeText())
+					TagItemFuncs:Set("* " .. ComputeText())
 				end
 			end)
 		end
@@ -555,7 +526,7 @@ function MugiHub_Library:CreateWindow(Config)
 
 	Min = Custom:Create("TextButton", {
 		Font = Enum.Font.GothamBold,
-		Text = "—",
+		Text = "-",
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 15,
 		AnchorPoint = Vector2.new(1, 0.5),
@@ -582,7 +553,6 @@ function MugiHub_Library:CreateWindow(Config)
 	}, Main)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 2)}, LayersTab)
 
-	-- Search box
 	local SearchBoxContainer = Custom:Create("Frame", {
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		BackgroundTransparency = 0.92,
@@ -716,7 +686,6 @@ function MugiHub_Library:CreateWindow(Config)
 		SortOrder = Enum.SortOrder.LayoutOrder
 	}, ScrollTab)
 
-	-- Avatar footer
 	local AvatarFooter = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(0, 1),
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -766,7 +735,6 @@ function MugiHub_Library:CreateWindow(Config)
 		if ok and url then AvatarImage.Image = url end
 	end)
 
-	-- Search Popup
 	local SearchPopup = Custom:Create("Frame", {
 		BackgroundColor3 = Color3.fromRGB(22, 22, 22),
 		BackgroundTransparency = 0.02,
@@ -907,8 +875,6 @@ function MugiHub_Library:CreateWindow(Config)
 		if Open_Close.Visible then Open_Close.Visible = false end
 	end)
 
-	-- /// Close Window Popup — DI DALAM Main (bukan di root ScreenGui), style flat sesuai referensi
-	-- Backdrop menutupi seluruh Main, popup di tengah, tanpa warna lain selain Putih-Pink standar Mugi
 	local ExitBackdrop = Custom:Create("Frame", {
 		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
 		BackgroundTransparency = 0.45,
@@ -931,7 +897,6 @@ function MugiHub_Library:CreateWindow(Config)
 	}, Main)
 	Custom:Create("UICorner", {CornerRadius = UDim.new(0, 8)}, ExitConfirm)
 
-	-- Header: Title (kiri) + X (kanan) — flat, tanpa aksen warna
 	local ExitHeader = Custom:Create("Frame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
@@ -952,21 +917,6 @@ function MugiHub_Library:CreateWindow(Config)
 		Name = "ExitTitle"
 	}, ExitHeader)
 
-	local ExitCloseX = Custom:Create("TextButton", {
-		Font = Enum.Font.GothamBold,
-		Text = "×",
-		TextColor3 = Color3.fromRGB(220, 220, 220),
-		TextSize = 18,
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.new(1, -10, 0.5, 0),
-		Size = UDim2.new(0, 24, 0, 24),
-		ZIndex = 52,
-		Name = "ExitCloseX"
-	}, ExitHeader)
-
-	-- Deskripsi
 	Custom:Create("TextLabel", {
 		Font = Enum.Font.GothamBold,
 		Text = "WANT TO CLOSE THIS SCRIPT?",
@@ -982,7 +932,6 @@ function MugiHub_Library:CreateWindow(Config)
 		Name = "ExitDesc"
 	}, ExitConfirm)
 
-	-- Tombol: Cancel (kiri, flat abu) + Close (kanan, flat pink)
 	local CancelButton = Custom:Create("TextButton", {
 		Font = Enum.Font.GothamBold,
 		Text = "Cancel",
@@ -1032,10 +981,6 @@ function MugiHub_Library:CreateWindow(Config)
 		CircleClick(CancelButton, Player:GetMouse().X, Player:GetMouse().Y)
 		task.spawn(HideExitConfirm)
 	end)
-	ExitCloseX.Activated:Connect(function()
-		CircleClick(ExitCloseX, Player:GetMouse().X, Player:GetMouse().Y)
-		task.spawn(HideExitConfirm)
-	end)
 	ExitButton.Activated:Connect(function()
 		CircleClick(ExitButton, Player:GetMouse().X, Player:GetMouse().Y)
 		task.spawn(function()
@@ -1060,7 +1005,6 @@ function MugiHub_Library:CreateWindow(Config)
 		end
 	end)
 
-	-- Blur / Dropdown overlay
 	local MoreBlur = Custom:Create("Frame", {
 		AnchorPoint = Vector2.new(1, 1), BackgroundColor3 = Color3.fromRGB(0, 0, 0),
 		BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true,
@@ -1111,9 +1055,6 @@ function MugiHub_Library:CreateWindow(Config)
 		Archivable = false, Name = "DropPageLayout", Parent = DropdownFolder
 	})
 
-	-- ============================================================
-	-- /// TABS
-	-- ============================================================
 	local Tabs = {}
 	local CountTab = 0
 	local CountDropdown = 0
@@ -1160,15 +1101,21 @@ function MugiHub_Library:CreateWindow(Config)
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.new(0, 9, 0.5, 0),
 			Size = UDim2.new(0, 16, 0, 16),
-			ZIndex = 2, -- eksplisit di atas TabButton/TabName supaya selalu terlihat
+			ZIndex = 2,
 			ScaleType = Enum.ScaleType.Fit,
 			Name = "FeatureImg"
 		}, Tab)
 
-		-- Verifikasi: kalau ID icon invalid/kosong/ke-delete, otomatis fallback ke icon default
-		-- (IsLoaded tidak selalu reliable lintas-executor, jadi kita cek ContentImageId kosong sebagai sinyal gagal load)
-		task.defer(function()
-			if TabIconImg.Image == "" or TabIconImg.Image == "rbxasset://textures/ui/GuiImagePlaceholder.png" then
+		task.spawn(function()
+			local ContentProvider = game:GetService("ContentProvider")
+			local ok, status = pcall(function()
+				local s
+				ContentProvider:PreloadAsync({TabIconImg}, function(_, assetFetchStatus)
+					s = assetFetchStatus
+				end)
+				return s
+			end)
+			if not ok or status == Enum.AssetFetchStatus.Failure then
 				TabIconImg.Image = Custom.DefaultIcon
 			end
 		end)
@@ -1218,7 +1165,7 @@ function MugiHub_Library:CreateWindow(Config)
 		function Sections:AddSection(Title, OpenSection)
 			Title = Title or ""; OpenSection = OpenSection or false
 			local SectionTitleText = Title
-			local SearchSubtitle = _Name .. " · " .. SectionTitleText
+			local SearchSubtitle = _Name .. " . " .. SectionTitleText
 
 			local Section = Custom:Create("Frame", {
 				BackgroundTransparency = 0.999, BorderSizePixel = 0,
@@ -1372,23 +1319,15 @@ function MugiHub_Library:CreateWindow(Config)
 				local Title = Config[1] or Config.Title or ""
 				local SF = {}
 				local S = Custom:Create("Frame", {
-					BackgroundColor3 = Color3.fromRGB(70, 70, 70), BackgroundTransparency = 0.1,
-					BorderSizePixel = 1, LayoutOrder = ItemCount, Size = UDim2.new(1, 0, 0, 30), Name = "Seperator"
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0, LayoutOrder = ItemCount, Size = UDim2.new(1, 0, 0, 30), Name = "Seperator"
 				}, SectionAdd)
 				local SL = Custom:Create("TextLabel", {
 					Font = Enum.Font.GothamBold, Text = Title,
-					TextColor3 = Color3.fromRGB(231, 231, 231),
-					TextStrokeColor3 = Color3.fromRGB(0, 0, 0), TextStrokeTransparency = 0.8,
+					TextColor3 = Custom.ColorRGB,
 					TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Center,
 					BackgroundTransparency = 1, BorderSizePixel = 0,
-					Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -16, 1, 0), Name = "SeperatorTitle"
-				}, S)
-				Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, S)
-				Custom:Create("UIGradient", {
-					Color = ColorSequence.new{
-						ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 120, 120)),
-						ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 120, 120))
-					}, Rotation = 90
+					Position = UDim2.new(0, 2, 0, 0), Size = UDim2.new(1, -4, 1, 0), Name = "SeperatorTitle"
 				}, S)
 				function SF:Set(Config)
 					SL.Text = Config[1] or Config.Title or ""
@@ -1410,7 +1349,7 @@ function MugiHub_Library:CreateWindow(Config)
 				local Content  = Config[2] or Config.Content  or ""
 				local Icon     = Custom:ResolveIcon(Config[3] or Config.Icon) 
 				if Icon == Custom.DefaultIcon and not (Config[3] or Config.Icon) then
-					Icon = "rbxassetid://7734010488" -- default khusus tombol jika sama sekali tidak diisi
+					Icon = "rbxassetid://7734010488"
 				end
 				local Callback = Config[4] or Config.Callback or function() end
 				local SF = {}
@@ -1523,9 +1462,10 @@ function MugiHub_Library:CreateWindow(Config)
 					FT.Value = not FT.Value; FT:Set(FT.Value)
 				end)
 				function FT:Set(Value)
+					FT.Value = Value
 					Callback(Value); ToggleAnim(Value)
 				end
-				FT:Set(FT.Value)
+				ToggleAnim(FT.Value)
 				RegisterSearch(Title, T, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
 				ItemCount += 1; return FT
 			end
@@ -1602,10 +1542,21 @@ function MugiHub_Library:CreateWindow(Config)
 					local r = math.floor(n / f + (math.sign(n) * 0.5)) * f
 					if r < 0 then r = r + f end; return r
 				end
+				local function FormatValue(v)
+					if Increment >= 1 then return tostring(math.floor(v + 0.5)) end
+					local decimals = 0
+					local incStr = tostring(Increment)
+					local dotPos = incStr:find("%.")
+					if dotPos then decimals = #incStr - dotPos end
+					decimals = math.max(decimals, 1)
+					local rounded = tonumber(string.format("%." .. decimals .. "f", v))
+					return string.format("%." .. decimals .. "f", rounded)
+				end
 				function FS:Set(Value, Animate)
 					Value = math.clamp(Round(Value, Increment), Min, Max)
 					FS.Value = Value
-					if TB.Text ~= tostring(Value) then TB.Text = tostring(Value) end
+					local display = FormatValue(Value)
+					if TB.Text ~= display then TB.Text = display end
 					local TS = UDim2.fromScale((Value - Min) / (Max - Min), 1)
 					if Animate then
 						TweenService:Create(SD, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = TS}):Play()
@@ -1635,16 +1586,39 @@ function MugiHub_Library:CreateWindow(Config)
 					end
 				end)
 				TB:GetPropertyChangedSignal("Text"):Connect(function()
-					local v = TB.Text:gsub("[^%d]", "")
-					if v ~= "" then
-						local n = math.min(tonumber(v), Max)
-						if TB.Text ~= tostring(n) then TB.Text = tostring(n) end
-					else TB.Text = "0" end
+					local v = TB.Text:gsub("[^%d%.%-]", "")
+
+					local sign = ""
+					if v:sub(1, 1) == "-" then
+						sign = "-"
+						v = v:sub(2)
+					end
+					v = v:gsub("%-", "")
+
+					local firstDot = v:find("%.")
+					if firstDot then
+						local intPart = v:sub(1, firstDot - 1)
+						local fracPart = v:sub(firstDot + 1):gsub("%.", "")
+						v = intPart .. "." .. fracPart
+					end
+					v = sign .. v
+
+					if v ~= "" and v ~= "-" and v ~= "." and v ~= "-." then
+						local n = tonumber(v)
+						if n then
+							n = math.min(n, Max)
+							local display = tostring(n)
+							if v:sub(-1) == "." then display = v end
+							if TB.Text ~= display then TB.Text = display end
+						end
+					elseif v == "" then
+						TB.Text = "0"
+					end
 				end)
 				TB.FocusLost:Connect(function()
 					FS:Set(tonumber(TB.Text) or 0, true); Callback(FS.Value)
 				end)
-				FS:Set(tonumber(Default), true); Callback(FS.Value)
+				FS:Set(tonumber(Default), true)
 				RegisterSearch(Title, S, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
 				ItemCount += 1; return FS
 			end
@@ -1703,7 +1677,7 @@ function MugiHub_Library:CreateWindow(Config)
 					ITB.Text = Value; FI.Value = Value; Callback(Value)
 				end
 				ITB.FocusLost:Connect(function() FI:Set(ITB.Text) end)
-				FI:Set(Default)
+				ITB.Text = Default; FI.Value = Default
 				RegisterSearch(Title, I, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
 				ItemCount += 1; return FI
 			end
@@ -1721,6 +1695,7 @@ function MugiHub_Library:CreateWindow(Config)
 				if type(Options) ~= "table" then Options = {} end
 
 				local FD = {Value = Default, Options = Options}
+				local ActiveTweens = {}
 
 				local D = Custom:Create("Frame", {
 					BackgroundColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.935,
@@ -1817,7 +1792,7 @@ function MugiHub_Library:CreateWindow(Config)
 						if f.Name == "Option" then FD.Value = {}; FD.Options = {}; OS.Text = "Select Options"; f:Destroy() end
 					end
 				end
-				function FD:Set(Value)
+				function FD:Set(Value, SkipCallback)
 					Value = Value or FD.Value
 					if type(Value) == "string" then Value = {Value}
 					elseif type(Value) ~= "table" then Value = {} end
@@ -1826,22 +1801,24 @@ function MugiHub_Library:CreateWindow(Config)
 					for _, Drop in pairs(SS:GetChildren()) do
 						if Drop.Name ~= "UIListLayout" and Drop.Name ~= "SearchBar" then
 							local found = table.find(FD.Value, Drop.OptionText.Text) ~= nil
-
-							-- Cancel tween lama pada frame ini sebelum mulai yang baru,
-							-- supaya klik cepat berturut-turut tidak bikin state visual desync
 							local ChooseFrame = Drop.ChooseFrame
-							if ChooseFrame:FindFirstChild("_ActiveTween") then
-								pcall(function() ChooseFrame._ActiveTween.Value:Cancel() end)
+
+							if ActiveTweens[ChooseFrame] then
+								for _, t in ipairs(ActiveTweens[ChooseFrame]) do
+									pcall(function() t:Cancel() end)
+								end
 							end
 
-							TweenService:Create(ChooseFrame, ti, {Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)}):Play()
-							TweenService:Create(ChooseFrame.UIStroke, ti, {Transparency = found and 0 or 0.999}):Play()
-							TweenService:Create(Drop, ti, {BackgroundTransparency = found and 0.935 or 0.999}):Play()
+							local tSize = TweenService:Create(ChooseFrame, ti, {Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)})
+							local tStroke = TweenService:Create(ChooseFrame.UIStroke, ti, {Transparency = found and 0 or 0.999})
+							local tBg = TweenService:Create(Drop, ti, {BackgroundTransparency = found and 0.935 or 0.999})
+							ActiveTweens[ChooseFrame] = {tSize, tStroke, tBg}
+							tSize:Play(); tStroke:Play(); tBg:Play()
 						end
 					end
 					local dv = table.concat(FD.Value, ", ")
 					OS.Text = dv ~= "" and dv or "Select Options"
-					Callback(FD.Value)
+					if not SkipCallback then Callback(FD.Value) end
 				end
 				function FD:AddOption(OptionName)
 					OptionName = OptionName or "Option"
@@ -1874,7 +1851,6 @@ function MugiHub_Library:CreateWindow(Config)
 					Custom:Create("UICorner", {}, CF)
 					OB.Activated:Connect(function()
 						CircleClick(OB, Player:GetMouse().X, Player:GetMouse().Y)
-						-- Source of truth = FD.Value (bukan baca BackgroundTransparency yang bisa stale saat tween masih jalan)
 						local currentlySelected = table.find(FD.Value, OptionName) ~= nil
 						if Multi then
 							if currentlySelected then
@@ -1898,14 +1874,14 @@ function MugiHub_Library:CreateWindow(Config)
 					end
 					UpdateCanvas(); DropCount += 1
 				end
-				function FD:Refresh(List, Sel)
+				function FD:Refresh(List, Sel, SkipCallback)
 					List = type(List) == "table" and List or {}
 					Sel = Sel or {}
 					FD:Clear()
 					for _, v in ipairs(List) do FD:AddOption(v) end
-					FD.Options = List; FD:Set(Sel)
+					FD.Options = List; FD:Set(Sel, SkipCallback)
 				end
-				FD:Refresh(FD.Options, FD.Value)
+				FD:Refresh(FD.Options, FD.Value, true)
 				RegisterSearch(Title, D, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
 				ItemCount += 1; CountDropdown += 1; return FD
 			end
@@ -2129,6 +2105,98 @@ function MugiHub_Library:CreateWindow(Config)
 				end
 				RegisterSearch(Title, RM, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
 				ItemCount += 1; return RF
+			end
+
+			function Item:AddCopyGroup(Config)
+				local Layout = Config.Layout or Config[1] or {"Copy1", "Copy2", "Copy3-full"}
+				local FC = {}
+
+				local ContainerHeight = 0
+				local Rows = {}
+				local i = 1
+				while i <= #Layout do
+					local entry = Layout[i]
+					if type(entry) == "table" then
+						table.insert(Rows, entry)
+					else
+						table.insert(Rows, {entry})
+					end
+					i += 1
+				end
+
+				local CG = Custom:Create("Frame", {
+					BackgroundTransparency = 1, BorderSizePixel = 0,
+					LayoutOrder = ItemCount, Size = UDim2.new(1, 0, 0, 35), Name = "CopyGroup"
+				}, SectionAdd)
+				local RowLayout = Custom:Create("UIListLayout", {
+					Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder
+				}, CG)
+
+				local ButtonRefs = {}
+
+				for rowIdx, rowItems in ipairs(Rows) do
+					local RowFrame = Custom:Create("Frame", {
+						BackgroundTransparency = 1, BorderSizePixel = 0,
+						LayoutOrder = rowIdx, Size = UDim2.new(1, 0, 0, 32), Name = "CopyRow"
+					}, CG)
+					local RowH = Custom:Create("UIListLayout", {
+						Padding = UDim.new(0, 4), FillDirection = Enum.FillDirection.Horizontal,
+						SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Center
+					}, RowFrame)
+
+					for colIdx, item in ipairs(rowItems) do
+						local Label, Code
+						if type(item) == "table" then
+							Label = item.Label or item[1] or ("Copy" .. colIdx)
+							Code = item.Code or item[2] or ""
+						else
+							Label = tostring(item)
+							Code = ""
+						end
+
+						local colCount = #rowItems
+						local totalPadding = (colCount - 1) * 4
+						local widthOffset = -(totalPadding / colCount)
+
+						local BtnFrame = Custom:Create("TextButton", {
+							Font = Enum.Font.GothamBold, Text = "", AutoButtonColor = false,
+							BackgroundColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.9,
+							BorderSizePixel = 0, LayoutOrder = colIdx,
+							Size = UDim2.new(1 / colCount, widthOffset, 1, 0), Name = "CopyBtn"
+						}, RowFrame)
+						Custom:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, BtnFrame)
+
+						local BtnLabel = Custom:Create("TextLabel", {
+							Font = Enum.Font.GothamBold, Text = Label, TextColor3 = Color3.fromRGB(230, 230, 230),
+							TextSize = 12, TextXAlignment = Enum.TextXAlignment.Center, BackgroundTransparency = 1,
+							Size = UDim2.new(1, -8, 1, 0), Position = UDim2.new(0, 4, 0, 0), Name = "CopyBtnLabel"
+						}, BtnFrame)
+
+						local BtnGen = 0
+						BtnFrame.Activated:Connect(function()
+							CircleClick(BtnFrame, Player:GetMouse().X, Player:GetMouse().Y)
+							pcall(function() if setclipboard then setclipboard(Code) end end)
+							BtnGen += 1; local TG = BtnGen
+							BtnLabel.Text = "Copied"
+							TweenService:Create(BtnFrame, TweenInfo.new(0.12), {BackgroundTransparency = 0.75}):Play()
+							task.delay(0.15, function()
+								if TG == BtnGen then
+									TweenService:Create(BtnFrame, TweenInfo.new(0.12), {BackgroundTransparency = 0.9}):Play()
+								end
+							end)
+							task.delay(2, function() if TG == BtnGen then BtnLabel.Text = Label end end)
+						end)
+
+						table.insert(ButtonRefs, {Frame = BtnFrame, Label = BtnLabel, SetCode = function(c) Code = c end})
+					end
+				end
+
+				function FC:SetCode(Index, NewCode)
+					if ButtonRefs[Index] then ButtonRefs[Index].SetCode(NewCode) end
+				end
+
+				RegisterSearch("Copy Group", CG, SearchSubtitle, SelectTab, EnsureSectionOpen, ScrolLayers)
+				ItemCount += 1; return FC
 			end
 
 			ItemCount += 1

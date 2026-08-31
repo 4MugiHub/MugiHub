@@ -162,6 +162,7 @@ local function EnsureNotifGui()
 	NotifGui = Custom:Create("ScreenGui", {
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 		ResetOnSpawn = false,
+		DisplayOrder = 1000,
 	}, RunService:IsStudio() and Player.PlayerGui or (gethui and gethui() or cloneref and cloneref(game:GetService("CoreGui")) or game:GetService("CoreGui")))
 
 	NotifContainer = Custom:Create("Frame", {
@@ -528,7 +529,9 @@ function MugiHub_Library:CreateWindow(Config)
 		Font = Enum.Font.GothamBold,
 		Text = "-",
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 15,
+		TextSize = 22,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextYAlignment = Enum.TextYAlignment.Center,
 		AnchorPoint = Vector2.new(1, 0.5),
 		BackgroundTransparency = 0.999,
 		BorderSizePixel = 0,
@@ -1807,13 +1810,20 @@ function MugiHub_Library:CreateWindow(Config)
 								for _, t in ipairs(ActiveTweens[ChooseFrame]) do
 									pcall(function() t:Cancel() end)
 								end
+								ActiveTweens[ChooseFrame] = nil
 							end
 
-							local tSize = TweenService:Create(ChooseFrame, ti, {Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)})
-							local tStroke = TweenService:Create(ChooseFrame.UIStroke, ti, {Transparency = found and 0 or 0.999})
-							local tBg = TweenService:Create(Drop, ti, {BackgroundTransparency = found and 0.935 or 0.999})
-							ActiveTweens[ChooseFrame] = {tSize, tStroke, tBg}
-							tSize:Play(); tStroke:Play(); tBg:Play()
+							if not Multi then
+								ChooseFrame.Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)
+								ChooseFrame.UIStroke.Transparency = found and 0 or 0.999
+								Drop.BackgroundTransparency = found and 0.935 or 0.999
+							else
+								local tSize = TweenService:Create(ChooseFrame, ti, {Size = found and UDim2.new(0, 1, 0, 12) or UDim2.new(0, 0, 0, 0)})
+								local tStroke = TweenService:Create(ChooseFrame.UIStroke, ti, {Transparency = found and 0 or 0.999})
+								local tBg = TweenService:Create(Drop, ti, {BackgroundTransparency = found and 0.935 or 0.999})
+								ActiveTweens[ChooseFrame] = {tSize, tStroke, tBg}
+								tSize:Play(); tStroke:Play(); tBg:Play()
+							end
 						end
 					end
 					local dv = table.concat(FD.Value, ", ")

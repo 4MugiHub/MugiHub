@@ -94,28 +94,6 @@ end
 
 local Open_Close = OpenClose()
 
-local function MakeDraggable(topbar, object)
-    local dragging, dragStart, startPos = false, nil, nil
-    topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = object.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    topbar.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            object.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
-
 local function CircleClick(Button, X, Y)
     task.spawn(function()
         Button.ClipsDescendants = true
@@ -551,14 +529,14 @@ function MugiHub_Library:CreateWindow(Config)
         Font = Enum.Font.GothamBold,
         Text = "—",
         TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 22,
+        TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Center,
         TextYAlignment = Enum.TextYAlignment.Center,
         AnchorPoint = Vector2.new(1, 0.5),
         BackgroundTransparency = 0.999,
         BorderSizePixel = 0,
-        Position = UDim2.new(1, -46, 0.5, 0),
-        Size = UDim2.new(0, 38, 0, 26),
+        Position = UDim2.new(1, -42, 0.5, 0),
+        Size = UDim2.new(0, 22, 0, 22),
         Name = "Min",
     }, Top)
 
@@ -1111,7 +1089,7 @@ function MugiHub_Library:CreateWindow(Config)
     local Tabs = {}
     local ActiveTab = nil
 
-    function Funcs:MakeTab(Config)
+    function Funcs:AddTab(Config)
         local TabName = Config[1] or Config.Name or Config.Title or "Tab"
         local TabIcon = Config[2] or Config.Icon or ""
 
@@ -1229,7 +1207,10 @@ function MugiHub_Library:CreateWindow(Config)
 
         local SectionFuncs = {}
 
-        function TabFuncs:MakeSection(SectionConfig)
+        function TabFuncs:AddSection(SectionConfig)
+            if type(SectionConfig) == "string" then
+                SectionConfig = {SectionConfig}
+            end
             local SectionName = SectionConfig[1] or SectionConfig.Name or SectionConfig.Title or "Section"
 
             local SectionFrame = Custom:Create("Frame", {
@@ -1280,9 +1261,9 @@ function MugiHub_Library:CreateWindow(Config)
 
             local SecFuncs = {}
 
-            function SecFuncs:MakeButton(ButtonConfig)
+            function SecFuncs:AddButton(ButtonConfig)
                 local ButtonName = ButtonConfig[1] or ButtonConfig.Name or ButtonConfig.Title or "Button"
-                local ButtonDesc = ButtonConfig[2] or ButtonConfig.Description or ""
+                local ButtonDesc = ButtonConfig[2] or ButtonConfig.Description or ButtonConfig.Content or ""
                 local Callback = ButtonConfig[3] or ButtonConfig.Callback or ButtonConfig.OnClick or function() end
 
                 local Btn = Custom:Create("TextButton", {
@@ -1339,7 +1320,7 @@ function MugiHub_Library:CreateWindow(Config)
                 return { Button = Btn, SetText = function(Text) BtnLabel.Text = Text end }
             end
 
-            function SecFuncs:MakeToggle(ToggleConfig)
+            function SecFuncs:AddToggle(ToggleConfig)
                 local ToggleName = ToggleConfig[1] or ToggleConfig.Name or ToggleConfig.Title or "Toggle"
                 local Default = ToggleConfig[2] or ToggleConfig.Default or false
                 local Callback = ToggleConfig[3] or ToggleConfig.Callback or function() end
@@ -1357,7 +1338,7 @@ function MugiHub_Library:CreateWindow(Config)
 
                 Custom:Create("UICorner", { CornerRadius = UDim.new(0, 6) }, ToggleFrame)
 
-                Custom:Create("TextLabel", {
+                local ToggleLabel = Custom:Create("TextLabel", {
                     Font = Enum.Font.GothamBold,
                     Text = ToggleName,
                     TextColor3 = Color3.fromRGB(230, 230, 230),
@@ -1368,6 +1349,22 @@ function MugiHub_Library:CreateWindow(Config)
                     Size = UDim2.new(1, -60, 1, 0),
                     Name = "ToggleLabel",
                 }, ToggleFrame)
+
+                local ToggleDesc = ToggleConfig.Content or ToggleConfig.Description or ToggleConfig[4]
+                if ToggleDesc and ToggleDesc ~= "" then
+                    ToggleLabel.Size = UDim2.new(1, -60, 0.6, 0)
+                    Custom:Create("TextLabel", {
+                        Font = Enum.Font.Gotham,
+                        Text = ToggleDesc,
+                        TextColor3 = Color3.fromRGB(140, 140, 140),
+                        TextSize = 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        BackgroundTransparency = 1,
+                        Position = UDim2.new(0, 10, 0.6, 0),
+                        Size = UDim2.new(1, -60, 0.4, 0),
+                        Name = "ToggleDesc",
+                    }, ToggleFrame)
+                end
 
                 local SwitchBg = Custom:Create("Frame", {
                     AnchorPoint = Vector2.new(1, 0.5),
@@ -1426,12 +1423,13 @@ function MugiHub_Library:CreateWindow(Config)
                 }
             end
 
-            function SecFuncs:MakeSlider(SliderConfig)
+            function SecFuncs:AddSlider(SliderConfig)
                 local SliderName = SliderConfig[1] or SliderConfig.Name or SliderConfig.Title or "Slider"
                 local MinVal = SliderConfig[2] or SliderConfig.Min or 0
                 local MaxVal = SliderConfig[3] or SliderConfig.Max or 100
                 local Default = SliderConfig[4] or SliderConfig.Default or MinVal
                 local Callback = SliderConfig[5] or SliderConfig.Callback or function() end
+                local Increment = SliderConfig.Increment or 1
 
                 local SliderFrame = Custom:Create("Frame", {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -1508,7 +1506,11 @@ function MugiHub_Library:CreateWindow(Config)
                     local BarX = BarBg.AbsolutePosition.X
                     local BarW = BarBg.AbsoluteSize.X
                     local Percent = math.clamp((Input.Position.X - BarX) / BarW, 0, 1)
-                    CurrentValue = math.floor(MinVal + (MaxVal - MinVal) * Percent)
+                    local raw = MinVal + (MaxVal - MinVal) * Percent
+                    CurrentValue = math.floor(raw / Increment + 0.5) * Increment
+                    if Increment >= 1 then
+                        CurrentValue = math.floor(CurrentValue)
+                    end
                     ValueLabel.Text = tostring(CurrentValue)
                     BarFill.Size = UDim2.new(Percent, 0, 1, 0)
                     SliderDot.Position = UDim2.new(Percent, 0, 0.5, 0)
@@ -1548,7 +1550,7 @@ function MugiHub_Library:CreateWindow(Config)
                 }
             end
 
-            function SecFuncs:MakeInput(InputConfig)
+            function SecFuncs:AddInput(InputConfig)
                 local InputName = InputConfig[1] or InputConfig.Name or InputConfig.Title or "Input"
                 local Placeholder = InputConfig[2] or InputConfig.Placeholder or "Enter text..."
                 local Default = InputConfig[3] or InputConfig.Default or ""
@@ -1606,11 +1608,15 @@ function MugiHub_Library:CreateWindow(Config)
                 }
             end
 
-            function SecFuncs:MakeDropdown(DropdownConfig)
+            function SecFuncs:AddDropdown(DropdownConfig)
                 local DropdownName = DropdownConfig[1] or DropdownConfig.Name or DropdownConfig.Title or "Dropdown"
                 local Options = DropdownConfig[2] or DropdownConfig.Options or {}
                 local Default = DropdownConfig[3] or DropdownConfig.Default or nil
                 local Callback = DropdownConfig[4] or DropdownConfig.Callback or function() end
+
+                if type(Default) == "table" then
+                    Default = Default[1]
+                end
 
                 local DropdownFrame = Custom:Create("Frame", {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -1720,7 +1726,7 @@ function MugiHub_Library:CreateWindow(Config)
 
                     DdLabel.Text = DropdownName .. ": " .. OptionText
                     DdLabel.TextColor3 = Custom.ColorRGB
-                    task.spawn(Callback, OptionText)
+                    task.spawn(Callback, {OptionText})
                 end
 
                 for i, OptionText in ipairs(Options) do
@@ -1794,18 +1800,23 @@ function MugiHub_Library:CreateWindow(Config)
                 return {
                     Dropdown = DropdownFrame,
                     Set = function(Value)
+                        if type(Value) == "table" then Value = Value[1] end
                         if OptionFrames[Value] then
                             SelectOption(Value)
                         end
                     end,
-                    Get = function() return SelectedOption end,
+                    Get = function() return {SelectedOption} end,
                 }
             end
 
-            function SecFuncs:MakeKeybind(KeybindConfig)
+            function SecFuncs:AddKeybind(KeybindConfig)
                 local KeybindName = KeybindConfig[1] or KeybindConfig.Name or KeybindConfig.Title or "Keybind"
                 local DefaultKey = KeybindConfig[2] or KeybindConfig.Default or Enum.KeyCode.E
                 local Callback = KeybindConfig[3] or KeybindConfig.Callback or function() end
+
+                if type(DefaultKey) == "string" then
+                    DefaultKey = Enum.KeyCode[DefaultKey] or Enum.KeyCode.E
+                end
 
                 local KeybindFrame = Custom:Create("Frame", {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -1873,12 +1884,18 @@ function MugiHub_Library:CreateWindow(Config)
 
                 return {
                     Keybind = KeybindFrame,
-                    Set = function(Key) UpdateKey(Key) end,
+                    Set = function(Key)
+                        if type(Key) == "string" then Key = Enum.KeyCode[Key] end
+                        if Key then UpdateKey(Key) end
+                    end,
                     Get = function() return CurrentKey end,
                 }
             end
 
-            function SecFuncs:MakeParagraph(ParagraphConfig)
+            function SecFuncs:AddParagraph(ParagraphConfig)
+                if type(ParagraphConfig) == "table" and ParagraphConfig[1] and ParagraphConfig[2] then
+                    ParagraphConfig = {Title = ParagraphConfig[1], Text = ParagraphConfig[2], Accordion = ParagraphConfig[3]}
+                end
                 local ParagraphName = ParagraphConfig[1] or ParagraphConfig.Name or ParagraphConfig.Title or "Paragraph"
                 local ParagraphText = ParagraphConfig[2] or ParagraphConfig.Text or ""
 
@@ -1892,6 +1909,18 @@ function MugiHub_Library:CreateWindow(Config)
 
                 Custom:Create("UICorner", { CornerRadius = UDim.new(0, 6) }, ParagraphFrame)
 
+                local TitleLbl = Custom:Create("TextLabel", {
+                    Font = Enum.Font.GothamBold,
+                    Text = ParagraphName,
+                    TextColor3 = Custom.ColorRGB,
+                    TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 10, 0, 4),
+                    Size = UDim2.new(1, -20, 0, 16),
+                    Name = "ParaTitle",
+                }, ParagraphFrame)
+
                 local ParaLabel = Custom:Create("TextLabel", {
                     Font = Enum.Font.Gotham,
                     Text = ParagraphText,
@@ -1901,7 +1930,7 @@ function MugiHub_Library:CreateWindow(Config)
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextYAlignment = Enum.TextYAlignment.Top,
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 10, 0, 6),
+                    Position = UDim2.new(0, 10, 0, 22),
                     Size = UDim2.new(1, -20, 0, 20),
                     Name = "ParaLabel",
                 }, ParagraphFrame)
@@ -1909,7 +1938,7 @@ function MugiHub_Library:CreateWindow(Config)
                 local TextService = game:GetService("TextService")
                 local Size = TextService:GetTextSize(ParagraphText, 11, Enum.Font.Gotham, Vector2.new(ParagraphFrame.AbsoluteSize.X - 20, 1000))
                 ParaLabel.Size = UDim2.new(1, -20, 0, Size.Y + 4)
-                ParagraphFrame.Size = UDim2.new(1, 0, 0, Size.Y + 16)
+                ParagraphFrame.Size = UDim2.new(1, 0, 0, Size.Y + 32)
 
                 return {
                     Paragraph = ParagraphFrame,
@@ -1917,12 +1946,15 @@ function MugiHub_Library:CreateWindow(Config)
                         ParaLabel.Text = Text
                         local NewSize = TextService:GetTextSize(Text, 11, Enum.Font.Gotham, Vector2.new(ParagraphFrame.AbsoluteSize.X - 20, 1000))
                         ParaLabel.Size = UDim2.new(1, -20, 0, NewSize.Y + 4)
-                        ParagraphFrame.Size = UDim2.new(1, 0, 0, NewSize.Y + 16)
+                        ParagraphFrame.Size = UDim2.new(1, 0, 0, NewSize.Y + 32)
                     end,
                 }
             end
 
-            function SecFuncs:MakeSeparator(SeparatorConfig)
+            function SecFuncs:AddSeparator(SeparatorConfig)
+                if type(SeparatorConfig) == "string" then
+                    SeparatorConfig = {SeparatorConfig}
+                end
                 local SeparatorName = SeparatorConfig[1] or SeparatorConfig.Name or SeparatorConfig.Title or ""
 
                 local SepFrame = Custom:Create("Frame", {
@@ -1954,7 +1986,7 @@ function MugiHub_Library:CreateWindow(Config)
                 return { Separator = SepFrame }
             end
 
-            function SecFuncs:MakeLine(LineConfig)
+            function SecFuncs:AddLine(LineConfig)
                 local LineFrame = Custom:Create("Frame", {
                     BackgroundColor3 = Custom.ColorRGB,
                     BackgroundTransparency = 0.6,
@@ -1966,7 +1998,7 @@ function MugiHub_Library:CreateWindow(Config)
                 return { Line = LineFrame }
             end
 
-            function SecFuncs:MakeSocial(SocialConfig)
+            function SecFuncs:AddSocial(SocialConfig)
                 local SocialName = SocialConfig[1] or SocialConfig.Name or SocialConfig.Title or "Social"
                 local SocialUrl = SocialConfig[2] or SocialConfig.Url or ""
                 local SocialIcon = SocialConfig[3] or SocialConfig.Icon or ""
@@ -2027,7 +2059,7 @@ function MugiHub_Library:CreateWindow(Config)
                 return { Social = SocialFrame }
             end
 
-            function SecFuncs:MakeCopyGroup(CopyConfig)
+            function SecFuncs:AddCopyGroup(CopyConfig)
                 local CopyName = CopyConfig[1] or CopyConfig.Name or CopyConfig.Title or "Copy Group"
                 local CopyText = CopyConfig[2] or CopyConfig.Text or ""
 
@@ -2082,7 +2114,10 @@ function MugiHub_Library:CreateWindow(Config)
                 return { CopyGroup = CopyFrame, Set = function(Text) CopyText = Text end }
             end
 
-            function SecFuncs:MakeReadMe(ReadMeConfig)
+            function SecFuncs:AddReadMe(ReadMeConfig)
+                if type(ReadMeConfig) == "table" and ReadMeConfig[1] and ReadMeConfig[2] then
+                    ReadMeConfig = {Title = ReadMeConfig[1], Text = ReadMeConfig[2]}
+                end
                 local ReadMeName = ReadMeConfig[1] or ReadMeConfig.Name or ReadMeConfig.Title or "Read Me"
                 local ReadMeText = ReadMeConfig[2] or ReadMeConfig.Text or ""
 

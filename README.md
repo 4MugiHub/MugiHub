@@ -4,7 +4,7 @@
 
 **A clean, modern UI library for Roblox script hubs.**
 
-Pink-and-white theme · Search-everything sidebar · Built-in notifications · Optional multi-config webhook · Zero dependencies
+Pink-and-black theme · Animated glowing border · Search-everything sidebar · Built-in notifications · Optional multi-config webhook · Zero dependencies
 
 [![Lua](https://img.shields.io/badge/Lua-Luau-2C2D72?style=for-the-badge&logo=lua&logoColor=white)](https://luau-lang.org/)
 [![Roblox](https://img.shields.io/badge/Platform-Roblox-000000?style=for-the-badge&logo=roblox&logoColor=white)](https://www.roblox.com/)
@@ -68,10 +68,13 @@ No external dependencies. No build step. Just `loadstring` one URL.
 ## Features
 
 - **Draggable window** with a minimize bubble that remembers its position
-- **Minimize (`─`) / Close (`✕`)** buttons with a close confirmation dialog
+- **Modern pink + black look** inspired by Rayfield Gen 2: gradient window, flat cards, no heavy frames
+- **Animated border** — a pink gradient runs around the window edge while a soft glow fades in and out
+- **Minimize button** and a **red rounded-square close button** with a pixel-perfect `✕` icon and a confirmation dialog
 - **Global search** — every component you add is searchable by title, jumps to its tab/section, and briefly highlights it
 - **Dynamic + executor tags** in the header, auto-refreshing on an interval
 - **Stacked notifications** (top-right) with an auto-closing progress bar
+- **Modern dropdown** — animated chevron, selected value shown in the header, scrollable list, built-in filter for long lists, live `Refresh`
 - **Full component set**: buttons, toggles, sliders, text inputs, dropdowns, keybinds, paragraphs, separators, dividers, social links, copy groups, and ReadMe blocks
 - **Optional webhook system** — create as many independent configs as you need, each with its own URL, queue, and rate limit
 - **Not tied to Discord** — any endpoint that accepts a JSON POST works
@@ -141,6 +144,19 @@ local Window = MugiHub.Library:CreateWindow({
 | `Window:SetTitle(text)` | Updates the header title |
 | `Window:SetDescription(text)` | Updates the header subtitle |
 | `Window:AddTab({name, icon})` | Creates a new tab, returns a Tab object |
+| `Window:Toggle()` | Shows or hides the window (same as the keybind) |
+| `Window:SetOpen(bool)` | Forces the window open or minimized |
+| `Window:Destroy()` | Closes the window, stops every animation and disconnects all listeners |
+
+When a window is closed (confirm dialog or `Destroy`), `MugiHub.Library.Unloaded` becomes `true`, so your loops can stop themselves:
+
+```lua
+while not MugiHub.Library.Unloaded do
+    task.wait(0.5)
+end
+```
+
+The window can only be dragged from its title bar, so sliders and inputs never move it by accident.
 
 ## Tags API
 
@@ -241,7 +257,20 @@ local Dropdown = Section:AddDropdown({
 
 Dropdown.Set("Option B")
 print(Dropdown.Get()[1])
+
+Dropdown.Refresh({"New 1", "New 2"}, true)
+Dropdown.Open()
+Dropdown.Close()
 ```
+
+| Method | Description |
+|---|---|
+| `Set(value)` | Selects an option (string or `{string}`), fires the callback |
+| `Get()` | Returns `{selected}` — `{}` when nothing is selected |
+| `Refresh(options, keepSelection)` | Replaces the option list; the selection is kept only when `keepSelection` is `true` and the option still exists |
+| `Open()` / `Close()` | Expands or collapses the list from code |
+
+Lists with more than 7 options get a filter box automatically, and the list scrolls once it grows past its maximum height.
 
 ### Keybind
 
@@ -313,6 +342,9 @@ MugiHub.Library:SetNotification({
     Delay   = 3,
     Time    = 0.25
 })
+
+MugiHub.Library:SetNotification({Title = "Update", Content = "Config saved", Delay = 4})
+MugiHub.Library:SetNotification("A plain string works too")
 
 local notif = MugiHub.Library:SetNotification({Content = "Loading...", Delay = 10})
 notif:Close()

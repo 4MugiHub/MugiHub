@@ -30,6 +30,10 @@ Black-and-white gradient theme · Animated glowing border · Search-everything s
   - [Input](#input)
   - [Dropdown](#dropdown)
   - [Keybind](#keybind)
+  - [Color Picker](#color-picker)
+  - [Label](#label)
+  - [Progress](#progress)
+  - [Flags & Configs](#flags--configs)
   - [Paragraph](#paragraph)
   - [Separator](#separator)
   - [Line](#line)
@@ -137,6 +141,7 @@ local Window = MugiHub.Library:CreateWindow({
     "rbxassetid://...",         -- [6] Icon ("" to disable)
     {"TAG1", "TAG2"}            -- [7] Static tags (max 3)
 })
+-- Optional named field: Scale = 0.9 (default). Auto-fits small screens.
 ```
 
 | Method | Description |
@@ -146,6 +151,10 @@ local Window = MugiHub.Library:CreateWindow({
 | `Window:AddTab({name, icon})` | Creates a new tab, returns a Tab object |
 | `Window:Toggle()` | Shows or hides the window (same as the keybind) |
 | `Window:SetOpen(bool)` | Forces the window open or minimized |
+| `Window:AddTabDivider(text)` | Adds a small group label between tabs in the sidebar |
+| `Window:SelectTab(nameOrIndex)` | Switches tab from code, returns `true` if found |
+| `Window:SetScale(0.5 - 1.5)` | Resizes the whole window at runtime |
+| `Window:Dialog({Title, Content, Buttons})` | Modal dialog; `Buttons = {{"Cancel"}, {"OK", callback, isDanger}}` |
 | `Window:Destroy()` | Closes the window, stops every animation and disconnects all listeners |
 
 When a window is closed (confirm dialog or `Destroy`), `MugiHub.Library.Unloaded` becomes `true`, so your loops can stop themselves:
@@ -177,9 +186,14 @@ Window.Tags:AddExecutorTag(5) -- shows the current executor, refreshes every 5s
 ## Tab & Section API
 
 ```lua
-local Tab = Window:AddTab({"Tab Name", "rbxassetid://..."})
+local Tab = Window:AddTab({"Tab Name", "home"})
 local Section = Tab:AddSection("Section Title")
+local Collapsed = Tab:AddSection({Name = "Advanced", Collapsed = true})
 ```
+
+Clicking a section header collapses or expands it. `Section:SetOpen(bool)` and `Section:SetTitle(text)` do the same from code. Search results open collapsed sections automatically.
+
+**Tab icons** accept a built-in name (drawn as a glyph), an asset id number, or a `rbxassetid://` string. Built-in names: `home`, `main`, `combat`, `sword`, `eye`, `esp`, `visual`, `settings`, `gear`, `config`, `user`, `player`, `star`, `target`, `aim`, `crosshair`, `shield`, `bolt`, `speed`, `info`, `menu`, `list`, `misc`, `edit`, `flag`, `plus`, `arrow`, `cloud`, `heart`, `music`, `sparkle`, `box`, `map`, `world`, `teleport`, `color`, `key`, `check`, `close`, `warn`, `bug`, `save`, `code`, `farm`, `auto`, `lock`, `bell`, `tools`. Glyph rendering depends on the font; asset ids are the most reliable choice for exact artwork.
 
 Every component below is added through a `Section` object.
 
@@ -261,6 +275,17 @@ print(Dropdown.Get()[1])
 Dropdown.Refresh({"New 1", "New 2"}, true)
 Dropdown.Open()
 Dropdown.Close()
+
+local Multi = Section:AddDropdown({
+    Name = "Hitboxes",
+    Options = {"Head", "Chest", "Arms", "Legs"},
+    Default = {"Head"},
+    Multi = true,
+    Max = 3,
+    Callback = function(selected) print(table.concat(selected, ", ")) end
+})
+Multi.Set({"Head", "Legs"})
+Multi.Clear()
 ```
 
 | Method | Description |
@@ -268,7 +293,10 @@ Dropdown.Close()
 | `Set(value)` | Selects an option (string or `{string}`), fires the callback |
 | `Get()` | Returns `{selected}` — `{}` when nothing is selected |
 | `Refresh(options, keepSelection)` | Replaces the option list; the selection is kept only when `keepSelection` is `true` and the option still exists |
+| `Clear()` | Deselects everything (fires the callback) |
 | `Open()` / `Close()` | Expands or collapses the list from code |
+
+With `Multi = true` the callback receives every selected option (in list order), clicking an option toggles it and the list stays open. `Max` limits how many can be selected.
 
 Lists with more than 7 options get a filter box automatically, and the list scrolls once it grows past its maximum height.
 
@@ -278,9 +306,64 @@ Lists with more than 7 options get a filter box automatically, and the list scro
 Section:AddKeybind({
     "Toggle Key",
     Enum.KeyCode.E,
-    function(key) end
+    function(key) end -- fires when the key is rebound
+})
+
+Section:AddKeybind({
+    Name = "Panic",
+    Default = Enum.KeyCode.X,
+    OnPress = function() print("pressed") end, -- fires when the bound key is pressed
+    Callback = function(key) end
 })
 ```
+
+### Color Picker
+
+```lua
+local Picker = Section:AddColorPicker({
+    "ESP Color",
+    Color3.fromRGB(255, 255, 255),
+    function(color) print(color) end
+})
+Picker.Set("#FF00AA") -- Color3 or hex string
+print(Picker.Get())
+```
+
+Drag the square (saturation / brightness) and the hue bar, or type a hex code.
+
+### Label
+
+```lua
+local Label = Section:AddLabel("Plain text")
+Label.Set("New text")
+```
+
+### Progress
+
+```lua
+local Bar = Section:AddProgress({"Loading", 25}) -- name, default, max (default 100)
+Bar.Set(80)
+```
+
+### Extras on every component
+
+Every component returned by `Add...` also has `SetVisible(bool)`, `Destroy()` and `.Frame`. Sliders accept `Suffix = "%"`, inputs accept `Numeric = true`.
+
+### Flags & Configs
+
+Give a component a `Flag` to include it in configs (toggle, slider, input, dropdown, keybind, color picker):
+
+```lua
+Section:AddToggle({Name = "Auto Farm", Default = false, Flag = "AutoFarm", Callback = function() end})
+
+print(MugiHub.Library.Flags.AutoFarm) -- live value
+MugiHub.Library:SaveConfig("legit")   -- writes MugiHub/legit.json (needs writefile)
+MugiHub.Library:LoadConfig("legit")   -- restores and fires callbacks
+MugiHub.Library:GetConfigs()          -- {"legit", ...}
+MugiHub.Library:DeleteConfig("legit")
+```
+
+`SaveConfig` and `LoadConfig` return `ok, err`; they fail gracefully on executors without file functions.
 
 ### Paragraph
 
@@ -344,6 +427,7 @@ MugiHub.Library:SetNotification({
 })
 
 MugiHub.Library:SetNotification({Title = "Update", Content = "Config saved", Delay = 4})
+MugiHub.Library:SetNotification({Content = "Something broke", Type = "Error"}) -- Success | Info | Warning | Error
 MugiHub.Library:SetNotification("A plain string works too")
 
 local notif = MugiHub.Library:SetNotification({Content = "Loading...", Delay = 10})

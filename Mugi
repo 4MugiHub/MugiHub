@@ -328,6 +328,41 @@ do
 		NumberSequenceKeypoint.new(1, 1),
 	})
 
+	Custom.Icons = {
+		home = "⌂", main = "⌂", combat = "⚔", sword = "⚔", fight = "⚔", eye = "◉", esp = "◉", visual = "◉", visuals = "◉",
+		settings = "⚙", gear = "⚙", config = "⚙", user = "☻", player = "☻", players = "☻", star = "★", target = "◎",
+		aim = "◎", aimbot = "◎", crosshair = "⌖", shield = "◈", defense = "◈", bolt = "ϟ", speed = "ϟ", zap = "ϟ",
+		info = "ℹ", menu = "☰", list = "☰", misc = "☰", edit = "✎", flag = "⚑", plus = "✚", add = "✚", arrow = "➤",
+		cloud = "☁", heart = "♥", music = "♪", sparkle = "✦", box = "▣", map = "◍", world = "◍", teleport = "◍",
+		color = "◐", palette = "◐", key = "⌘", check = "✔", close = "✕", warn = "⚠", bug = "✱", save = "▤",
+		code = "</>", farm = "✿", auto = "↻", loop = "↻", lock = "▣", bell = "♫", tools = "⛭", util = "⛭",
+	}
+
+	function Custom:MakeIcon(Parent, Icon, Props)
+		if Icon == nil or Icon == "" then return nil end
+		if type(Icon) == "number" then Icon = "rbxassetid://" .. tostring(Icon) end
+		Icon = tostring(Icon)
+		local Glyph = Custom.Icons[string.lower(Icon)]
+		local Inst, ColorProp
+		if Glyph then
+			Inst = Custom:Create("TextLabel", {
+				Font = Enum.Font.GothamBold, Text = Glyph, TextColor3 = Theme.Sub, TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Center,
+				BackgroundTransparency = 1, BorderSizePixel = 0, Name = "TabIcon",
+			}, nil)
+			ColorProp = "TextColor3"
+		else
+			if not string.find(Icon, "://", 1, true) and string.match(Icon, "^%d+$") then Icon = "rbxassetid://" .. Icon end
+			Inst = Custom:Create("ImageLabel", {
+				Image = Icon, ImageColor3 = Theme.Sub, BackgroundTransparency = 1, BorderSizePixel = 0, Name = "TabIcon",
+			}, nil)
+			ColorProp = "ImageColor3"
+		end
+		for k, v in pairs(Props or {}) do Inst[k] = v end
+		Inst.Parent = Parent
+		return Inst, ColorProp
+	end
+
 	function Custom:Create(Name, Props, Parent)
 		local inst = Instance.new(Name)
 		for k, v in pairs(Props) do inst[k] = v end
@@ -498,6 +533,12 @@ function MugiHub_Library:SetNotification(Config)
 	EnsureNotifGui()
 	local Text = tostring(Config.Content or Config[1] or "")
 	local Head = Config.Title
+	local NType = string.lower(tostring(Config.Type or ""))
+	local NGlyph = ({ success = "✔", error = "✕", warning = "⚠", info = "ℹ" })[NType]
+	if NGlyph then
+		Head = NGlyph .. " " .. tostring(Head or (string.upper(string.sub(NType, 1, 1)) .. string.sub(NType, 2)))
+	end
+	local NColor = NType == "error" and Theme.Red or Theme.White
 	local Delay = tonumber(Config.Delay or Config[6]) or 3
 	local AnimT = tonumber(Config.Time or Config[5]) or 0.25
 	NotifCounter = NotifCounter + 1
@@ -523,13 +564,13 @@ function MugiHub_Library:SetNotification(Config)
 	Custom:AddGradient(CardStroke, 0, Custom.GradientBorder)
 
 	local Accent = Custom:Create("Frame", {
-		BackgroundColor3 = Theme.White, BorderSizePixel = 0, Size = UDim2.new(0, 3, 1, 0), Name = "Accent",
+		BackgroundColor3 = NColor, BorderSizePixel = 0, Size = UDim2.new(0, 3, 1, 0), Name = "Accent",
 	}, Card)
 	Custom:AddGradient(Accent, 90)
 
 	if Head then
 		Custom:Label(Card, {
-			Text = tostring(Head), TextColor3 = Theme.White, TextSize = 11,
+			Text = tostring(Head), TextColor3 = NColor, TextSize = 11,
 			Position = UDim2.new(0, 14, 0, 7), Size = UDim2.new(1, -24, 0, 13), Name = "Title",
 		})
 	end
@@ -545,7 +586,7 @@ function MugiHub_Library:SetNotification(Config)
 	}, Card)
 	Custom:Round(BarTrack)
 	local Bar = Custom:Create("Frame", {
-		BackgroundColor3 = Theme.White, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0), Name = "Bar",
+		BackgroundColor3 = NColor, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0), Name = "Bar",
 	}, BarTrack)
 	Custom:Round(Bar)
 	Custom:AddGradient(Bar, 0)
@@ -575,6 +616,76 @@ function MugiHub_Library:SetNotification(Config)
 
 	function NF:Close() task.spawn(DoClose) end
 	return NF
+end
+
+MugiHub_Library.Elements = {}
+MugiHub_Library.ConfigFolder = "MugiHub"
+MugiHub_Library.Flags = setmetatable({}, {
+	__index = function(_, Key)
+		local E = MugiHub_Library.Elements[Key]
+		if E then
+			local ok, v = pcall(E.Get)
+			if ok then return v end
+		end
+		return nil
+	end,
+})
+
+local function ConfigPath(Name)
+	return MugiHub_Library.ConfigFolder .. "/" .. tostring(Name) .. ".json"
+end
+
+function MugiHub_Library:SaveConfig(Name)
+	if not writefile then return false, "writefile is not supported" end
+	local Data = {}
+	for Flag, E in pairs(self.Elements) do
+		local ok, v = pcall(E.Get)
+		if ok and v ~= nil then Data[Flag] = E.Encode(v) end
+	end
+	local ok, Json = pcall(HttpService.JSONEncode, HttpService, Data)
+	if not ok then return false, "encode failed" end
+	if makefolder and isfolder and not isfolder(self.ConfigFolder) then pcall(makefolder, self.ConfigFolder) end
+	local Saved, Err = pcall(writefile, ConfigPath(Name), Json)
+	return Saved, Err
+end
+
+function MugiHub_Library:LoadConfig(Name)
+	if not (readfile and isfile) then return false, "readfile is not supported" end
+	local Path = ConfigPath(Name)
+	if not isfile(Path) then return false, "config not found" end
+	local ok, Raw = pcall(readfile, Path)
+	if not ok then return false, "read failed" end
+	local ok2, Data = pcall(HttpService.JSONDecode, HttpService, Raw)
+	if not ok2 or type(Data) ~= "table" then return false, "decode failed" end
+	for Flag, Value in pairs(Data) do
+		local E = self.Elements[Flag]
+		if E then pcall(function() E.Set(E.Decode(Value)) end) end
+	end
+	return true
+end
+
+function MugiHub_Library:GetConfigs()
+	local Result = {}
+	if not listfiles then return Result end
+	local ok, Files = pcall(listfiles, self.ConfigFolder)
+	if not ok or type(Files) ~= "table" then return Result end
+	for _, Path in ipairs(Files) do
+		local Name = string.match(tostring(Path), "([^/\\]+)%.json$")
+		if Name then table.insert(Result, Name) end
+	end
+	table.sort(Result)
+	return Result
+end
+
+function MugiHub_Library:DeleteConfig(Name)
+	if not (delfile and isfile) then return false end
+	local Path = ConfigPath(Name)
+	if not isfile(Path) then return false end
+	return (pcall(delfile, Path))
+end
+
+function MugiHub_Library:Notify(Config)
+	return self:SetNotification(Config)
 end
 
 function MugiHub_Library:CreateWindow(Config)
@@ -1162,14 +1273,115 @@ function MugiHub_Library:CreateWindow(Config)
 
 	local Tabs = {}
 	local ActiveTab = nil
+	local TabOrder = 0
+
+	function Funcs:AddTabDivider(DividerText)
+		TabOrder = TabOrder + 1
+		local DF = Custom:Create("Frame", {
+			BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = TabOrder, Size = UDim2.new(1, 0, 0, 18),
+			Name = "TabDivider",
+		}, ScrollTab)
+		Custom:Label(DF, {
+			Font = Enum.Font.GothamBold, Text = string.upper(tostring(DividerText or "")), TextColor3 = Theme.Sub, TextSize = 9,
+			Position = UDim2.new(0, 8, 0, 4), Size = UDim2.new(1, -8, 0, 12), Name = "DividerLabel",
+		})
+		return DF
+	end
+
+	function Funcs:SelectTab(Target)
+		for i, T in ipairs(Tabs) do
+			if T.Name == Target or i == Target then T.Select() return true end
+		end
+		return false
+	end
+
+	function Funcs:Dialog(DConfig)
+		if Destroyed then return end
+		if type(DConfig) == "string" then DConfig = { Content = DConfig } end
+		DConfig = DConfig or {}
+		local DTitle = tostring(DConfig.Title or DConfig[1] or "Notice")
+		local DText = tostring(DConfig.Content or DConfig[2] or "")
+		local Btns = DConfig.Buttons or DConfig[3]
+		if type(Btns) ~= "table" or #Btns == 0 then Btns = { { "OK" } } end
+		local TSz = TextService:GetTextSize(DText, 11, Enum.Font.Gotham, Vector2.new(206, 1000))
+		local DH = 34 + TSz.Y + 12 + 28 + 12
+
+		local DBackdrop = Custom:Create("Frame", {
+			Active = true, BackgroundColor3 = Theme.Black, BackgroundTransparency = 1, BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 1, 0), ZIndex = 59, Name = "DialogBackdrop",
+		}, Main)
+		local DFrame = Custom:Create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(20, 20, 20), BorderSizePixel = 0,
+			Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 230, 0, DH), ZIndex = 60, Name = "DialogFrame",
+		}, Main)
+		Custom:Corner(DFrame, 10)
+		Custom:Stroke(DFrame, Theme.White, 0.6, 1)
+		local DScale = Custom:Create("UIScale", { Scale = 0.85 }, DFrame)
+		Custom:Tween(DBackdrop, 0.2, { BackgroundTransparency = 0.45 })
+		Custom:Tween(DScale, 0.25, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+		Custom:Label(DFrame, {
+			Text = DTitle, TextColor3 = Theme.White, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Center,
+			Size = UDim2.new(1, 0, 0, 30), Name = "DialogTitle",
+		})
+		Custom:Label(DFrame, {
+			Font = Enum.Font.Gotham, Text = DText, TextColor3 = Theme.Sub, TextSize = 11, TextWrapped = true,
+			TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Top,
+			Position = UDim2.new(0, 12, 0, 32), Size = UDim2.new(1, -24, 0, TSz.Y + 2), Name = "DialogText",
+		})
+		local Closing = false
+		local function CloseDialog()
+			if Closing then return end
+			Closing = true
+			Custom:Tween(DBackdrop, 0.15, { BackgroundTransparency = 1 })
+			local Shrink = Custom:Tween(DScale, 0.15, { Scale = 0.85 }, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+			Shrink.Completed:Wait()
+			DBackdrop:Destroy()
+			DFrame:Destroy()
+		end
+		local Count = #Btns
+		local Row = Custom:Create("Frame", {
+			BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.new(0, 12, 1, -40),
+			Size = UDim2.new(1, -24, 0, 28), Name = "DialogButtons",
+		}, DFrame)
+		Custom:Create("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6),
+		}, Row)
+		for i, B in ipairs(Btns) do
+			local BName = tostring(B[1] or B.Name or "OK")
+			local BCallback = B[2] or B.Callback
+			local Danger = B.Danger == true or B[3] == true
+			local Button = Custom:Create("TextButton", {
+				Font = Enum.Font.GothamBold, Text = BName, TextColor3 = Danger and Theme.White or Theme.Text, TextSize = 11,
+				AutoButtonColor = false, BackgroundColor3 = Danger and Theme.Red or Theme.White,
+				BackgroundTransparency = Danger and 0 or 0.9, BorderSizePixel = 0, ClipsDescendants = true, LayoutOrder = i,
+				Size = UDim2.new(1 / Count, -math.ceil(6 * (Count - 1) / Count), 0, 28),
+				Name = "DialogButton_" .. BName,
+			}, Row)
+			Custom:Corner(Button, 7)
+			if not Danger then Custom:Stroke(Button, Theme.White, 0.8, 1) end
+			Button.Activated:Connect(function()
+				CircleClick(Button)
+				if BCallback then task.spawn(BCallback) end
+				task.spawn(CloseDialog)
+			end)
+		end
+		return { Close = function() task.spawn(CloseDialog) end }
+	end
+
+	function Funcs:SetScale(NewScale)
+		Base = math.clamp(tonumber(NewScale) or Base, 0.5, 1.5)
+		if Opened and not Destroyed then Custom:Tween(WindowScale, 0.2, { Scale = Base }) end
+	end
+
 
 	function Funcs:AddTab(Config)
 		local TabName = Config[1] or Config.Name or Config.Title or "Tab"
 		local TabIcon = Config[2] or Config.Icon or ""
 
+		TabOrder = TabOrder + 1
 		local TabBtn = Custom:Create("TextButton", {
 			Text = "", AutoButtonColor = false, BackgroundTransparency = 1, BorderSizePixel = 0,
-			ClipsDescendants = true, LayoutOrder = #Tabs + 1, Size = UDim2.new(1, 0, 0, 26), Name = TabName .. "TabBtn",
+			ClipsDescendants = true, LayoutOrder = TabOrder, Size = UDim2.new(1, 0, 0, 26), Name = TabName .. "TabBtn",
 		}, ScrollTab)
 		Custom:Corner(TabBtn, 7)
 		local TabFill = Custom:Create("Frame", {
@@ -1182,16 +1394,13 @@ function MugiHub_Library:CreateWindow(Config)
 			Position = UDim2.new(0, 3, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), Size = UDim2.new(0, 3, 0, 0),
 		}, TabBtn)
 		Custom:Round(TabIndicator)
-		local TabIconImg
-		if TabIcon ~= "" then
-			TabIconImg = Custom:Create("ImageLabel", {
-				Image = TabIcon, ImageColor3 = Theme.Sub, AnchorPoint = Vector2.new(0, 0.5), BackgroundTransparency = 1,
-				BorderSizePixel = 0, Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), Name = "TabIcon",
-			}, TabBtn)
-		end
+		local TabIconImg, TabIconProp = Custom:MakeIcon(TabBtn, TabIcon, {
+			AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 10, 0.5, 0), Size = UDim2.new(0, 16, 0, 16),
+		})
+		local HasIcon = TabIconImg ~= nil
 		local TabLabel = Custom:Label(TabBtn, {
 			Text = TabName, TextColor3 = Theme.Sub, TextSize = 11, TextTruncate = Enum.TextTruncate.AtEnd,
-			Position = UDim2.new(0, TabIcon ~= "" and 32 or 12, 0, 0), Size = UDim2.new(1, TabIcon ~= "" and -36 or -16, 1, 0), Name = "TabLabel",
+			Position = UDim2.new(0, HasIcon and 32 or 12, 0, 0), Size = UDim2.new(1, HasIcon and -36 or -16, 1, 0), Name = "TabLabel",
 		})
 
 		local TabFrame = Custom:Create("ScrollingFrame", {
@@ -1204,7 +1413,7 @@ function MugiHub_Library:CreateWindow(Config)
 		Custom:Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, TabFrame)
 		Custom:Create("UIPadding", { PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 1), PaddingRight = UDim.new(0, 6) }, TabFrame)
 
-		local TabFuncs = { Frame = TabFrame, Button = TabBtn }
+		local TabFuncs = { Frame = TabFrame, Button = TabBtn, Name = TabName }
 
 		TabBtn.MouseEnter:Connect(function()
 			if ActiveTab ~= TabFuncs then Custom:Tween(TabFill, 0.15, { BackgroundTransparency = 0.94 }) end
@@ -1218,7 +1427,7 @@ function MugiHub_Library:CreateWindow(Config)
 			Custom:Tween(T.Fill, 0.15, { BackgroundTransparency = 1 })
 			Custom:Tween(T.Indicator, 0.15, { Size = UDim2.new(0, 3, 0, 0) })
 			Custom:Tween(T.Label, 0.15, { TextColor3 = Theme.Sub })
-			if T.IconImg then Custom:Tween(T.IconImg, 0.15, { ImageColor3 = Theme.Sub }) end
+			if T.IconImg then Custom:Tween(T.IconImg, 0.15, { [T.IconProp] = Theme.Sub }) end
 		end
 
 		local function SelectTab()
@@ -1232,13 +1441,14 @@ function MugiHub_Library:CreateWindow(Config)
 			Custom:Tween(TabFill, 0.2, { BackgroundTransparency = 0.86 })
 			Custom:Tween(TabIndicator, 0.25, { Size = UDim2.new(0, 3, 0, 14) }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 			Custom:Tween(TabLabel, 0.15, { TextColor3 = Theme.White })
-			if TabIconImg then Custom:Tween(TabIconImg, 0.15, { ImageColor3 = Theme.White }) end
+			if TabIconImg then Custom:Tween(TabIconImg, 0.15, { [TabIconProp] = Theme.White }) end
 		end
 
 		TabFuncs.Fill = TabFill
 		TabFuncs.Indicator = TabIndicator
 		TabFuncs.Label = TabLabel
 		TabFuncs.IconImg = TabIconImg
+		TabFuncs.IconProp = TabIconProp
 		TabBtn.Activated:Connect(function() CircleClick(TabBtn) SelectTab() end)
 		TabFuncs.Select = SelectTab
 		table.insert(Tabs, TabFuncs)
@@ -1257,12 +1467,25 @@ function MugiHub_Library:CreateWindow(Config)
 			Custom:Stroke(SectionFrame, Theme.White, 0.93, 1)
 			Custom:Create("UIListLayout", { Padding = UDim.new(0, 0), SortOrder = Enum.SortOrder.LayoutOrder }, SectionFrame)
 
-			local Header = Custom:Create("Frame", {
-				BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 26), Name = "Header",
+			local Header = Custom:Create("TextButton", {
+				Text = "", AutoButtonColor = false, BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1,
+				Size = UDim2.new(1, 0, 0, 26), Name = "Header",
 			}, SectionFrame)
+			local SecChevron = Custom:Create("Frame", {
+				AnchorPoint = Vector2.new(1, 0.5), BackgroundTransparency = 1, BorderSizePixel = 0, Rotation = 180,
+				Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.new(0, 12, 0, 12), Name = "SectionArrow",
+			}, Header)
+			for _, Rot in ipairs({ 45, -45 }) do
+				local Arm = Custom:Create("Frame", {
+					AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Theme.Sub, BorderSizePixel = 0,
+					Position = UDim2.new(0.5, Rot == 45 and -2.2 or 2.2, 0.5, -1), Rotation = Rot,
+					Size = UDim2.new(0, 6, 0, 2), Name = "Arm",
+				}, SecChevron)
+				Custom:Round(Arm)
+			end
 			local HeaderLabel = Custom:Label(Header, {
 				Text = SectionName, TextColor3 = Theme.White, TextSize = 12, TextTruncate = Enum.TextTruncate.AtEnd,
-				Position = UDim2.new(0, 10, 0, 0), Size = UDim2.new(1, -20, 1, 0), Name = "SectionTitle",
+				Position = UDim2.new(0, 10, 0, 0), Size = UDim2.new(1, -32, 1, 0), Name = "SectionTitle",
 			})
 			Custom:AddGradient(HeaderLabel, 0)
 
@@ -1272,6 +1495,22 @@ function MugiHub_Library:CreateWindow(Config)
 			}, SectionFrame)
 			Custom:Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder }, SectionContent)
 			Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6) }, SectionContent)
+
+			local SectionOpen = true
+			local function SetSectionOpen(State, Animate)
+				SectionOpen = State and true or false
+				SectionContent.Visible = SectionOpen
+				if Animate then
+					Custom:Tween(SecChevron, 0.2, { Rotation = SectionOpen and 180 or 0 })
+				else
+					SecChevron.Rotation = SectionOpen and 180 or 0
+				end
+			end
+			local function EnsureOpen()
+				if not SectionOpen then SetSectionOpen(true, true) end
+			end
+			Header.Activated:Connect(function() SetSectionOpen(not SectionOpen, true) end)
+			if SectionConfig.Opened == false or SectionConfig.Collapsed == true then SetSectionOpen(false, false) end
 
 			local Order = 0
 			local function Place(Obj)
@@ -1321,7 +1560,7 @@ function MugiHub_Library:CreateWindow(Config)
 				end
 				Custom:Hover(Btn, BtnStroke)
 				Btn.Activated:Connect(function() CircleClick(Btn) task.spawn(Callback) end)
-				RegisterSearch(ButtonName, Btn, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(ButtonName, Btn, Where, SelectTab, EnsureOpen, TabFrame)
 				return { Button = Btn, SetText = function(t) BtnLabel.Text = tostring(t) end }
 			end
 
@@ -1389,7 +1628,7 @@ function MugiHub_Library:CreateWindow(Config)
 					UpdateToggle(not ToggleState, true)
 					task.spawn(Callback, ToggleState)
 				end)
-				RegisterSearch(ToggleName, ToggleFrame, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(ToggleName, ToggleFrame, Where, SelectTab, EnsureOpen, TabFrame)
 				return {
 					Toggle = ToggleFrame,
 					Set = function(State) State = State and true or false UpdateToggle(State, true) task.spawn(Callback, State) end,
@@ -1404,6 +1643,7 @@ function MugiHub_Library:CreateWindow(Config)
 				local Default = SliderConfig[4] or SliderConfig.Default or MinVal
 				local Callback = SliderConfig[5] or SliderConfig.Callback or function() end
 				local Increment = SliderConfig.Increment or 1
+				local Suffix = tostring(SliderConfig.Suffix or "")
 				if Increment <= 0 then Increment = 1 end
 				if MaxVal < MinVal then MinVal, MaxVal = MaxVal, MinVal end
 				local Range = MaxVal - MinVal
@@ -1429,7 +1669,7 @@ function MugiHub_Library:CreateWindow(Config)
 				})
 				local CurrentValue = Snap(Default)
 				local ValueLabel = Custom:Label(SliderFrame, {
-					Text = string.format(Fmt, CurrentValue), TextColor3 = Theme.White, TextXAlignment = Enum.TextXAlignment.Right,
+					Text = string.format(Fmt, CurrentValue) .. Suffix, TextColor3 = Theme.White, TextXAlignment = Enum.TextXAlignment.Right,
 					Position = UDim2.new(1, -66, 0, 5), Size = UDim2.new(0, 56, 0, 14), Name = "ValueLabel",
 				})
 				local Hit = Custom:Create("TextButton", {
@@ -1457,7 +1697,7 @@ function MugiHub_Library:CreateWindow(Config)
 				local Dragging = false
 				local function Render(Value, Animate)
 					local Percent = ToPercent(Value)
-					ValueLabel.Text = string.format(Fmt, Value)
+					ValueLabel.Text = string.format(Fmt, Value) .. Suffix
 					if Animate then
 						Custom:Tween(BarFill, 0.08, { Size = UDim2.new(Percent, 0, 1, 0) })
 						Custom:Tween(SliderDot, 0.08, { Position = UDim2.new(Percent, 0, 0.5, 0) })
@@ -1496,7 +1736,7 @@ function MugiHub_Library:CreateWindow(Config)
 					if Dragging and (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then SetDragging(false) end
 				end))
 				Custom:Hover(SliderFrame, SliderStroke)
-				RegisterSearch(SliderName, SliderFrame, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(SliderName, SliderFrame, Where, SelectTab, EnsureOpen, TabFrame)
 				return {
 					Slider = SliderFrame,
 					Set = function(Value)
@@ -1528,6 +1768,12 @@ function MugiHub_Library:CreateWindow(Config)
 				Custom:Corner(InputBox, 6)
 				local BoxStroke = Custom:Stroke(InputBox, Theme.White, 0.88, 1)
 				Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 7), PaddingRight = UDim.new(0, 7) }, InputBox)
+				if InputConfig.Numeric == true then
+					InputBox:GetPropertyChangedSignal("Text"):Connect(function()
+						local Filtered = string.gsub(InputBox.Text, "[^%d%.%-]", "")
+						if Filtered ~= InputBox.Text then InputBox.Text = Filtered end
+					end)
+				end
 				InputBox.Focused:Connect(function()
 					Custom:Tween(BoxStroke, 0.15, { Transparency = 0.3 })
 					Custom:Tween(InputStroke, 0.15, { Transparency = 0.7 })
@@ -1537,7 +1783,7 @@ function MugiHub_Library:CreateWindow(Config)
 					Custom:Tween(InputStroke, 0.2, { Transparency = 0.92 })
 					task.spawn(Callback, InputBox.Text)
 				end)
-				RegisterSearch(InputName, InputFrame, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(InputName, InputFrame, Where, SelectTab, EnsureOpen, TabFrame)
 				return {
 					Input = InputBox,
 					Set = function(Text) InputBox.Text = tostring(Text) end,
@@ -1550,8 +1796,8 @@ function MugiHub_Library:CreateWindow(Config)
 				local Options = DropdownConfig[2] or DropdownConfig.Options or {}
 				local Default = DropdownConfig[3] or DropdownConfig.Default or nil
 				local Callback = DropdownConfig[4] or DropdownConfig.Callback or function() end
-				if type(Default) == "table" then Default = Default[1] end
-				if Default ~= nil then Default = tostring(Default) end
+				local Multi = DropdownConfig.Multi == true or DropdownConfig.Multiple == true or DropdownConfig.MultiSelect == true
+				local MaxSel = tonumber(DropdownConfig.Max)
 
 				local HEAD, ROW, MAXLIST, FILTERH = 28, 22, 120, 24
 				local DropdownFrame, DropdownStroke = Custom:Card(SectionContent, HEAD, DropdownName .. "Dropdown", false)
@@ -1617,9 +1863,17 @@ function MugiHub_Library:CreateWindow(Config)
 				local ListLayout = Custom:Create("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder }, List)
 
 				local IsOpen = false
-				local SelectedOption = nil
+				local Selected = {}
 				local OptionFrames = {}
 				local OptionOrder = {}
+
+				local function Chosen()
+					local Out = {}
+					for _, Name in ipairs(OptionOrder) do
+						if Selected[Name] then table.insert(Out, Name) end
+					end
+					return Out
+				end
 
 				local function ListHeight()
 					return math.min(ListLayout.AbsoluteContentSize.Y, MAXLIST)
@@ -1635,42 +1889,40 @@ function MugiHub_Library:CreateWindow(Config)
 					if IsOpen then Resize() end
 				end)
 
-				local function Paint(Option, Selected, Animate)
+				local function Paint(Option, State, Animate)
 					local OF = OptionFrames[Option]
 					if not OF then return end
-					local Frame, Bar, Label = OF.Frame, OF.Bar, OF.Label
-					local BG = Selected and 0.88 or 1
-					local BarSize = Selected and UDim2.new(0, 3, 0, 12) or UDim2.new(0, 3, 0, 0)
-					local TC = Selected and Theme.White or Theme.Sub
+					local BG = State and 0.88 or 1
+					local BarSize = State and UDim2.new(0, 3, 0, 12) or UDim2.new(0, 3, 0, 0)
+					local TC = State and Theme.White or Theme.Sub
 					if Animate then
-						Custom:Tween(Frame, 0.18, { BackgroundTransparency = BG })
-						Custom:Tween(Bar, 0.2, { Size = BarSize }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-						Custom:Tween(Label, 0.15, { TextColor3 = TC })
+						Custom:Tween(OF.Frame, 0.18, { BackgroundTransparency = BG })
+						Custom:Tween(OF.Bar, 0.2, { Size = BarSize }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+						Custom:Tween(OF.Label, 0.15, { TextColor3 = TC })
 					else
-						Frame.BackgroundTransparency = BG
-						Bar.Size = BarSize
-						Label.TextColor3 = TC
+						OF.Frame.BackgroundTransparency = BG
+						OF.Bar.Size = BarSize
+						OF.Label.TextColor3 = TC
 					end
 				end
 
 				local function ShowValue()
-					if SelectedOption then
-						ValueLabel.Text = SelectedOption
-						ValueLabel.TextColor3 = Theme.White
-					else
+					local List2 = Chosen()
+					if #List2 == 0 then
 						ValueLabel.Text = "Select..."
 						ValueLabel.TextColor3 = Theme.Sub
+					else
+						local Text = List2[1]
+						if #List2 == 2 then Text = List2[1] .. ", " .. List2[2]
+						elseif #List2 > 2 then Text = List2[1] .. ", " .. List2[2] .. " +" .. (#List2 - 2) end
+						ValueLabel.Text = Text
+						ValueLabel.TextColor3 = Theme.White
 					end
 				end
 
-				local function SelectOption(OptionText, Silent)
-					OptionText = tostring(OptionText)
-					if not OptionFrames[OptionText] then return end
-					if SelectedOption and SelectedOption ~= OptionText then Paint(SelectedOption, false, true) end
-					SelectedOption = OptionText
-					Paint(OptionText, true, true)
+				local function Commit(Silent)
 					ShowValue()
-					if not Silent then task.spawn(Callback, { OptionText }) end
+					if not Silent then task.spawn(Callback, Chosen()) end
 				end
 
 				local function ToggleList(State)
@@ -1678,6 +1930,52 @@ function MugiHub_Library:CreateWindow(Config)
 					Custom:Tween(Arrow, 0.22, { Rotation = State and 180 or 0 })
 					Custom:Tween(DropdownStroke, 0.2, { Transparency = State and 0.6 or 0.92 })
 					Resize()
+				end
+
+				local function SetSelection(Values, Silent)
+					local New = {}
+					local Count = 0
+					for _, Raw in ipairs(Values) do
+						local Name = tostring(Raw)
+						if OptionFrames[Name] and not New[Name] then
+							if Multi then
+								if not MaxSel or Count < MaxSel then New[Name] = true Count = Count + 1 end
+							elseif Count == 0 then
+								New[Name] = true Count = 1
+							end
+						end
+					end
+					for Name in pairs(Selected) do
+						if not New[Name] then Paint(Name, false, true) end
+					end
+					for Name in pairs(New) do
+						if not Selected[Name] then Paint(Name, true, true) end
+					end
+					Selected = New
+					Commit(Silent)
+				end
+
+				local function Normalize(Value)
+					if Value == nil then return {} end
+					if type(Value) == "table" then return Value end
+					return { Value }
+				end
+
+				local function OnOptionClick(OptionText)
+					if Multi then
+						if Selected[OptionText] then
+							Selected[OptionText] = nil
+							Paint(OptionText, false, true)
+						else
+							if MaxSel and #Chosen() >= MaxSel then return end
+							Selected[OptionText] = true
+							Paint(OptionText, true, true)
+						end
+						Commit(false)
+					else
+						SetSelection({ OptionText }, false)
+						ToggleList(false)
+					end
 				end
 
 				local function ApplyFilter()
@@ -1715,29 +2013,26 @@ function MugiHub_Library:CreateWindow(Config)
 							OptionFrames[OptionText] = { Frame = OFrame, Bar = OBar, Label = OLabel }
 							table.insert(OptionOrder, OptionText)
 							OFrame.MouseEnter:Connect(function()
-								if SelectedOption ~= OptionText then Custom:Tween(OFrame, 0.12, { BackgroundTransparency = 0.94 }) end
+								if not Selected[OptionText] then Custom:Tween(OFrame, 0.12, { BackgroundTransparency = 0.94 }) end
 							end)
 							OFrame.MouseLeave:Connect(function()
-								if SelectedOption ~= OptionText then Custom:Tween(OFrame, 0.15, { BackgroundTransparency = 1 }) end
+								if not Selected[OptionText] then Custom:Tween(OFrame, 0.15, { BackgroundTransparency = 1 }) end
 							end)
 							OFrame.Activated:Connect(function()
 								CircleClick(OFrame)
-								SelectOption(OptionText)
-								ToggleList(false)
+								OnOptionClick(OptionText)
 							end)
 						end
 					end
-					if SelectedOption and OptionFrames[SelectedOption] then
-						Paint(SelectedOption, true, false)
-					else
-						SelectedOption = nil
+					for Name in pairs(Selected) do
+						if OptionFrames[Name] then Paint(Name, true, false) else Selected[Name] = nil end
 					end
 					ShowValue()
 					ApplyFilter()
 				end
 
 				Build(Options)
-				if Default and OptionFrames[Default] then SelectOption(Default) end
+				if Default ~= nil then SetSelection(Normalize(Default), false) end
 
 				DropdownBtn.MouseEnter:Connect(function()
 					if not IsOpen then Custom:Tween(DropdownStroke, 0.15, { Transparency = 0.7 }) end
@@ -1749,16 +2044,22 @@ function MugiHub_Library:CreateWindow(Config)
 					CircleClick(DropdownBtn)
 					ToggleList(not IsOpen)
 				end)
-				RegisterSearch(DropdownName, DropdownFrame, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(DropdownName, DropdownFrame, Where, SelectTab, EnsureOpen, TabFrame)
 				return {
 					Dropdown = DropdownFrame,
 					Set = function(Value)
-						if type(Value) == "table" then Value = Value[1] end
-						if Value ~= nil then SelectOption(Value) end
+						local V = Normalize(Value)
+						if #V > 0 then
+							local Any = false
+							for _, x in ipairs(V) do if OptionFrames[tostring(x)] then Any = true end end
+							if not Any then return end
+						end
+						SetSelection(V, false)
 					end,
-					Get = function() return { SelectedOption } end,
+					Get = function() return Chosen() end,
+					Clear = function() SetSelection({}, false) end,
 					Refresh = function(NewOptions, Keep)
-						if not Keep then SelectedOption = nil end
+						if not Keep then Selected = {} end
 						Build(NewOptions or {})
 						if IsOpen then Resize() end
 					end,
@@ -1785,6 +2086,7 @@ function MugiHub_Library:CreateWindow(Config)
 				}, KeybindFrame)
 				Custom:Corner(KeyBtn, 6)
 				local KeyStroke = Custom:Stroke(KeyBtn, Theme.White, 0.85, 1)
+				local OnPress = KeybindConfig.OnPress or KeybindConfig.Pressed
 				local CurrentKey = DefaultKey
 				local Listening = false
 				local Conn = nil
@@ -1813,8 +2115,14 @@ function MugiHub_Library:CreateWindow(Config)
 						end
 					end))
 				end)
+				if OnPress then
+					Track(UserInputService.InputBegan:Connect(function(i, gp)
+						if gp or Listening then return end
+						if i.UserInputType == Enum.UserInputType.Keyboard and i.KeyCode == CurrentKey then task.spawn(OnPress, CurrentKey) end
+					end))
+				end
 				Custom:Hover(KeybindFrame, KeybindStroke)
-				RegisterSearch(KeybindName, KeybindFrame, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(KeybindName, KeybindFrame, Where, SelectTab, EnsureOpen, TabFrame)
 				return {
 					Keybind = KeybindFrame,
 					Set = function(Key)
@@ -1935,7 +2243,7 @@ function MugiHub_Library:CreateWindow(Config)
 						MugiHub_Library:SetNotification({ Content = "Link copied: " .. SocialUrl })
 					end
 				end)
-				RegisterSearch(SocialName, SF, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(SocialName, SF, Where, SelectTab, EnsureOpen, TabFrame)
 				return { Social = SF }
 			end
 
@@ -1967,9 +2275,355 @@ function MugiHub_Library:CreateWindow(Config)
 					end
 				end)
 				Custom:Hover(CF, CStroke)
-				RegisterSearch(CopyName, CF, Where, SelectTab, nil, TabFrame)
+				RegisterSearch(CopyName, CF, Where, SelectTab, EnsureOpen, TabFrame)
 				return { CopyGroup = CF, Set = function(Text) CopyText = tostring(Text) end }
 			end
+
+			function SecFuncs:AddColorPicker(CPConfig)
+				local CPName = CPConfig[1] or CPConfig.Name or "Color"
+				local Default = CPConfig[2] or CPConfig.Default or Color3.fromRGB(255, 255, 255)
+				local Callback = CPConfig[3] or CPConfig.Callback or function() end
+				local HEAD, BODYH = 28, 112
+
+				local function ToHSV(C)
+					local R, G, B = C.R, C.G, C.B
+					local Max, Min = math.max(R, G, B), math.min(R, G, B)
+					local D = Max - Min
+					local H = 0
+					if D > 0 then
+						if Max == R then H = ((G - B) / D) % 6
+						elseif Max == G then H = (B - R) / D + 2
+						else H = (R - G) / D + 4 end
+						H = H / 6
+					end
+					return H, Max == 0 and 0 or D / Max, Max
+				end
+				local function FromHSV(H, S, V)
+					local I = math.floor(H * 6)
+					local F = H * 6 - I
+					local P, Q, T = V * (1 - S), V * (1 - F * S), V * (1 - (1 - F) * S)
+					I = I % 6
+					local R, G, B
+					if I == 0 then R, G, B = V, T, P
+					elseif I == 1 then R, G, B = Q, V, P
+					elseif I == 2 then R, G, B = P, V, T
+					elseif I == 3 then R, G, B = P, Q, V
+					elseif I == 4 then R, G, B = T, P, V
+					else R, G, B = V, P, Q end
+					return Color3.new(math.clamp(R, 0, 1), math.clamp(G, 0, 1), math.clamp(B, 0, 1))
+				end
+				local function ToHex(C)
+					return string.format("#%02X%02X%02X", math.floor(C.R * 255 + 0.5), math.floor(C.G * 255 + 0.5), math.floor(C.B * 255 + 0.5))
+				end
+				local function ParseHex(Text)
+					Text = string.gsub(tostring(Text), "%s", "")
+					local Hex = string.match(Text, "^#?(%x%x%x%x%x%x)$")
+					if not Hex then return nil end
+					return Color3.fromRGB(tonumber(string.sub(Hex, 1, 2), 16), tonumber(string.sub(Hex, 3, 4), 16), tonumber(string.sub(Hex, 5, 6), 16))
+				end
+
+				local CPFrame, CPStroke = Custom:Card(SectionContent, HEAD, CPName .. "ColorPicker", false)
+				Place(CPFrame)
+				CPFrame.ClipsDescendants = true
+				local CPBtn = Custom:Create("TextButton", {
+					Text = "", AutoButtonColor = false, BackgroundTransparency = 1, BorderSizePixel = 0,
+					Size = UDim2.new(1, 0, 0, HEAD), Name = "ColorBtn",
+				}, CPFrame)
+				Custom:Label(CPBtn, {
+					Text = CPName, TextTruncate = Enum.TextTruncate.AtEnd,
+					Position = UDim2.new(0, 10, 0, 0), Size = UDim2.new(1, -60, 1, 0), Name = "ColorLabel",
+				})
+				local Swatch = Custom:Create("Frame", {
+					AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Default, BorderSizePixel = 0,
+					Position = UDim2.new(1, -9, 0.5, 0), Size = UDim2.new(0, 30, 0, 15), Name = "Swatch",
+				}, CPBtn)
+				Custom:Corner(Swatch, 5)
+				Custom:Stroke(Swatch, Theme.White, 0.6, 1)
+
+				local CPBody = Custom:Create("Frame", {
+					BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, HEAD),
+					Size = UDim2.new(1, 0, 0, BODYH), Name = "Body",
+				}, CPFrame)
+				Custom:Create("Frame", {
+					BackgroundColor3 = Theme.White, BackgroundTransparency = 0.92, BorderSizePixel = 0,
+					Position = UDim2.new(0, 8, 0, 0), Size = UDim2.new(1, -16, 0, 1), Name = "Divider",
+				}, CPBody)
+
+				local SVBox = Custom:Create("Frame", {
+					BackgroundColor3 = Color3.new(1, 0, 0), BorderSizePixel = 0, ClipsDescendants = true,
+					Position = UDim2.new(0, 8, 0, 8), Size = UDim2.new(1, -40, 0, 70), Name = "SVBox",
+				}, CPBody)
+				Custom:Corner(SVBox, 6)
+				local SatLayer = Custom:Create("Frame", {
+					BackgroundColor3 = Theme.White, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0), Name = "SatLayer",
+				}, SVBox)
+				Custom:Create("UIGradient", {
+					Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }), Rotation = 0,
+				}, SatLayer)
+				local ValLayer = Custom:Create("Frame", {
+					BackgroundColor3 = Theme.Black, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0), Name = "ValLayer",
+				}, SVBox)
+				Custom:Create("UIGradient", {
+					Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) }), Rotation = 90,
+				}, ValLayer)
+				local SVCursor = Custom:Create("Frame", {
+					AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Theme.White, BorderSizePixel = 0,
+					Position = UDim2.new(1, 0, 0, 0), Size = UDim2.new(0, 8, 0, 8), ZIndex = 3, Name = "SVCursor",
+				}, SVBox)
+				Custom:Round(SVCursor)
+				Custom:Stroke(SVCursor, Theme.Black, 0.2, 1.5)
+
+				local HueBar = Custom:Create("Frame", {
+					AnchorPoint = Vector2.new(1, 0), BackgroundColor3 = Theme.White, BorderSizePixel = 0,
+					Position = UDim2.new(1, -8, 0, 8), Size = UDim2.new(0, 20, 0, 70), Name = "HueBar",
+				}, CPBody)
+				Custom:Corner(HueBar, 6)
+				Custom:Create("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+						ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)),
+						ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)),
+						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+						ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 0, 255)),
+						ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+					}), Rotation = 90,
+				}, HueBar)
+				local HueCursor = Custom:Create("Frame", {
+					AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Theme.White, BorderSizePixel = 0,
+					Position = UDim2.new(0.5, 0, 0, 0), Size = UDim2.new(1, 4, 0, 4), ZIndex = 3, Name = "HueCursor",
+				}, HueBar)
+				Custom:Round(HueCursor)
+				Custom:Stroke(HueCursor, Theme.Black, 0.2, 1.5)
+
+				local HexBox = Custom:Create("TextBox", {
+					Font = Enum.Font.GothamBold, Text = "", PlaceholderText = "#FFFFFF", PlaceholderColor3 = Theme.Sub,
+					TextColor3 = Theme.Text, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Center, ClearTextOnFocus = false,
+					BackgroundColor3 = Theme.Field, BorderSizePixel = 0, ClipsDescendants = true,
+					Position = UDim2.new(0, 8, 0, 84), Size = UDim2.new(1, -16, 0, 20), Name = "HexBox",
+				}, CPBody)
+				Custom:Corner(HexBox, 6)
+				local HexStroke = Custom:Stroke(HexBox, Theme.White, 0.88, 1)
+
+				local H, S, V = ToHSV(Default)
+				local Current = Default
+				local IsOpen = false
+
+				local function Render()
+					Current = FromHSV(H, S, V)
+					Swatch.BackgroundColor3 = Current
+					SVBox.BackgroundColor3 = FromHSV(H, 1, 1)
+					SVCursor.Position = UDim2.new(S, 0, 1 - V, 0)
+					HueCursor.Position = UDim2.new(0.5, 0, H, 0)
+					HexBox.Text = ToHex(Current)
+				end
+				Render()
+
+				local function Fire() task.spawn(Callback, Current) end
+
+				local DragMode = nil
+				local function FromInput(Input)
+					if DragMode == "sv" then
+						local P, Sz = SVBox.AbsolutePosition, SVBox.AbsoluteSize
+						if Sz.X <= 0 or Sz.Y <= 0 then return end
+						S = math.clamp((Input.Position.X - P.X) / Sz.X, 0, 1)
+						V = 1 - math.clamp((Input.Position.Y - P.Y) / Sz.Y, 0, 1)
+					elseif DragMode == "hue" then
+						local P, Sz = HueBar.AbsolutePosition, HueBar.AbsoluteSize
+						if Sz.Y <= 0 then return end
+						H = math.clamp((Input.Position.Y - P.Y) / Sz.Y, 0, 1)
+					else
+						return
+					end
+					Render()
+					Fire()
+				end
+				local function IsPointer(Input)
+					return Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch
+				end
+				SVBox.InputBegan:Connect(function(i)
+					if IsPointer(i) then DragMode = "sv" TabFrame.ScrollingEnabled = false FromInput(i) end
+				end)
+				HueBar.InputBegan:Connect(function(i)
+					if IsPointer(i) then DragMode = "hue" TabFrame.ScrollingEnabled = false FromInput(i) end
+				end)
+				Track(UserInputService.InputChanged:Connect(function(i)
+					if DragMode and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then FromInput(i) end
+				end))
+				Track(UserInputService.InputEnded:Connect(function(i)
+					if DragMode and IsPointer(i) then
+						DragMode = nil
+						TabFrame.ScrollingEnabled = true
+					end
+				end))
+
+				local function ApplyColor(C, Silent)
+					H, S, V = ToHSV(C)
+					Render()
+					if not Silent then Fire() end
+				end
+
+				HexBox.Focused:Connect(function() Custom:Tween(HexStroke, 0.15, { Transparency = 0.3 }) end)
+				HexBox.FocusLost:Connect(function()
+					Custom:Tween(HexStroke, 0.2, { Transparency = 0.88 })
+					local C = ParseHex(HexBox.Text)
+					if C then ApplyColor(C, false) else Render() end
+				end)
+
+				local function ToggleOpen(State)
+					IsOpen = State
+					Custom:Tween(CPFrame, 0.22, { Size = UDim2.new(1, 0, 0, State and (HEAD + BODYH) or HEAD) })
+					Custom:Tween(CPStroke, 0.2, { Transparency = State and 0.6 or 0.92 })
+				end
+				CPBtn.Activated:Connect(function()
+					CircleClick(CPBtn)
+					ToggleOpen(not IsOpen)
+				end)
+				CPBtn.MouseEnter:Connect(function()
+					if not IsOpen then Custom:Tween(CPStroke, 0.15, { Transparency = 0.7 }) end
+				end)
+				CPBtn.MouseLeave:Connect(function()
+					if not IsOpen then Custom:Tween(CPStroke, 0.2, { Transparency = 0.92 }) end
+				end)
+				RegisterSearch(CPName, CPFrame, Where, SelectTab, EnsureOpen, TabFrame)
+				return {
+					ColorPicker = CPFrame,
+					Set = function(Value)
+						if type(Value) == "string" then Value = ParseHex(Value) end
+						if Value then ApplyColor(Value, false) end
+					end,
+					Get = function() return Current end,
+					Open = function() ToggleOpen(true) end,
+					Close = function() ToggleOpen(false) end,
+				}
+			end
+
+			function SecFuncs:AddLabel(LabelConfig)
+				if type(LabelConfig) == "string" then LabelConfig = { LabelConfig } end
+				local LabelText = tostring(LabelConfig[1] or LabelConfig.Text or LabelConfig.Name or "")
+				local LF = Custom:Card(SectionContent, 28, "Label", false)
+				Place(LF)
+				LF.AutomaticSize = Enum.AutomaticSize.Y
+				Custom:Create("UIPadding", {
+					PaddingTop = UDim.new(0, 7), PaddingBottom = UDim.new(0, 7), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10),
+				}, LF)
+				local Text = Custom:Label(LF, {
+					Font = Enum.Font.GothamMedium, Text = LabelText, TextColor3 = Theme.Text, TextSize = 11, TextWrapped = true,
+					TextYAlignment = Enum.TextYAlignment.Top, AutomaticSize = Enum.AutomaticSize.Y,
+					Size = UDim2.new(1, 0, 0, 14), Name = "LabelText",
+				})
+				return {
+					Label = LF,
+					Set = function(NewText) Text.Text = tostring(NewText) end,
+					SetText = function(NewText) Text.Text = tostring(NewText) end,
+					Get = function() return Text.Text end,
+				}
+			end
+
+			function SecFuncs:AddProgress(PConfig)
+				local PName = PConfig[1] or PConfig.Name or "Progress"
+				local PDefault = PConfig[2] or PConfig.Default or 0
+				local PMax = PConfig[3] or PConfig.Max or 100
+				if PMax <= 0 then PMax = 100 end
+				local PF, PStroke = Custom:Card(SectionContent, 36, PName .. "Progress", false)
+				Place(PF)
+				Custom:Label(PF, {
+					Text = PName, TextTruncate = Enum.TextTruncate.AtEnd,
+					Position = UDim2.new(0, 10, 0, 4), Size = UDim2.new(1, -70, 0, 14), Name = "ProgressLabel",
+				})
+				local Percent = Custom:Label(PF, {
+					Text = "0%", TextColor3 = Theme.White, TextXAlignment = Enum.TextXAlignment.Right,
+					Position = UDim2.new(1, -60, 0, 4), Size = UDim2.new(0, 50, 0, 14), Name = "ProgressValue",
+				})
+				local Track2 = Custom:Create("Frame", {
+					BackgroundColor3 = Theme.Off, BorderSizePixel = 0,
+					Position = UDim2.new(0, 10, 1, -13), Size = UDim2.new(1, -20, 0, 5), Name = "ProgressTrack",
+				}, PF)
+				Custom:Round(Track2)
+				local Fill = Custom:Create("Frame", {
+					BackgroundColor3 = Theme.White, BorderSizePixel = 0, Size = UDim2.new(0, 0, 1, 0), Name = "ProgressFill",
+				}, Track2)
+				Custom:Round(Fill)
+				Custom:AddGradient(Fill, 0)
+				local Value = 0
+				local function SetValue(v)
+					Value = math.clamp(tonumber(v) or 0, 0, PMax)
+					local Ratio = Value / PMax
+					Percent.Text = tostring(math.floor(Ratio * 100 + 0.5)) .. "%"
+					Custom:Tween(Fill, 0.25, { Size = UDim2.new(Ratio, 0, 1, 0) })
+				end
+				SetValue(PDefault)
+				Custom:Hover(PF, PStroke)
+				RegisterSearch(PName, PF, Where, SelectTab, EnsureOpen, TabFrame)
+				return { Progress = PF, Set = SetValue, Get = function() return Value end }
+			end
+
+
+			local FrameKeys = {
+				AddButton = "Button", AddToggle = "Toggle", AddSlider = "Slider", AddInput = "Input", AddDropdown = "Dropdown",
+				AddKeybind = "Keybind", AddParagraph = "Paragraph", AddReadMe = "ReadMe", AddSeparator = "Separator",
+				AddLine = "Line", AddSocial = "Social", AddCopyGroup = "CopyGroup", AddColorPicker = "ColorPicker",
+				AddLabel = "Label", AddProgress = "Progress",
+			}
+			local FlagKinds = {
+				AddToggle = "toggle", AddSlider = "slider", AddInput = "input", AddDropdown = "dropdown",
+				AddKeybind = "keybind", AddColorPicker = "color",
+			}
+			local function Identity(v) return v end
+			local Codecs = {
+				toggle = { Identity, function(v) return v == true end },
+				slider = { Identity, function(v) return tonumber(v) end },
+				input = { Identity, function(v) return tostring(v) end },
+				dropdown = { Identity, function(v) return v end },
+				keybind = {
+					function(v) return v.Name end,
+					function(v) return v end,
+				},
+				color = {
+					function(c) return string.format("#%02X%02X%02X", math.floor(c.R * 255 + 0.5), math.floor(c.G * 255 + 0.5), math.floor(c.B * 255 + 0.5)) end,
+					function(v) return v end,
+				},
+			}
+			for Method, Key in pairs(FrameKeys) do
+				local Original = SecFuncs[Method]
+				SecFuncs[Method] = function(self, Cfg)
+					local Result = Original(self, Cfg)
+					local Frame = Result[Key]
+					Result.Frame = Frame
+					Result.SetVisible = function(State) if Frame and Frame.Parent then Frame.Visible = State and true or false end end
+					local FlagName = type(Cfg) == "table" and Cfg.Flag or nil
+					Result.Destroy = function()
+						if FlagName and MugiHub_Library.Elements[FlagName] and MugiHub_Library.Elements[FlagName].Owner == Result then
+							MugiHub_Library.Elements[FlagName] = nil
+						end
+						if Frame and Frame.Parent then Frame:Destroy() end
+					end
+					local Kind = FlagKinds[Method]
+					if Kind and FlagName then
+						local Codec = Codecs[Kind]
+						local Decode = Codec[2]
+						if Kind == "color" then
+							Decode = function(v)
+								local Hex = string.match(tostring(v), "^#?(%x%x%x%x%x%x)$")
+								if not Hex then return nil end
+								return Color3.fromRGB(tonumber(string.sub(Hex, 1, 2), 16), tonumber(string.sub(Hex, 3, 4), 16), tonumber(string.sub(Hex, 5, 6), 16))
+							end
+						elseif Kind == "keybind" then
+							Decode = function(v)
+								local ok, Key = pcall(function() return Enum.KeyCode[tostring(v)] end)
+								return ok and Key or nil
+							end
+						end
+						MugiHub_Library.Elements[tostring(FlagName)] = {
+							Owner = Result, Get = Result.Get, Set = Result.Set, Encode = Codec[1], Decode = Decode,
+						}
+					end
+					return Result
+				end
+			end
+
+			function SecFuncs:SetOpen(State) SetSectionOpen(State == true, true) end
+			function SecFuncs:SetTitle(NewTitle) HeaderLabel.Text = tostring(NewTitle) end
 
 			return SecFuncs
 		end

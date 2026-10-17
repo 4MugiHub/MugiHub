@@ -4,11 +4,11 @@
 
 **A clean, modern UI library for Roblox script hubs.**
 
-Pink-and-black theme · Animated glowing border · Search-everything sidebar · Built-in notifications · Optional multi-config webhook · Zero dependencies
+Black-and-white gradient theme · Animated glowing border · Search-everything sidebar · Built-in notifications · Optional multi-config webhook · Zero dependencies
 
 [![Lua](https://img.shields.io/badge/Lua-Luau-2C2D72?style=for-the-badge&logo=lua&logoColor=white)](https://luau-lang.org/)
 [![Roblox](https://img.shields.io/badge/Platform-Roblox-000000?style=for-the-badge&logo=roblox&logoColor=white)](https://www.roblox.com/)
-[![License](https://img.shields.io/badge/License-MIT-pink?style=for-the-badge)](#license)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)](#license)
 
 </div>
 
@@ -68,8 +68,8 @@ No external dependencies. No build step. Just `loadstring` one URL.
 ## Features
 
 - **Draggable window** with a minimize bubble that remembers its position
-- **Modern pink + black look** inspired by Rayfield Gen 2: gradient window, flat cards, no heavy frames
-- **Animated border** — a pink gradient runs around the window edge while a soft glow fades in and out
+- **Compact black + white gradient look** inspired by Rayfield Gen 2: section cards, white accents, no pink, small footprint (default scale 0.9, configurable via `Scale`)
+- **Animated border** — a white gradient runs around the window edge while its stroke softly fades in and out
 - **Minimize button** and a **red rounded-square close button** with a pixel-perfect `✕` icon and a confirmation dialog
 - **Global search** — every component you add is searchable by title, jumps to its tab/section, and briefly highlights it
 - **Dynamic + executor tags** in the header, auto-refreshing on an interval
@@ -384,7 +384,7 @@ local Log = MugiHub.Webhook:NewConfig("Log", {
     Timestamp  = true,
     RateDelay  = 2,
     QueueMax   = 50,
-    Color      = 0xFF99CC,
+    Color      = 0xE6E6E6,
 })
 ```
 
@@ -399,7 +399,7 @@ local Log = MugiHub.Webhook:NewConfig("Log", {
 | `Timestamp` | `true` | Include a timestamp on every embed |
 | `RateDelay` | `2` | Minimum seconds between requests |
 | `QueueMax` | `50` | Maximum queued messages before new ones are dropped |
-| `Color` | `0xFF99CC` | Fallback embed color when an event has none |
+| `Color` | `0xE6E6E6` | Fallback embed color when an event has none |
 
 `SendPlayer` and `SendGame` only ever include: Roblox username, display name, UserId, PlaceId, JobId, and the executor's name. Nothing else is collected — no passwords, cookies, tokens, or other client data.
 
@@ -431,7 +431,7 @@ The library has no built-in events. Register the ones your script needs:
 ```lua
 Log:RegisterEvent("ButtonClicked", {
     title = "Button Clicked",
-    color = 0xFF99CC,
+    color = 0xE6E6E6,
 })
 
 Log:RegisterEvent("ScriptLoaded", {
@@ -460,7 +460,7 @@ For a one-off message that doesn't need a registered event:
 Log:SendEmbed({
     Title       = "Script Loaded",
     Description = "Everything initialized correctly.",
-    Color       = 0xFF99CC,
+    Color       = 0xE6E6E6,
     Footer      = "My Script v1.0",
     Fields      = {
         { name = "Status", value = "Online", inline = true },
@@ -472,7 +472,7 @@ Send several embeds in one request (Discord allows up to 10):
 
 ```lua
 Log:SendEmbeds({
-    { Title = "First",  Color = 0xFF99CC },
+    { Title = "First",  Color = 0xE6E6E6 },
     { Title = "Second", Color = 0x99CCFF },
 })
 ```
@@ -585,7 +585,7 @@ local Log = MugiHub.Webhook:NewConfig("Log", {
     URL = "https://discord.com/api/webhooks/ID/TOKEN",
 })
 
-Log:RegisterEvent("ButtonClicked", {title = "Button Clicked", color = 0xFF99CC})
+Log:RegisterEvent("ButtonClicked", {title = "Button Clicked", color = 0xE6E6E6})
 Log:RegisterEvent("ToggleChanged", {title = "Toggle Changed", color = 0x99CCFF})
 
 local Window = MugiHub.Library:CreateWindow({

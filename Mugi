@@ -1032,7 +1032,7 @@ local function Flatten(D)
 	end
 	local function Cubic(X1, Y1, X2, Y2, X3, Y3)
 		local L = math.sqrt((X1 - Cx) ^ 2 + (Y1 - Cy) ^ 2) + math.sqrt((X2 - X1) ^ 2 + (Y2 - Y1) ^ 2) + math.sqrt((X3 - X2) ^ 2 + (Y3 - Y2) ^ 2)
-		local N = math.clamp(math.ceil(L / 1.7), 2, 16)
+		local N = math.clamp(math.ceil(L / 0.9), 3, 40)
 		local X0, Y0 = Cx, Cy
 		for I = 1, N do
 			local T = I / N
@@ -1277,6 +1277,7 @@ function Icons:Register(Name, Source)
 	local Key = NormalizeName(Name)
 	self.Custom[Key] = Data
 	self.Flat[Key] = nil
+	self.Rev = (self.Rev or 0) + 1
 	return true
 end
 
@@ -1292,7 +1293,7 @@ end
 
 function Icons:Draw(Parent, Flat, Size, Color, Thick)
 	local K = Size / 24
-	local T = Thick or math.max(1.5, 1.75 * K)
+	local T = Thick or math.max(1.75, 2.05 * K)
 	local Items = {}
 	local function Pill(X1, Y1, X2, Y2)
 		local Dx, Dy = (X2 - X1) * K, (Y2 - Y1) * K
@@ -1451,6 +1452,154 @@ local function CacheAsset(Path)
 	return nil
 end
 
+local PngCrc = nil
+local function Crc32(Str)
+	if not PngCrc then
+		PngCrc = {}
+		for I = 0, 255 do
+			local C = I
+			for _ = 1, 8 do
+				if bit32.band(C, 1) == 1 then C = bit32.bxor(bit32.rshift(C, 1), 3988292384) else C = bit32.rshift(C, 1) end
+			end
+			PngCrc[I] = C
+		end
+	end
+	local C = 4294967295
+	local Tbl = PngCrc
+	local Byte = string.byte
+	for I = 1, #Str do
+		C = bit32.bxor(Tbl[bit32.band(bit32.bxor(C, Byte(Str, I)), 255)], bit32.rshift(C, 8))
+	end
+	return bit32.bxor(C, 4294967295)
+end
+
+local function Adler32(Str)
+	local A, B = 1, 0
+	local Byte = string.byte
+	for I = 1, #Str do
+		A = (A + Byte(Str, I)) % 65521
+		B = (B + A) % 65521
+	end
+	return B * 65536 + A
+end
+
+local function PngChunk(Kind, Data)
+	return string.pack(">I4", #Data) .. Kind .. Data .. string.pack(">I4", Crc32(Kind .. Data))
+end
+
+local function EncodePng(W, H, Rows)
+	local Raw = table.concat(Rows)
+	local Parts = { "\120\1" }
+	local Pos, Total = 1, #Raw
+	while Pos <= Total do
+		local Len = math.min(65535, Total - Pos + 1)
+		local Final = (Pos + Len > Total) and 1 or 0
+		table.insert(Parts, string.pack("<I1I2I2", Final, Len, 65535 - Len))
+		table.insert(Parts, string.sub(Raw, Pos, Pos + Len - 1))
+		Pos = Pos + Len
+	end
+	table.insert(Parts, string.pack(">I4", Adler32(Raw)))
+	return "\137PNG\13\10\26\10"
+		.. PngChunk("IHDR", string.pack(">I4I4I1I1I1I1I1", W, H, 8, 6, 0, 0, 0))
+		.. PngChunk("IDAT", table.concat(Parts))
+		.. PngChunk("IEND", "")
+end
+
+local AlphaPx = nil
+local RasterAssets = {}
+local RasterSpan = 27
+local RasterPad = 1.5
+
+function Icons:Raster(Flat, Size, Thick, Source)
+	local Reader = getcustomasset or getsynasset
+	if not (writefile and Reader and Flat) then return nil end
+	local Key = tostring(Source) .. "|" .. tostring(Size) .. "|" .. tostring(Thick) .. "|" .. tostring(self.Rev or 0)
+	local Hit = RasterAssets[Key]
+	if Hit then return Hit end
+	local K = Size / 24
+	local T = Thick or math.max(1.75, 2.05 * K)
+	local W = math.clamp(math.ceil(RasterSpan * K * 3), 24, 512)
+	local S = W / RasterSpan
+	local Rad = (T / K) * S / 2
+	local Buf = table.create(W * W, 0)
+	local Floor, Ceil, Sqrt = math.floor, math.ceil, math.sqrt
+	local function Stamp(X1, Y1, X2, Y2, R)
+		local MinX = math.max(0, Floor(math.min(X1, X2) - R - 1))
+		local MaxX = math.min(W - 1, Ceil(math.max(X1, X2) + R + 1))
+		local MinY = math.max(0, Floor(math.min(Y1, Y2) - R - 1))
+		local MaxY = math.min(W - 1, Ceil(math.max(Y1, Y2) + R + 1))
+		local Dx, Dy = X2 - X1, Y2 - Y1
+		local L2 = Dx * Dx + Dy * Dy
+		for Py = MinY, MaxY do
+			local Cy = Py + 0.5
+			local Base = Py * W + 1
+			for Px = MinX, MaxX do
+				local Cx = Px + 0.5
+				local U = 0
+				if L2 > 0 then
+					U = ((Cx - X1) * Dx + (Cy - Y1) * Dy) / L2
+					if U < 0 then U = 0 elseif U > 1 then U = 1 end
+				end
+				local Ex, Ey = Cx - (X1 + Dx * U), Cy - (Y1 + Dy * U)
+				local Cov = R + 0.5 - Sqrt(Ex * Ex + Ey * Ey)
+				if Cov > 0 then
+					if Cov > 1 then Cov = 1 end
+					local I = Base + Px
+					if Cov > Buf[I] then Buf[I] = Cov end
+				end
+			end
+		end
+	end
+	local function Map(V) return (V + RasterPad) * S end
+	for _, Sub in ipairs(Flat.subs) do
+		local P = Sub.pts
+		local N = #P / 2
+		if N == 1 then
+			Stamp(Map(P[1]), Map(P[2]), Map(P[1]), Map(P[2]), Rad)
+		else
+			for I = 1, N - 1 do
+				Stamp(Map(P[I * 2 - 1]), Map(P[I * 2]), Map(P[I * 2 + 1]), Map(P[I * 2 + 2]), Rad)
+			end
+			if Sub.closed and N > 2 then
+				Stamp(Map(P[N * 2 - 1]), Map(P[N * 2]), Map(P[1]), Map(P[2]), Rad)
+			end
+		end
+	end
+	for _, Dt in ipairs(Flat.dots) do
+		local R = math.max(Dt[3], T / K / 2) * S
+		Stamp(Map(Dt[1]), Map(Dt[2]), Map(Dt[1]), Map(Dt[2]), R)
+	end
+	if not AlphaPx then
+		AlphaPx = {}
+		for A = 0, 255 do AlphaPx[A] = string.char(255, 255, 255, A) end
+	end
+	local Rows = {}
+	for Y = 0, W - 1 do
+		local Row = table.create(W + 1)
+		Row[1] = "\0"
+		local Base = Y * W + 1
+		for X = 0, W - 1 do
+			Row[X + 2] = AlphaPx[Floor(Buf[Base + X] * 255 + 0.5)]
+		end
+		Rows[Y + 1] = table.concat(Row)
+	end
+	local Png = EncodePng(W, W, Rows)
+	local Ok, Asset = pcall(function()
+		if makefolder and isfolder then
+			if not isfolder("MugiHub") then makefolder("MugiHub") end
+			if not isfolder(ImageFolder) then makefolder(ImageFolder) end
+		end
+		local Path = ImageFolder .. "/ico_" .. HashHex(Key) .. ".png"
+		writefile(Path, Png)
+		return Reader(Path)
+	end)
+	if Ok and type(Asset) == "string" and Asset ~= "" then
+		RasterAssets[Key] = Asset
+		return Asset
+	end
+	return nil
+end
+
 local function ResolveImage(Url)
 	if ImageCache[Url] then return ImageCache[Url] end
 	if not (writefile and isfile and readfile) then return nil end
@@ -1583,7 +1732,26 @@ function Custom:MakeIcon(Parent, Source, Props)
 		if K ~= "Color" and K ~= "Thickness" and K ~= "Size" and K ~= "Tint" then pcall(function() Holder[K] = V end) end
 	end
 	local Obj = { Instance = Holder, Kind = "svg" }
-	if Flat then
+	local RasterOk, RasterAsset = false, nil
+	if Flat and type(Source) == "string" then
+		RasterOk, RasterAsset = pcall(function() return Icons:Raster(Flat, Size, Thick, Source) end)
+	end
+	if Flat and RasterOk and RasterAsset then
+		local Img = Instance.new("ImageLabel")
+		Img.BackgroundTransparency = 1
+		Img.BorderSizePixel = 0
+		Img.Image = RasterAsset
+		Img.ImageColor3 = Color
+		Img.ScaleType = Enum.ScaleType.Stretch
+		Img.Size = UDim2.new(27 / 24, 0, 27 / 24, 0)
+		Img.Position = UDim2.new(-1.5 / 24, 0, -1.5 / 24, 0)
+		Img.Name = "Vector"
+		Img.Parent = Holder
+		function Obj.SetColor(C, Animate)
+			if Animate then Custom:Tween(Img, 0.15, { ImageColor3 = C }) else Img.ImageColor3 = C end
+		end
+		function Obj.SetTransparency(T) Img.ImageTransparency = T end
+	elseif Flat then
 		local Items = Icons:Draw(Holder, Flat, Size, Color, Thick)
 		local Driver = Instance.new("Frame")
 		Driver.Visible = false
@@ -1694,7 +1862,7 @@ function MugiHub_Library:SetNotification(Config)
 
 	if IconName then
 		Custom:MakeIcon(Card, IconName, {
-			Size = UDim2.new(0, 16, 0, 16), Position = UDim2.new(0, 14, 0, Head and 5 or 8), Color = NColor, Name = "NotifIcon",
+			Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(0, 14, 0, Head and 4 or 7), Color = NColor, Name = "NotifIcon",
 		})
 	end
 	if Head then
@@ -2337,7 +2505,7 @@ function MugiHub_Library:CreateWindow(Config)
 	Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 9) }, TitleHolder)
 
 	local IconSlot = Custom:Create("Frame", {
-		BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 22, 0, 22),
+		BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 24, 0, 24),
 		Visible = false, Name = "IconSlot",
 	}, TitleHolder)
 	local function ApplyTitleIcon(Src)
@@ -2346,7 +2514,7 @@ function MugiHub_Library:CreateWindow(Config)
 			IconSlot.Visible = false
 			return
 		end
-		local Obj = Custom:MakeIcon(IconSlot, Src, { Size = UDim2.new(0, 22, 0, 22), Color = Theme.White, Name = "Icon" })
+		local Obj = Custom:MakeIcon(IconSlot, Src, { Size = UDim2.new(0, 24, 0, 24), Color = Theme.White, Name = "Icon" })
 		if Obj then
 			IconSlot.Visible = true
 			if Obj.Kind == "image" then
@@ -2420,7 +2588,7 @@ function MugiHub_Library:CreateWindow(Config)
 		}, TagFrame)
 		Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 7), PaddingRight = UDim.new(0, 8) }, TagFrame)
 		local TagIconSlot = Custom:Create("Frame", {
-			BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 11, 0, 11),
+			BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 13, 0, 13),
 			Visible = false, Name = "TagIconSlot",
 		}, TagFrame)
 		local TagLabel = Custom:Label(TagFrame, {
@@ -2438,7 +2606,7 @@ function MugiHub_Library:CreateWindow(Config)
 				TagIconSlot.Visible = false
 				return
 			end
-			local Obj = Custom:MakeIcon(TagIconSlot, Src, { Size = UDim2.new(0, 11, 0, 11), Color = Theme.Text, Thickness = 1.4, Name = "TagIcon" })
+			local Obj = Custom:MakeIcon(TagIconSlot, Src, { Size = UDim2.new(0, 13, 0, 13), Color = Theme.Text, Thickness = 1.6, Name = "TagIcon" })
 			TagIconSlot.Visible = Obj ~= nil
 		end
 		function TIF:Set(NewText)
@@ -2539,7 +2707,7 @@ function MugiHub_Library:CreateWindow(Config)
 	local SearchStroke = Custom:Stroke(SearchBoxContainer, Theme.White, 0.9, 1)
 
 	local SearchIconObj = Custom:MakeIcon(SearchBoxContainer, "search", {
-		AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 8, 0.5, 0), Size = UDim2.new(0, 13, 0, 13),
+		AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 8, 0.5, 0), Size = UDim2.new(0, 15, 0, 15),
 		ZIndex = 2, Color = Theme.Sub, Name = "SI",
 	})
 
@@ -3101,7 +3269,7 @@ function MugiHub_Library:CreateWindow(Config)
 		}, Panel)
 		Custom:Corner(CloseBtn, 6)
 		local CloseIcon = Custom:MakeIcon(CloseBtn, "x", {
-			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 12, 0, 12),
+			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 13, 0, 13),
 			Color = Theme.Sub, Name = "CloseIcon",
 		})
 		CloseBtn.MouseEnter:Connect(function()
@@ -3406,13 +3574,13 @@ function MugiHub_Library:CreateWindow(Config)
 		}, TabBtn)
 		Custom:Round(TabIndicator)
 		local TabIconImg = Custom:MakeIcon(TabBtn, TabIcon, {
-			AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 10, 0.5, 0), Size = UDim2.new(0, 14, 0, 14),
+			AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 10, 0.5, 0), Size = UDim2.new(0, 16, 0, 16),
 			Color = Theme.Sub, Name = "TabIcon",
 		})
 		local HasIcon = TabIconImg ~= nil
 		local TabLabel = Custom:Label(TabBtn, {
 			Text = TabName, TextColor3 = Theme.Sub, TextSize = 11, TextTruncate = Enum.TextTruncate.AtEnd,
-			Position = UDim2.new(0, HasIcon and 32 or 12, 0, 0), Size = UDim2.new(1, HasIcon and -36 or -16, 1, 0), Name = "TabLabel",
+			Position = UDim2.new(0, HasIcon and 34 or 12, 0, 0), Size = UDim2.new(1, HasIcon and -38 or -16, 1, 0), Name = "TabLabel",
 		})
 
 		local TabFrame = Custom:Create("ScrollingFrame", {
@@ -3563,7 +3731,7 @@ function MugiHub_Library:CreateWindow(Config)
 				if BtnIconSrc ~= false and BtnIconSrc ~= "" then
 					BtnIconObj = Custom:MakeIcon(Btn, BtnIconSrc, {
 						AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0),
-						Size = UDim2.new(0, 14, 0, 14), Color = Theme.Sub, Name = "BtnIcon",
+						Size = UDim2.new(0, 16, 0, 16), Color = Theme.Sub, Name = "BtnIcon",
 					})
 				end
 				if not BtnIconObj then
@@ -3579,7 +3747,7 @@ function MugiHub_Library:CreateWindow(Config)
 				return { Button = Btn, SetText = function(t) BtnLabel.Text = tostring(t) end, SetIcon = function(Src)
 					if BtnIconObj then BtnIconObj.Destroy() BtnIconObj = nil end
 					if Src and Src ~= "" then
-						BtnIconObj = Custom:MakeIcon(Btn, Src, { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), Color = Theme.Sub, Name = "BtnIcon" })
+						BtnIconObj = Custom:MakeIcon(Btn, Src, { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0), Size = UDim2.new(0, 16, 0, 16), Color = Theme.Sub, Name = "BtnIcon" })
 					end
 				end }
 			end
@@ -3843,7 +4011,7 @@ function MugiHub_Library:CreateWindow(Config)
 					Position = UDim2.new(0.5, 0, 0, 0), Size = UDim2.new(0.5, -30, 1, 0), Name = "DdValue",
 				})
 				local ArrowObj = Custom:MakeIcon(DropdownBtn, "chevron-down", {
-					AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0), Size = UDim2.new(0, 13, 0, 13),
+					AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0), Size = UDim2.new(0, 15, 0, 15),
 					Color = Theme.White, Name = "Arrow",
 				})
 				local Arrow = ArrowObj.Instance
@@ -4040,7 +4208,7 @@ function MugiHub_Library:CreateWindow(Config)
 								}, OFrame)
 								Custom:Corner(Del, 5)
 								local DelIcon = Custom:MakeIcon(Del, DeleteIcon, {
-									AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 12, 0, 12),
+									AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 14, 0, 14),
 									Color = Theme.Sub, ZIndex = 4, Name = "DeleteIcon",
 								})
 								local Armed, ArmTicket = false, 0

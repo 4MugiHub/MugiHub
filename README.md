@@ -34,14 +34,55 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
 - [Tags API](#tags-api)
 - [Tab and Section API](#tab-and-section-api)
 - [Components](#components)
+  - [Button](#button)
+  - [Toggle](#toggle)
+  - [Slider](#slider)
+  - [Input](#input)
+  - [Dropdown](#dropdown)
+  - [Keybind](#keybind)
+  - [Color Picker](#color-picker)
+  - [Label / Progress / Paragraph / Separator / Line / Social / Copy Group / ReadMe](#label--progress--paragraph--separator--line--social--copy-group--readme)
+  - [Flags](#flags)
 - [Configs (HWID + Account)](#configs-hwid--account)
+  - [The easy way: one component](#the-easy-way-one-component)
+  - [How HWID and account work](#how-hwid-and-account-work)
+  - [Files](#files)
+  - [Performance](#performance)
+  - [API (without the component)](#api-without-the-component)
 - [Color Picker Popup](#color-picker-popup)
 - [Notifications](#notifications)
 - [Search](#search)
 - [Webhook (Optional)](#webhook-optional)
+  - [What the Library Provides](#what-the-library-provides)
+  - [Creating a Config](#creating-a-config)
+  - [Multiple Configs](#multiple-configs)
+  - [Registering Your Own Events](#registering-your-own-events)
+  - [Sending Events](#sending-events)
+  - [Custom Embeds](#custom-embeds)
+  - [Attaching to Notifications](#attaching-to-notifications)
+  - [Local Listeners](#local-listeners)
+  - [Stats & Maintenance](#stats--maintenance)
+  - [Full Method Reference](#full-method-reference)
+  - [Any HTTP Endpoint Works](#any-http-endpoint-works)
+  - [Security Note](#security-note)
 - [Full Example](#full-example)
 - [Icon Pack](#icon-pack)
 - [Icon Gallery](#icon-gallery)
+  - [Navigation (34)](#navigation-34)
+  - [Actions (43)](#actions-43)
+  - [Files (34)](#files-34)
+  - [System (36)](#system-36)
+  - [Settings (18)](#settings-18)
+  - [Security (22)](#security-22)
+  - [Status (25)](#status-25)
+  - [Media (23)](#media-23)
+  - [Social (21)](#social-21)
+  - [Finance (23)](#finance-23)
+  - [Nature (28)](#nature-28)
+  - [Gaming (30)](#gaming-30)
+  - [Roblox Ui (37)](#roblox-ui-37)
+  - [Developer Tools (28)](#developer-tools-28)
+  - [Transportation (26)](#transportation-26)
 - [Validation Report](#validation-report)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
@@ -52,7 +93,7 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
 
 MugiHub is a single-file Luau UI library for building script hub interfaces on Roblox. It ships with a searchable sidebar, a draggable window, a customizable minimize bubble, stacked notifications, a full set of ready-made components, a popup color picker, a config manager and an **optional** webhook layer.
 
-Roblox cannot render `.svg` files, so the library carries its own icon engine: every icon is stored as compact path data inside `Mugi` and drawn at runtime with rounded frames, which keeps them crisp at any size and lets them change color with the UI. No emoji and no font glyphs are used for icons anywhere.
+Roblox cannot render `.svg` files, so the library carries its own icon engine: every icon is stored as compact path data inside `Mugi` and rasterized at runtime into small anti-aliased PNGs (3x supersampled, cached in `MugiHub/Cache/`) so edges stay smooth, and tinted to follow the UI colors. If the executor cannot write files or load custom assets, icons automatically fall back to rounded frames. No emoji and no font glyphs are used for icons anywhere.
 
 No external dependencies. No build step. Just `loadstring` one URL.
 
@@ -1520,29 +1561,4 @@ What was actually checked for this release, and how.
 ## Troubleshooting
 
 **`attempt to call a nil value` right after the `loadstring` line**
-The library failed to load - usually a stale GitHub raw cache shortly after a push, or a restricted `loadstring`/HTTP function. Wait about 60 seconds and re-run, or try another executor.
-
-**An icon name shows nothing**
-Names are exact (`sword`, not `Sword `). Check the [gallery](#icon-gallery) or `MugiHub.Library:GetIcons()`. Unknown names are ignored silently.
-
-**An image link shows nothing**
-The link must lead to an image (or to a page with an `og:image`). Your executor needs `request`, `writefile` and `getcustomasset`. Try `rbxassetid://...` to confirm the rest works, and `MugiHub.Library:ClearImageCache()` if an old broken file was cached.
-
-**Configs do not appear in the dropdown**
-Press **Refresh list**. Your executor needs `writefile`, `readfile`, `isfile` and `listfiles`. A config is hidden only when both the device and the account differ from the ones that saved it.
-
-**Auto save never saves**
-It needs a selected/typed config name, flagged components (`Flag = "..."`), and it starts about 3 seconds after the window opens (or after the auto load finishes).
-
-**Slider won't accept decimals**
-Set `Increment` to a decimal value, e.g. `Increment = 0.1`.
-
-**Webhook isn't sending**
-- Confirm `URL` is set and correct
-- Confirm your executor supports HTTP requests (`syn.request`, `http.request`, `request`, or `http_request`)
-- Check `config:GetStats()` - a rising `failed` count means the URL or request itself is failing
-- Try `config:Flush()` to force-send whatever is queued
-
-## License
-
-MIT - use it, fork it, ship it.
+The library failed to load - usually a stale GitHub raw cache shortly after a push

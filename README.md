@@ -49,6 +49,25 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
   - [Files](#files)
   - [Performance](#performance)
   - [API (without the component)](#api-without-the-component)
+- [Key System](#key-system)
+  - [What It Provides](#what-it-provides)
+  - [Requirements and Platform Notes](#requirements-and-platform-notes)
+  - [Configuration Structure](#configuration-structure)
+  - [General Options](#general-options)
+  - [Window Options](#window-options)
+  - [Appearance Options](#appearance-options)
+  - [Authentication Options](#authentication-options)
+  - [API Mode](#api-mode)
+  - [Password Mode](#password-mode)
+  - [Mode Switching](#mode-switching)
+  - [Discord Support](#discord-support)
+  - [Account and Device Policy](#account-and-device-policy)
+  - [Behavior Options](#behavior-options)
+  - [Callbacks](#callbacks)
+  - [Controller Methods](#controller-methods)
+  - [States, Feedback and Responsiveness](#states-feedback-and-responsiveness)
+  - [Lifecycle and Cleanup](#lifecycle-and-cleanup)
+  - [Security Model and Known Limitations](#security-model-and-known-limitations)
 - [Color Picker Popup](#color-picker-popup)
 - [Notifications](#notifications)
 - [Search](#search)
@@ -123,6 +142,7 @@ Everything that depends on an executor function degrades quietly: if a function 
 - **Buttons with a mouse-pointer icon** instead of an arrow, so they are never mistaken for dropdowns
 - **Modern dropdown** with filter, multi-select, live `Refresh`, and an optional per-row **delete button**
 - **Popup color picker** with saturation/brightness box, hue bar, hex, RGB, presets and cancel/done
+- **Key System** - a ready-made verification window with API mode (provider links and your own verification), password mode, Discord support, device and account policy, and callbacks
 - **Config manager** - name input, save, deletable dropdown of saved configs, load, auto load, auto save
 - **Configs follow the device OR the account** - the same config stays available if either the HWID or the Roblox account changes
 - **Global search**, **stacked notifications**, **ripple click**, and an **optional webhook**
@@ -511,6 +531,415 @@ Library:RefreshOwner()                              -- re-read HWID/account (rar
 ```
 
 Config names are cleaned to letters, digits, spaces, `-`, `_` and `.` (other characters become `_`). `SaveConfig` returns `false, reason` on failure, e.g. no `writefile`, an invalid name or a config owned by someone else.
+
+## Key System
+
+MugiHub includes a ready-made Key System window. It is created through the **CreateKeySystem** method of the library object, works on its own (no main window is required first), and reports its result through callbacks so your script decides what to load after the key is accepted. It uses the same monochrome gradient look, animated border, rounded corners, SVG icons and notification system as the rest of the library.
+
+The Key System is fully driven by one structured configuration table. Every option below is optional; anything you leave out falls back to the default shown in the tables. Nested groups are merged with their defaults, so you only need to provide the values you want to change.
+
+### What It Provides
+
+- A compact, responsive window with a title, a description, a key input, a Verify button, one Get Key button per enabled provider, a status line with a loading indicator, a Discord support line and a red rounded close button with an SVG X
+- Two authentication methods that can be enabled separately or together: **API mode** (provider links plus your own verification) and **Password mode** (a password stored in your script, no external service)
+- A modular provider system: each provider supplies its own link or key-fetching function and its own verification, and nothing is assumed to be shared between providers
+- Status states (idle, loading, success, error, warning, info) plus notifications through the normal MugiHub notification system
+- Timeouts, controlled retries, a cooldown after failures, protection against double submission, and clear messages for empty input, invalid keys, service errors, timeouts, missing configuration and clipboard failures
+- Optional device and account policy settings, with account-independent keys and no device binding as the default
+- Optional local key persistence with automatic re-verification
+- Callbacks for success, failure, accepted key, rejected key, closing and key requests, and a controller object for driving the window from code
+
+### Requirements and Platform Notes
+
+- The window itself needs only the standard MugiHub environment.
+- Copying links and the Discord invite needs an executor clipboard function (setclipboard or toclipboard). If neither exists, the configured clipboard fallback is used instead.
+- API mode verification through the built-in URL verifier needs an HTTP function (request, http_request, syn.request or http.request). Without one, only GET requests can fall back to the game HTTP get function and POST requests fail with a service error.
+- Key persistence needs the executor file functions (writefile, readfile, isfile). Deleting a saved key also needs delfile.
+- Roblox does not give scripts an official way to open an external browser or to read a stable device identifier. The Key System therefore copies links for the user to open manually, and device identification is only possible through functions you supply or through an executor function you explicitly allow.
+- The Key System has not been tested in a real Roblox client or executor. Behavior that depends on executor functions follows their documented behavior and may differ between executors.
+
+### Configuration Structure
+
+| Group | Purpose |
+|---|---|
+| Title, Description, Icon | Text and icon shown in the header |
+| AccountIndependent, AllowMultipleAccounts, HWIDMode | Account and device policy (top level) |
+| Window | Size, scale, position, border, backdrop, close button |
+| Appearance | Colors, fonts, icon size and alignment, animations |
+| Authentication | Methods, texts, messages, timeouts, retries, API providers, password |
+| Discord | Support line and invite link |
+| Device | How a device identifier may be obtained and disclosed |
+| Account | Whether account information may be sent to the built-in URL verifier |
+| Behavior | Close on success, clipboard fallback, notifications, persistence |
+| Callbacks | Functions the Key System calls for each outcome |
+
+### General Options
+
+| Option | Default | Description |
+|---|---|---|
+| Title | Access Verification | Main heading of the window. Can be changed later with the SetTitle controller method. |
+| Description | Verify your key to continue. | Line under the title. An empty text hides it. Can be changed with SetDescription. |
+| Icon | key | Header icon. Accepts a built-in icon name, an alias, raw SVG path data, full SVG text, an asset id or any image link, exactly like every other MugiHub icon. If the name is unknown, the key icon is used. |
+
+### Window Options
+
+These options live in the Window group.
+
+| Option | Default | Description |
+|---|---|---|
+| Width | 360 | Window width in pixels. Limited to a range of 240 to 640. The height is automatic and follows the content. |
+| Scale | 1 | Preferred scale. The Key System never exceeds it, but lowers the scale automatically so the whole window fits inside 94 percent of the screen width and 90 percent of the screen height. The final scale stays between 0.4 and 1.5. |
+| Position | Centered | A UDim2 position for the window center. Leave it out to center the window. |
+| Padding | 14 | Inner padding in pixels. Limited to 6 to 32. |
+| CornerRadius | 12 | Corner radius of the window in pixels. Limited to 0 to 28. |
+| Border | true | Shows the animated gradient border. Set to false for no border. |
+| BorderTransparency | 0.25 | Base transparency of the border stroke. |
+| BackgroundTransparency | 0.02 | Transparency of the window background. |
+| Backdrop | true | Dims the screen behind the window and blocks clicks to interface underneath. With false there is no dimming and no click blocking. |
+| BackdropTransparency | 0.5 | Transparency of the dimming layer. Higher values are lighter. |
+| CloseButton | true | Shows the red rounded close button with an SVG X in the top-right corner. |
+| CloseBehavior | Destroy | What the close button does. See the close behavior list below. |
+| DisplayOrder | 150 | Display order of the screen interface, so it sits above the main window. |
+
+Close behavior values:
+- **Destroy** plays the closing animation, then removes the whole interface and cleans up every connection.
+- **Hide** hides the window and the backdrop but keeps everything alive. It can be shown again with the Show controller method.
+- **Callback** only calls the OnClose callback and leaves the window open, so your own code decides what happens.
+
+The close button never closes the window by accident while the user types, because it is a separate button, and the backdrop never closes the window when it is tapped.
+
+### Appearance Options
+
+These options live in the Appearance group. All color options expect a Color3 value; invalid values are ignored and the default is used.
+
+| Option | Default | Used for |
+|---|---|---|
+| Background | Library gradient | Window background. Leave it out for the standard MugiHub gradient. Setting a color replaces the gradient with a solid color. |
+| Panel | White (translucent) | Fill of the header icon box and the mode switch bar |
+| Accent | White | Header icon tint, the selected pill of the mode switch, and the default tint of provider icons |
+| Text | Light gray | Title, selected mode label and enabled provider button labels |
+| SubText | Mid gray | Description, placeholders, idle status text, notices and inactive labels |
+| Border | White | Strokes around the window, header icon box, mode switch, input field, link box and default provider buttons |
+| Button | White | Fill of the Verify button. The soft white gradient is applied only while this stays at the default white. |
+| ButtonText | Near black | Label and icon color on the Verify button |
+| Secondary | White (translucent) | Fill of the Get Key buttons |
+| Input | Near black | Fill of the key input and of the link box |
+| InputText | Light gray | Text typed into the input |
+| Success | White | Status icon and text for success |
+| Error | Red | Status icon and text for errors |
+| Warning | Light gray | Status icon and text for warnings |
+| Info | Soft gray | Status icon and text for information |
+| Font | Gotham | Font for body text. Must be a Roblox font enum value. |
+| FontBold | Gotham Bold | Font for the title, buttons and labels. |
+| IconSize | 16 | Size in pixels of the icons inside buttons. Limited to 10 to 32. |
+| IconAlign | Left | Places button icons Left or Right of the button text. Applies to the Verify and Get Key buttons. |
+| Animations | true | Turns window, hover, status and spinner animations on or off. |
+| AnimationTime | 0.2 | Base animation duration in seconds. All animation durations are scaled relative to the default of 0.2. |
+| ReducedMotion | false | When true, every animation is skipped: no entrance animation, no border rotation, no spinner rotation and instant state changes. The result is identical to turning Animations off. |
+
+Icons keep their quality on different screens because they are rendered as smooth anti-aliased images at three times their display size. If the executor cannot create image files, icons automatically fall back to the vector frame renderer.
+
+### Authentication Options
+
+These options live in the Authentication group.
+
+| Option | Default | Description |
+|---|---|---|
+| DefaultMode | API | Which method is selected first: API or Password. If the requested method is not enabled, the enabled one is selected. |
+| Placeholder | Enter your key... | Placeholder of the input in API mode. |
+| PasswordPlaceholder | Enter the password... | Placeholder of the input in Password mode. |
+| VerifyText | Verify | Text of the Verify button. |
+| GetKeyText | Get Key | Base text of the Get Key buttons. |
+| LoadingText | Verifying... | Text shown on the Verify button and in the status line while a key is being checked. |
+| GetKeyLoadingText | Preparing link... | Status text while a Get Key request is running. |
+| SuccessText | Key verified. | Status and notification text after a key is accepted. |
+| ModeLabels | Key and Password | Labels of the two pills in the mode switch. Provide a table with API and Password entries. |
+| Timeout | 10 | Seconds before one verification or key request attempt is treated as timed out. Limited to 2 to 60. |
+| Retry | Attempts 1, Delay 1.5 | Controlled retry policy. See the retry section below. |
+| Cooldown | 1 | Seconds a user must wait after a failed attempt before verifying again. Limited to 0 to 30. |
+| Trim | true | Removes leading and trailing spaces from the key before checking it. |
+| MaxLength | 512 | Keys longer than this are rejected as invalid without any check. |
+| ShowProviderName | true | When more than one provider is enabled, appends the provider name to the Get Key text, for example Get Key - Name. Providers with their own ButtonText ignore this. |
+| Messages | See below | Every user-facing message. |
+| API | See API mode | Settings for API mode. |
+| Password | See Password mode | Settings for Password mode. |
+
+Message options (inside Messages):
+
+| Message | Default text | Shown when |
+|---|---|---|
+| Empty | Enter your key to continue. | The input is empty when Verify is pressed |
+| Invalid | That key is not valid. | Every verifier rejected the key, the password did not match, or the key was too long |
+| ApiError | Could not reach the verification service. | A verifier failed with an error or returned nothing, and retries were used up |
+| Timeout | The request timed out. Try again. | The last failed attempt timed out |
+| NotConfigured | Verification is not configured. | There is no verifier in API mode, or no password in Password mode |
+| NoMethod | No authentication method is enabled. | Neither API mode nor Password mode is enabled |
+| ProviderMissing | This provider has no link configured. | A Get Key button is pressed for a provider without a link or key function |
+| Copied | Link copied. Finish the steps, then paste your key here. | A link was copied to the clipboard |
+| ClipboardFailed | Clipboard is not available. Copy the link manually. | Copying failed or no clipboard function exists |
+| DeviceUnavailable | A device identifier is required but unavailable. | Strict device mode could not obtain an identifier |
+| KeyReceived | Key received. Press Verify to check it. | A key function returned a key that was placed in the input |
+| Busy | Please wait for the current request. | Verify or Get Key is pressed while another request runs |
+| Cooldown | Please wait a moment before trying again. | Verify is pressed during the cooldown after a failure |
+
+### API Mode
+
+API mode is enabled through the Enabled option of the API group (inside Authentication). It separates **getting** a key from **verifying** a key, because those are different steps with different requirements.
+
+API group options:
+
+| Option | Default | Description |
+|---|---|---|
+| Enabled | false | Turns API mode on. |
+| Providers | Empty list | List of provider tables. Only enabled providers get a Get Key button. |
+| Verify | None | A global verification function used for every key, before any provider verifier. |
+| VerifyUrl | None | A global verification request description handled by the built-in URL verifier. |
+
+**How verification works.** When the user presses Verify, the Key System collects every available verifier in a fixed order: the global Verify function, then the global VerifyUrl, then for each enabled provider in the order listed its own Verify function followed by its own VerifyUrl. Each verifier is tried in turn.
+
+- If a verifier accepts the key, verification ends at once and the key is accepted.
+- If a verifier rejects the key, the next verifier is tried, because the key may belong to a different provider.
+- If a verifier fails with an error, returns nothing or times out, it is retried according to the retry policy, then the next verifier is tried.
+- If no verifier accepted the key and at least one failed with an error or timeout, the user sees the service error or timeout message. If every verifier clearly rejected the key, the user sees the invalid key message.
+- If there is no verifier at all, the user sees the not configured message. The Key System never reports success without a verifier saying so.
+
+**Custom verification functions.** A verifier function receives the typed key and a context table, and reports one of three outcomes: accepted, rejected, or failed. Returning true accepts the key. Returning false rejects it. Returning nothing, or raising an error, counts as a failure and is eligible for retries. The function runs in its own thread with the configured timeout, so a function that never returns cannot freeze the window.
+
+The context table contains: the key, the mode, a Policy table (AccountIndependent, AllowMultipleAccounts and HWIDMode), a Send table that says whether the device identifier and account details may be forwarded by the built-in URL verifier, the device identifier when one was obtained, the account user id and name only when AccountIndependent is false, and, for provider verifiers, a Provider table with the provider id, name and settings. Custom functions receive this information whenever the policy collects it; what a custom function does with it is the developer's responsibility.
+
+#### Provider Options
+
+Each entry in the Providers list supports:
+
+| Option | Default | Description |
+|---|---|---|
+| Id | Preset name or provider plus position | Unique identifier, used by the RequestKey controller method and by callbacks. |
+| Preset | None | Optional shortcut. Linkvertise and Jnkie are recognized and only fill in the display name. See the provider status section. |
+| Name | Preset name or Id | Display name. |
+| Enabled | true | Set to false to hide the provider without removing it. |
+| Logo (alias Icon) | link icon | Logo shown next to the Get Key text. Accepts a built-in icon name, SVG path data, SVG text, an asset id or an image link. Official brand SVG files are not bundled; supply your own asset or link. |
+| Url | None | A fixed link that Get Key copies to the clipboard. |
+| GetKey | None | A function that produces the link or key at press time. Takes precedence over Url. |
+| ButtonText | Derived from GetKeyText | Full text for this provider's button. |
+| Accent | None | Color for this provider's icon tint and button stroke. Without it the library accent and a neutral stroke are used. |
+| Verify | None | Provider-specific verification function. |
+| VerifyUrl | None | Provider-specific request description for the built-in URL verifier. |
+| Settings | None | Free-form table passed through to your functions inside the context. The Key System never reads or sends it. |
+| Timeout | Authentication Timeout | Per-provider timeout in seconds for its functions. |
+
+A provider counts as ready for Get Key when it has a Url or a GetKey function. A provider without either stays visible but dimmed and shows the provider missing message when pressed.
+
+#### Get Key Buttons
+
+Each enabled provider gets its own button. The provider logo sits directly next to the Get Key text (on the left by default, or on the right with IconAlign). Buttons only exist for enabled providers, and the whole group is hidden in Password mode or when no provider is enabled.
+
+When a Get Key button is pressed:
+1. The Key System refuses the request if another request is running or the window is closing.
+2. A fixed Url is used immediately. A GetKey function runs in its own thread with the timeout and retry policy.
+3. A function may return a link text, or a table with a link, a key or both. Link texts must begin with http:// or https://; anything else is treated as a failure.
+4. A returned link is copied to the clipboard automatically, followed by a notification and a status message. The status is informational, never success: the Key System does not assume a copied link is a valid key and does not assume the user finished the provider's steps.
+5. A returned key is placed in the input and the user is asked to press Verify. It is never auto-accepted.
+6. If copying fails or no clipboard function exists, an error message is shown and the clipboard fallback runs.
+7. The OnGetKey callback is called with the provider id and the link.
+
+Clipboard fallback values (Behavior group):
+- **Show** reveals a selectable text box under the input that contains the link, so it can be copied by hand (default).
+- **Notify** appends the link to the status and notification message.
+- **None** shows only the failure message.
+
+The same fallback applies when copying the Discord invite fails.
+
+#### Built-in URL Verifier
+
+For servers you control, a verification request can be described without writing a function. Put a description table in VerifyUrl (global or per provider). The Key System sends the request, checks the response, and reports accepted, rejected or failed.
+
+| Option | Default | Description |
+|---|---|---|
+| Url | Required | Address to call. Placeholders are filled in and URL-encoded. |
+| Method | GET | HTTP method. |
+| Headers | None | Table of header names and values. Placeholders are filled in and control characters are removed. |
+| Body | None | Request body text, for example JSON. Placeholders are filled in and JSON-escaped. |
+| SuccessBody | None | Text that must appear in the response body. |
+| MatchMode | contains | With contains the text only needs to appear; with equals the whole trimmed body must match. |
+| SuccessJson | None | A table with Field (a dotted path such as a nested field name) and Value (default true). The response must be JSON and the field must equal the value. |
+
+Response handling:
+- Status codes 200 to 299 are evaluated against SuccessBody and SuccessJson. If neither is set, any successful status accepts the key, so set at least one in practice.
+- Status 0, 429 and 500 or above count as service failures and are retried.
+- Any other status counts as a clear rejection.
+- A body that cannot be decoded as JSON when SuccessJson is set counts as a failure.
+
+Placeholders available in Url, Headers and Body: key, hwid, userid, username and multi. The key is always available. The device identifier is filled in only when the device mode collected one and Device SendToVerifyUrl is true. User id and username are filled in only when AccountIndependent is false and Account SendToVerifyUrl is true. Multi is the text true or false from AllowMultipleAccounts. Placeholders that are not allowed are replaced with empty text. Unknown placeholder names are left untouched.
+
+#### Retry Policy
+
+Retry has two options: Attempts (extra tries after a failure, default 1, limited to 0 to 5) and Delay (seconds between tries, default 1.5, limited to 0.2 to 15). Retries apply only to failures (errors, empty results, timeouts, service status codes), per verifier or per key request. A clear rejection is never retried. While any request runs, Verify and Get Key are blocked, and after a failed attempt the cooldown applies.
+
+#### Provider Support Status
+
+- **Linkvertise and Jnkie:** MugiHub includes the integration structure for them, but no verified, official integration. Searching for official developer documentation did not produce a documented client verification flow that can be implemented honestly, so the Key System does not invent endpoints, parameters or callbacks. The Preset option only sets the display name. A provider counts as working only when you supply its link and a verification path, either your own backend (through VerifyUrl or a Verify function) or another mechanism that the provider documents.
+- **Redirect and callback flows:** If a provider uses redirects or server-side callbacks, the user opens the copied link in a browser, completes the steps, and receives a key. Your backend checks the key. The Key System cannot observe the browser flow.
+- **Not configured:** A provider with no link, or API mode with no verifier, shows a not configured message. It never reports success.
+- **Brand assets:** No third-party logos are bundled. Use your own SVG, asset id or image link.
+
+### Password Mode
+
+Password mode is enabled through the Enabled option of the Password group (inside Authentication). It needs no external service and works offline.
+
+| Option | Default | Description |
+|---|---|---|
+| Enabled | false | Turns Password mode on. |
+| Password | Empty | A password text, or a list of accepted password texts. Empty texts are ignored. |
+| CaseSensitive | true | When false, the typed text and the password are compared in lower case. |
+
+The user types the password and presses Verify. A match accepts it; anything else shows the invalid message. With no password configured, the not configured message is shown instead of accepting anything.
+
+**Security limits:** A password stored inside a Luau script that runs on the user's machine can be extracted by anyone who can read the script or inspect memory. Password mode is only suitable for simple gating, private groups or casual access control. It must never be treated as authentication that protects server resources. When real security is required, verify through a trusted backend using API mode with your own verification endpoint.
+
+### Mode Switching
+
+- If only one method is enabled, the mode switch is hidden and that method is used.
+- If both are enabled, a switch appears under the header. The input icon (key or lock), placeholder and Get Key buttons change with the mode. Get Key buttons are shown only in API mode.
+- If neither is enabled, the window shows the no method message and every verification attempt fails with it.
+- The SetMode controller method changes the mode from code and returns whether the mode is enabled.
+
+### Discord Support
+
+The Discord group controls the support line at the bottom of the window. By default it reads Need Support? followed by a blue Discord link with an icon.
+
+| Option | Default | Description |
+|---|---|---|
+| Enabled | true | Shows the support line. |
+| Text | Need Support? | Plain text before the link. An empty text hides it. |
+| LinkText | Discord | Text of the clickable part. |
+| Color | Discord-style blue | Color of the link text and icon. |
+| Icon | message-circle | Icon next to the link text. Accepts any MugiHub icon source. Set to false to hide it. MugiHub has no bundled Discord logo; supply your own SVG or asset if you want the brand logo. |
+| IconSize | 14 | Icon size in pixels. Limited to 8 to 24. |
+| InviteURL | Empty | Invite link to copy. The invite is never hard-coded in the library. |
+| CopiedMessage | Discord invite copied to clipboard. | Status and notification text after copying. |
+| MissingMessage | The Discord invite has not been configured. | Shown when the invite is empty. |
+
+The link brightens on hover and dims briefly while pressed. Pressing it copies the invite and shows a notification. If copying fails, the clipboard fallback runs. The invite is not validated.
+
+### Account and Device Policy
+
+These options are top-level options (not inside a group) and are designed so that the default works for everyone.
+
+| Option | Default | Description |
+|---|---|---|
+| AccountIndependent | true | Validation does not depend on the Roblox username or user id. Nothing about the account is placed in the context or sent. Set to false to let your own verifiers receive the account. |
+| AllowMultipleAccounts | true | Declares that one key may be used by several accounts. |
+| HWIDMode | Disabled | Device policy: Disabled, Optional or Strict. |
+
+**AccountIndependent and AllowMultipleAccounts.** Keys are never bound to an account by default. The client cannot enforce how many accounts use a key; AllowMultipleAccounts is a policy flag delivered to your verifiers (in the context Policy table) and to the built-in URL verifier as the multi placeholder. Enforcement must happen on your server.
+
+**HWIDMode values:**
+- **Disabled:** no device identifier is collected or checked. This is the default and prioritizes cross-account and cross-device compatibility.
+- **Optional:** the Key System tries to obtain an identifier; if one is available it is added to the context, and verification continues normally if it is not.
+- **Strict:** an identifier is required. If none can be obtained, verification stops before any request and reports the device unavailable message. The Key System does not register, store or compare devices itself. Real binding (registration, validation, reset and conflict handling) must be done by your trusted backend using the identifier.
+
+**Where an identifier comes from.** Roblox provides no official, stable HWID API for ordinary scripts, and the Key System does not claim otherwise. It does not fingerprint the executor, the IP address or the device. An identifier is used only if you provide a Provider function in the Device group, or you set UseExecutorFunction to true to allow the executor's gethwid function. Executor functions are unofficial and behavior varies.
+
+Device group options:
+
+| Option | Default | Description |
+|---|---|---|
+| Provider | None | A function that returns the identifier text. Takes precedence. |
+| UseExecutorFunction | false | Allows the executor function when no Provider is set. |
+| SendToVerifyUrl | false | Allows the built-in URL verifier to place the identifier in requests through the hwid placeholder. Without it the placeholder is empty. |
+| Notice | A device identifier is used for verification. | Disclosure text shown in the window whenever HWIDMode is not Disabled. |
+
+Account group options:
+
+| Option | Default | Description |
+|---|---|---|
+| SendToVerifyUrl | false | Allows the built-in URL verifier to place the user id and name in requests, only when AccountIndependent is false. |
+| Notice | Your Roblox account is used for verification. | Disclosure text shown whenever AccountIndependent is false. |
+
+Policy summary: nothing about the device or account is sent anywhere unless you opt in, and the window shows a disclosure line in the cases where it is. The flags that control sending apply only to the built-in URL verifier; code you write yourself decides what it does with the context.
+
+### Behavior Options
+
+| Option | Default | Description |
+|---|---|---|
+| CloseOnSuccess | true | Destroys the window after the success delay. |
+| SuccessDelay | 0.9 | Seconds the success state stays visible before OnSuccess is called and the window closes. |
+| ClipboardFallback | Show | Show, Notify or None. |
+| Notifications | true | Turns notifications for outcomes on or off. The status line is always updated. |
+| NotificationDelay | 3 | Seconds notifications stay visible. |
+| ReplaceExisting | true | Creating a Key System destroys the previous one first, so duplicates never stack. |
+| Persist | See below | Local key persistence. |
+
+Persistence options (inside Persist):
+
+| Option | Default | Description |
+|---|---|---|
+| Enabled | false | Saves an accepted key to a file and checks it again on the next start. |
+| Name | Default | File name, cleaned with the same rules as config names. The file is stored in the MugiHub KeySystem folder. |
+| Days | 0 | Number of days a saved key stays usable. Zero means it never expires. |
+| AutoVerify | true | Fills the input with the saved key and verifies it automatically after the window appears. |
+
+A key is saved only after it has been accepted. A saved key goes through exactly the same verification as a typed one, and if it is rejected the file is deleted. The file contains the key as plain text together with the mode and a timestamp, so anyone with access to the device files can read it. The ClearSaved controller method deletes it.
+
+### Callbacks
+
+Callbacks are provided in the Callbacks group. Each runs in its own thread inside a protected call, so an error in your function never breaks the window; it is reported as a warning in the output.
+
+| Callback | Receives | When it runs |
+|---|---|---|
+| OnKeyAccepted | The key and an info table (mode, and provider id if applicable) | Immediately when verification succeeds |
+| OnSuccess | The key and the info table | After the success delay, once. This is the place to load your script. Called even if the user closes the window during the delay. |
+| OnKeyRejected | The key and a reason code | A key is clearly rejected (invalid, or too long) |
+| OnFailure | A readable message and a reason code | Any failed attempt, including empty input, rejected keys, service errors, timeouts, missing configuration and unavailable device |
+| OnClose | Nothing | The user presses the close button or the Close controller method is used. Not called when the window is destroyed by success or by code. |
+| OnGetKey | Provider id and the link | A key request produced a link |
+
+Reason codes for OnFailure and OnKeyRejected: empty, invalid, api_error, timeout, not_configured, no_method and device_unavailable. A provider with nothing to open reports not_configured.
+
+### Controller Methods
+
+The CreateKeySystem method returns a controller table.
+
+| Member | Description |
+|---|---|
+| Destroy | Closes the window with its animation (or immediately when given true), disconnects every event, stops every animation and removes the interface. Safe to call more than once. |
+| Close | Does what the close button does, according to CloseBehavior, and calls OnClose. |
+| Show and Hide | Show or hide the window and backdrop without destroying it. |
+| SetTitle and SetDescription | Change the header texts. |
+| SetStatus | Shows a status of kind idle, loading, success, error, warning or info with a text. |
+| SetMode and GetMode | Switch between API and Password, and read the current mode. |
+| SetKey and GetInput | Put text in the input and read it. |
+| Verify | Runs verification, optionally with a given key, exactly like pressing the button. |
+| RequestKey | Runs the Get Key action for a provider id. Returns whether a request started. |
+| IsVerified | Whether a key has been accepted. |
+| ClearSaved | Deletes the saved key file. |
+| IsDestroyed | Whether the window is closing or gone. |
+| Frame and Gui | The main frame and the screen interface, for advanced adjustments. |
+
+### States, Feedback and Responsiveness
+
+- **Status line:** the icon and text change by kind. Loading shows a rotating SVG loader (still when motion is reduced), success, error, warning and info each have their own icon and color.
+- **Buttons:** Verify and Get Key are disabled while a request runs, the Verify button swaps its icon for a spinner and its label for the loading text, and repeated presses are ignored. The input is locked during a request.
+- **Input:** pressing the keyboard confirm key submits. The input border highlights on focus.
+- **Touch:** buttons use tap-based activation with the standard ripple, and no important function depends on hover. On touch devices the window moves up to 30 percent of the screen height while the input is focused, so the on-screen keyboard does not cover it, and returns afterwards.
+- **Layout:** the height adapts to the content (for example more providers, a longer description or a long message), and the scale shrinks automatically on small screens so nothing is cut off. Icons are sized in pixels and do not shift the layout.
+- **Success is never faked:** the success state appears only after a verifier or the password check accepts the key.
+
+### Lifecycle and Cleanup
+
+- Only one Key System exists at a time unless ReplaceExisting is turned off.
+- Destroying the window disconnects every event, cancels the border and spinner animations and removes the interface. Results of requests that finish after destruction are ignored, so callbacks cannot fire twice and nothing indexes a removed interface.
+- Creating and destroying the Key System repeatedly leaves nothing behind.
+- The interface does not reset on respawn.
+
+### Security Model and Known Limitations
+
+- The Key System runs on the client. Anything inside a client script, including passwords, keys, links and adapter logic, can be inspected or modified by a determined user. A client-side check can gate access politely; it cannot protect secrets.
+- For real protection, keep the actual resource on a trusted server and release it only after your backend validates the key. Never place API secrets, private tokens or credentials in the script.
+- A copied link is not a key, and a provider's page being opened is not completion. The Key System never treats either as success.
+- Responses are not trusted blindly: the built-in verifier requires a successful status and the configured body or JSON match, and anything unexpected is reported as a failure or a rejection.
+- No username, user id, device identifier, IP address or other information is collected or sent unless you configure it, and the window discloses it when it does. There are no hidden webhooks or hidden data collection.
+- Limitations: there is no input masking or visibility toggle for the key field; there is no drop shadow option because MugiHub windows do not use one; the window cannot be dragged; the library cannot open a web browser; official Linkvertise or Jnkie verification is not implemented, as explained in the provider status section; and the whole Key System was not tested in a real Roblox client or executor.
 
 ## Color Picker Popup
 
@@ -1163,402 +1592,4 @@ Every icon, grouped by category. The name under each tile is what you pass to `A
 <td align="center" width="16%"><img src="icons/tiles/thumbs-down.svg" width="56" height="56" alt="thumbs-down"><br><sub><code>thumbs-down</code></sub></td>
 <td align="center" width="16%"><img src="icons/tiles/bell-ring.svg" width="56" height="56" alt="bell-ring"><br><sub><code>bell-ring</code></sub></td>
 <td align="center" width="16%"><img src="icons/tiles/circle-dot.svg" width="56" height="56" alt="circle-dot"><br><sub><code>circle-dot</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/verified.svg" width="56" height="56" alt="verified"><br><sub><code>verified</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/zap.svg" width="56" height="56" alt="zap"><br><sub><code>zap</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/progress.svg" width="56" height="56" alt="progress"><br><sub><code>progress</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/online.svg" width="56" height="56" alt="online"><br><sub><code>online</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/offline.svg" width="56" height="56" alt="offline"><br><sub><code>offline</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/pause-circle.svg" width="56" height="56" alt="pause-circle"><br><sub><code>pause-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/stop-circle.svg" width="56" height="56" alt="stop-circle"><br><sub><code>stop-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/clock-alert.svg" width="56" height="56" alt="clock-alert"><br><sub><code>clock-alert</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/target-check.svg" width="56" height="56" alt="target-check"><br><sub><code>target-check</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/sparkle.svg" width="56" height="56" alt="sparkle"><br><sub><code>sparkle</code></sub></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Media (23)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/play.svg" width="56" height="56" alt="play"><br><sub><code>play</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/pause.svg" width="56" height="56" alt="pause"><br><sub><code>pause</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/stop.svg" width="56" height="56" alt="stop"><br><sub><code>stop</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/skip-forward.svg" width="56" height="56" alt="skip-forward"><br><sub><code>skip-forward</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/skip-back.svg" width="56" height="56" alt="skip-back"><br><sub><code>skip-back</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/fast-forward.svg" width="56" height="56" alt="fast-forward"><br><sub><code>fast-forward</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/rewind.svg" width="56" height="56" alt="rewind"><br><sub><code>rewind</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/repeat.svg" width="56" height="56" alt="repeat"><br><sub><code>repeat</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shuffle.svg" width="56" height="56" alt="shuffle"><br><sub><code>shuffle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/volume.svg" width="56" height="56" alt="volume"><br><sub><code>volume</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/volume-low.svg" width="56" height="56" alt="volume-low"><br><sub><code>volume-low</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/volume-mute.svg" width="56" height="56" alt="volume-mute"><br><sub><code>volume-mute</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/mic.svg" width="56" height="56" alt="mic"><br><sub><code>mic</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/mic-off.svg" width="56" height="56" alt="mic-off"><br><sub><code>mic-off</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/camera.svg" width="56" height="56" alt="camera"><br><sub><code>camera</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/video.svg" width="56" height="56" alt="video"><br><sub><code>video</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/music.svg" width="56" height="56" alt="music"><br><sub><code>music</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/film.svg" width="56" height="56" alt="film"><br><sub><code>film</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/radio.svg" width="56" height="56" alt="radio"><br><sub><code>radio</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cast.svg" width="56" height="56" alt="cast"><br><sub><code>cast</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/subtitles.svg" width="56" height="56" alt="subtitles"><br><sub><code>subtitles</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/equalizer.svg" width="56" height="56" alt="equalizer"><br><sub><code>equalizer</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/image-play.svg" width="56" height="56" alt="image-play"><br><sub><code>image-play</code></sub></td>
-<td></td>
-</tr>
-</table>
-
-### Social (21)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/user.svg" width="56" height="56" alt="user"><br><sub><code>user</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/users.svg" width="56" height="56" alt="users"><br><sub><code>users</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/user-plus.svg" width="56" height="56" alt="user-plus"><br><sub><code>user-plus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/user-minus.svg" width="56" height="56" alt="user-minus"><br><sub><code>user-minus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/user-circle.svg" width="56" height="56" alt="user-circle"><br><sub><code>user-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/message-circle.svg" width="56" height="56" alt="message-circle"><br><sub><code>message-circle</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/message-square.svg" width="56" height="56" alt="message-square"><br><sub><code>message-square</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/chat-dots.svg" width="56" height="56" alt="chat-dots"><br><sub><code>chat-dots</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/smile.svg" width="56" height="56" alt="smile"><br><sub><code>smile</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/frown.svg" width="56" height="56" alt="frown"><br><sub><code>frown</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/meh.svg" width="56" height="56" alt="meh"><br><sub><code>meh</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/at-sign.svg" width="56" height="56" alt="at-sign"><br><sub><code>at-sign</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/hash.svg" width="56" height="56" alt="hash"><br><sub><code>hash</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/gift.svg" width="56" height="56" alt="gift"><br><sub><code>gift</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/megaphone.svg" width="56" height="56" alt="megaphone"><br><sub><code>megaphone</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/share-2.svg" width="56" height="56" alt="share-2"><br><sub><code>share-2</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/group.svg" width="56" height="56" alt="group"><br><sub><code>group</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/send-message.svg" width="56" height="56" alt="send-message"><br><sub><code>send-message</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/link-2.svg" width="56" height="56" alt="link-2"><br><sub><code>link-2</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/rss.svg" width="56" height="56" alt="rss"><br><sub><code>rss</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bookmark-check.svg" width="56" height="56" alt="bookmark-check"><br><sub><code>bookmark-check</code></sub></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Finance (23)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/coins.svg" width="56" height="56" alt="coins"><br><sub><code>coins</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/wallet.svg" width="56" height="56" alt="wallet"><br><sub><code>wallet</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/credit-card.svg" width="56" height="56" alt="credit-card"><br><sub><code>credit-card</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/banknote.svg" width="56" height="56" alt="banknote"><br><sub><code>banknote</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/piggy-bank.svg" width="56" height="56" alt="piggy-bank"><br><sub><code>piggy-bank</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/receipt.svg" width="56" height="56" alt="receipt"><br><sub><code>receipt</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/shopping-cart.svg" width="56" height="56" alt="shopping-cart"><br><sub><code>shopping-cart</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shopping-bag.svg" width="56" height="56" alt="shopping-bag"><br><sub><code>shopping-bag</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/tag.svg" width="56" height="56" alt="tag"><br><sub><code>tag</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/percent.svg" width="56" height="56" alt="percent"><br><sub><code>percent</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/trending-up.svg" width="56" height="56" alt="trending-up"><br><sub><code>trending-up</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/trending-down.svg" width="56" height="56" alt="trending-down"><br><sub><code>trending-down</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/bar-chart.svg" width="56" height="56" alt="bar-chart"><br><sub><code>bar-chart</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/pie-chart.svg" width="56" height="56" alt="pie-chart"><br><sub><code>pie-chart</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/line-chart.svg" width="56" height="56" alt="line-chart"><br><sub><code>line-chart</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/calculator.svg" width="56" height="56" alt="calculator"><br><sub><code>calculator</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/store.svg" width="56" height="56" alt="store"><br><sub><code>store</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bank.svg" width="56" height="56" alt="bank"><br><sub><code>bank</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/dollar-sign.svg" width="56" height="56" alt="dollar-sign"><br><sub><code>dollar-sign</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/safe.svg" width="56" height="56" alt="safe"><br><sub><code>safe</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/scale.svg" width="56" height="56" alt="scale"><br><sub><code>scale</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/gem.svg" width="56" height="56" alt="gem"><br><sub><code>gem</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/badge-dollar.svg" width="56" height="56" alt="badge-dollar"><br><sub><code>badge-dollar</code></sub></td>
-<td></td>
-</tr>
-</table>
-
-### Nature (28)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/sun.svg" width="56" height="56" alt="sun"><br><sub><code>sun</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/moon.svg" width="56" height="56" alt="moon"><br><sub><code>moon</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/sunrise.svg" width="56" height="56" alt="sunrise"><br><sub><code>sunrise</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud-rain.svg" width="56" height="56" alt="cloud-rain"><br><sub><code>cloud-rain</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud-snow.svg" width="56" height="56" alt="cloud-snow"><br><sub><code>cloud-snow</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud-lightning.svg" width="56" height="56" alt="cloud-lightning"><br><sub><code>cloud-lightning</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/wind.svg" width="56" height="56" alt="wind"><br><sub><code>wind</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/snowflake.svg" width="56" height="56" alt="snowflake"><br><sub><code>snowflake</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/droplet.svg" width="56" height="56" alt="droplet"><br><sub><code>droplet</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/flame.svg" width="56" height="56" alt="flame"><br><sub><code>flame</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/leaf.svg" width="56" height="56" alt="leaf"><br><sub><code>leaf</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/tree.svg" width="56" height="56" alt="tree"><br><sub><code>tree</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/sprout.svg" width="56" height="56" alt="sprout"><br><sub><code>sprout</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/mountain.svg" width="56" height="56" alt="mountain"><br><sub><code>mountain</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/waves.svg" width="56" height="56" alt="waves"><br><sub><code>waves</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/flower.svg" width="56" height="56" alt="flower"><br><sub><code>flower</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bird.svg" width="56" height="56" alt="bird"><br><sub><code>bird</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/fish.svg" width="56" height="56" alt="fish"><br><sub><code>fish</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/paw.svg" width="56" height="56" alt="paw"><br><sub><code>paw</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/umbrella.svg" width="56" height="56" alt="umbrella"><br><sub><code>umbrella</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/thermometer.svg" width="56" height="56" alt="thermometer"><br><sub><code>thermometer</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/rainbow.svg" width="56" height="56" alt="rainbow"><br><sub><code>rainbow</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cactus.svg" width="56" height="56" alt="cactus"><br><sub><code>cactus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/mushroom.svg" width="56" height="56" alt="mushroom"><br><sub><code>mushroom</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/earth.svg" width="56" height="56" alt="earth"><br><sub><code>earth</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/volcano.svg" width="56" height="56" alt="volcano"><br><sub><code>volcano</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/moon-star.svg" width="56" height="56" alt="moon-star"><br><sub><code>moon-star</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/tornado.svg" width="56" height="56" alt="tornado"><br><sub><code>tornado</code></sub></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Gaming (30)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/sword.svg" width="56" height="56" alt="sword"><br><sub><code>sword</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/swords.svg" width="56" height="56" alt="swords"><br><sub><code>swords</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-sword.svg" width="56" height="56" alt="shield-sword"><br><sub><code>shield-sword</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/gamepad.svg" width="56" height="56" alt="gamepad"><br><sub><code>gamepad</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/joystick.svg" width="56" height="56" alt="joystick"><br><sub><code>joystick</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/dpad.svg" width="56" height="56" alt="dpad"><br><sub><code>dpad</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/dice.svg" width="56" height="56" alt="dice"><br><sub><code>dice</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/puzzle.svg" width="56" height="56" alt="puzzle"><br><sub><code>puzzle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/trophy.svg" width="56" height="56" alt="trophy"><br><sub><code>trophy</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/crown.svg" width="56" height="56" alt="crown"><br><sub><code>crown</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/medal.svg" width="56" height="56" alt="medal"><br><sub><code>medal</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bow.svg" width="56" height="56" alt="bow"><br><sub><code>bow</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/bomb.svg" width="56" height="56" alt="bomb"><br><sub><code>bomb</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/skull.svg" width="56" height="56" alt="skull"><br><sub><code>skull</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/ghost.svg" width="56" height="56" alt="ghost"><br><sub><code>ghost</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/potion.svg" width="56" height="56" alt="potion"><br><sub><code>potion</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/target.svg" width="56" height="56" alt="target"><br><sub><code>target</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/crosshair.svg" width="56" height="56" alt="crosshair"><br><sub><code>crosshair</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/treasure-chest.svg" width="56" height="56" alt="treasure-chest"><br><sub><code>treasure-chest</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/castle.svg" width="56" height="56" alt="castle"><br><sub><code>castle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/helmet.svg" width="56" height="56" alt="helmet"><br><sub><code>helmet</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/armor.svg" width="56" height="56" alt="armor"><br><sub><code>armor</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/boots.svg" width="56" height="56" alt="boots"><br><sub><code>boots</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/spell-book.svg" width="56" height="56" alt="spell-book"><br><sub><code>spell-book</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/wizard-hat.svg" width="56" height="56" alt="wizard-hat"><br><sub><code>wizard-hat</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/chess-pawn.svg" width="56" height="56" alt="chess-pawn"><br><sub><code>chess-pawn</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cards.svg" width="56" height="56" alt="cards"><br><sub><code>cards</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/heart-health.svg" width="56" height="56" alt="heart-health"><br><sub><code>heart-health</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/level-up.svg" width="56" height="56" alt="level-up"><br><sub><code>level-up</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/coin-xp.svg" width="56" height="56" alt="coin-xp"><br><sub><code>coin-xp</code></sub></td>
-</tr>
-</table>
-
-### Roblox Ui (37)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/player.svg" width="56" height="56" alt="player"><br><sub><code>player</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/leaderboard.svg" width="56" height="56" alt="leaderboard"><br><sub><code>leaderboard</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/inventory.svg" width="56" height="56" alt="inventory"><br><sub><code>inventory</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/backpack.svg" width="56" height="56" alt="backpack"><br><sub><code>backpack</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/health-bar.svg" width="56" height="56" alt="health-bar"><br><sub><code>health-bar</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/respawn.svg" width="56" height="56" alt="respawn"><br><sub><code>respawn</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/teleport.svg" width="56" height="56" alt="teleport"><br><sub><code>teleport</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/portal.svg" width="56" height="56" alt="portal"><br><sub><code>portal</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/checkpoint.svg" width="56" height="56" alt="checkpoint"><br><sub><code>checkpoint</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/map.svg" width="56" height="56" alt="map"><br><sub><code>map</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/radar.svg" width="56" height="56" alt="radar"><br><sub><code>radar</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/gems.svg" width="56" height="56" alt="gems"><br><sub><code>gems</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/xp.svg" width="56" height="56" alt="xp"><br><sub><code>xp</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/rank.svg" width="56" height="56" alt="rank"><br><sub><code>rank</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/quest.svg" width="56" height="56" alt="quest"><br><sub><code>quest</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/npc.svg" width="56" height="56" alt="npc"><br><sub><code>npc</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/emote.svg" width="56" height="56" alt="emote"><br><sub><code>emote</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/avatar.svg" width="56" height="56" alt="avatar"><br><sub><code>avatar</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/dash.svg" width="56" height="56" alt="dash"><br><sub><code>dash</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/double-jump.svg" width="56" height="56" alt="double-jump"><br><sub><code>double-jump</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/fly.svg" width="56" height="56" alt="fly"><br><sub><code>fly</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/noclip.svg" width="56" height="56" alt="noclip"><br><sub><code>noclip</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/esp.svg" width="56" height="56" alt="esp"><br><sub><code>esp</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/halo.svg" width="56" height="56" alt="halo"><br><sub><code>halo</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/script-scroll.svg" width="56" height="56" alt="script-scroll"><br><sub><code>script-scroll</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/execute.svg" width="56" height="56" alt="execute"><br><sub><code>execute</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/inject.svg" width="56" height="56" alt="inject"><br><sub><code>inject</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/hub.svg" width="56" height="56" alt="hub"><br><sub><code>hub</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/auto-farm.svg" width="56" height="56" alt="auto-farm"><br><sub><code>auto-farm</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/server-hop.svg" width="56" height="56" alt="server-hop"><br><sub><code>server-hop</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/rejoin.svg" width="56" height="56" alt="rejoin"><br><sub><code>rejoin</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/fps-boost.svg" width="56" height="56" alt="fps-boost"><br><sub><code>fps-boost</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/sleep.svg" width="56" height="56" alt="sleep"><br><sub><code>sleep</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/aura.svg" width="56" height="56" alt="aura"><br><sub><code>aura</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/camera-lock.svg" width="56" height="56" alt="camera-lock"><br><sub><code>camera-lock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/speed-boots.svg" width="56" height="56" alt="speed-boots"><br><sub><code>speed-boots</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/currency-robux.svg" width="56" height="56" alt="currency-robux"><br><sub><code>currency-robux</code></sub></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Developer Tools (28)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/code.svg" width="56" height="56" alt="code"><br><sub><code>code</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/braces.svg" width="56" height="56" alt="braces"><br><sub><code>braces</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/terminal.svg" width="56" height="56" alt="terminal"><br><sub><code>terminal</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/database.svg" width="56" height="56" alt="database"><br><sub><code>database</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/api.svg" width="56" height="56" alt="api"><br><sub><code>api</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/plugin.svg" width="56" height="56" alt="plugin"><br><sub><code>plugin</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/git-branch.svg" width="56" height="56" alt="git-branch"><br><sub><code>git-branch</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/git-commit.svg" width="56" height="56" alt="git-commit"><br><sub><code>git-commit</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/git-merge.svg" width="56" height="56" alt="git-merge"><br><sub><code>git-merge</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/git-pull-request.svg" width="56" height="56" alt="git-pull-request"><br><sub><code>git-pull-request</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/binary.svg" width="56" height="56" alt="binary"><br><sub><code>binary</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/variable.svg" width="56" height="56" alt="variable"><br><sub><code>variable</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/function.svg" width="56" height="56" alt="function"><br><sub><code>function</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/regex.svg" width="56" height="56" alt="regex"><br><sub><code>regex</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/webhook.svg" width="56" height="56" alt="webhook"><br><sub><code>webhook</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/package.svg" width="56" height="56" alt="package"><br><sub><code>package</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/blocks.svg" width="56" height="56" alt="blocks"><br><sub><code>blocks</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/workflow.svg" width="56" height="56" alt="workflow"><br><sub><code>workflow</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/network.svg" width="56" height="56" alt="network"><br><sub><code>network</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/command.svg" width="56" height="56" alt="command"><br><sub><code>command</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/flask.svg" width="56" height="56" alt="flask"><br><sub><code>flask</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/rocket.svg" width="56" height="56" alt="rocket"><br><sub><code>rocket</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/key-code.svg" width="56" height="56" alt="key-code"><br><sub><code>key-code</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bracket-square.svg" width="56" height="56" alt="bracket-square"><br><sub><code>bracket-square</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/parentheses.svg" width="56" height="56" alt="parentheses"><br><sub><code>parentheses</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/lua-moon.svg" width="56" height="56" alt="lua-moon"><br><sub><code>lua-moon</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/console.svg" width="56" height="56" alt="console"><br><sub><code>console</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/git-compare.svg" width="56" height="56" alt="git-compare"><br><sub><code>git-compare</code></sub></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Transportation (26)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/car.svg" width="56" height="56" alt="car"><br><sub><code>car</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bus.svg" width="56" height="56" alt="bus"><br><sub><code>bus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/truck.svg" width="56" height="56" alt="truck"><br><sub><code>truck</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bike.svg" width="56" height="56" alt="bike"><br><sub><code>bike</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/motorcycle.svg" width="56" height="56" alt="motorcycle"><br><sub><code>motorcycle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/train.svg" width="56" height="56" alt="train"><br><sub><code>train</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/tram.svg" width="56" height="56" alt="tram"><br><sub><code>tram</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/plane.svg" width="56" height="56" alt="plane"><br><sub><code>plane</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/helicopter.svg" width="56" height="56" alt="helicopter"><br><sub><code>helicopter</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/ship.svg" width="56" height="56" alt="ship"><br><sub><code>ship</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cargo-ship.svg" width="56" height="56" alt="cargo-ship"><br><sub><code>cargo-ship</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/tanker.svg" width="56" height="56" alt="tanker"><br><sub><code>tanker</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/sailboat.svg" width="56" height="56" alt="sailboat"><br><sub><code>sailboat</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/anchor.svg" width="56" height="56" alt="anchor"><br><sub><code>anchor</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/fuel.svg" width="56" height="56" alt="fuel"><br><sub><code>fuel</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/traffic-cone.svg" width="56" height="56" alt="traffic-cone"><br><sub><code>traffic-cone</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/parking.svg" width="56" height="56" alt="parking"><br><sub><code>parking</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/road.svg" width="56" height="56" alt="road"><br><sub><code>road</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/map-route.svg" width="56" height="56" alt="map-route"><br><sub><code>map-route</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/submarine.svg" width="56" height="56" alt="submarine"><br><sub><code>submarine</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/ufo.svg" width="56" height="56" alt="ufo"><br><sub><code>ufo</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/scooter.svg" width="56" height="56" alt="scooter"><br><sub><code>scooter</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/taxi.svg" width="56" height="56" alt="taxi"><br><sub><code>taxi</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/ambulance.svg" width="56" height="56" alt="ambulance"><br><sub><code>ambulance</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/container.svg" width="56" height="56" alt="container"><br><sub><code>container</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/forklift.svg" width="56" height="56" alt="forklift"><br><sub><code>forklift</code></sub></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-
-## Validation Report
-
-What was actually checked for this release, and how.
-
-**Icon pack**
-- 428 icons in 15 categories, each in 3 variants (outline, filled, duotone) plus a preview tile
-- SVG structure check on every file: well-formed XML, `viewBox="0 0 24 24"` on every outline/filled/duotone file, only `path`, `circle`, `rect`, `g`, `mask` and `defs` elements, no scripts, links or external references
-- Name check: unique kebab-case names, the same names in all variants and in `manifest.json`
-- Geometry check: no two icons with identical geometry
-- Visual check: every outline icon was rendered in Chromium and the contact sheets were looked at category by category. `sword`, `refresh-cw` and `tools` were redrawn from scratch and inspected at large and small sizes. Filled variants were rendered and inspected for every category; duotone variants were rendered and inspected as samples, not one by one.
-
-**Library (`Mugi`)**
-- Compiled and statically analyzed with the real Luau compiler: no syntax errors
-- Source check: line 1 is the only comment in the file, no non-ASCII characters (no emoji), no pink colors (the only magenta is a keypoint of the hue spectrum in the color picker)
-- Run in a simulated Roblox environment (a strict mock that rejects unknown properties and wrong value types, with a fake file system and HTTP): window creation, every component, tags with icons, tab icons, search icon, notifications, popup color picker (hex, RGB, presets, cancel, done), background via link and via `og:image` page, bubble customization, all 428 icons drawing without errors, config save/load/delete with the HWID-or-account rule (same account other device: visible; other account same device: visible; both changed: hidden), delete confirmation, auto save, notification cleanup and full cleanup on `Destroy`
-- **Not tested in the real Roblox client or in a real executor.** Behavior that depends on executor functions (`request`, `getcustomasset`, `gethwid`, file functions) follows their documented behavior but could differ per executor.
-
-**Thumbnail**
-- The thumbnail at the top of this file uses the Dropbox link you provided (`raw=1`). Dropbox could not be reached from the build environment, so the image was **not** downloaded or checked there. If it does not show on GitHub, download the image once, save it as `assets/thumbnail.png`, and replace the `src` of the first `<img>` with `assets/thumbnail.png`.
-
-## Troubleshooting
-
-**`attempt to call a nil value` right after the `loadstring` line**
-The library failed to load - usually a stale GitHub raw cache shortly after a push
+<td align="center" width="16%"><img src="icons/tiles/verified.svg" width="56" height="56" alt="verified"><br><sub><code>verified</code><

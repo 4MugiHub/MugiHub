@@ -1,0 +1,3877 @@
+{
+ "name": "MugiHub Icons",
+ "viewBox": "0 0 24 24",
+ "stroke": 1.75,
+ "count": 428,
+ "categories": [
+  "navigation",
+  "actions",
+  "files",
+  "system",
+  "settings",
+  "security",
+  "status",
+  "media",
+  "social",
+  "finance",
+  "nature",
+  "gaming",
+  "roblox-ui",
+  "developer-tools",
+  "transportation"
+ ],
+ "icons": [
+  {
+   "name": "home",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/home.svg",
+    "duotone": "duotone/navigation/home.svg",
+    "filled": "filled/navigation/home.svg"
+   }
+  },
+  {
+   "name": "menu",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/menu.svg",
+    "duotone": "duotone/navigation/menu.svg",
+    "filled": "filled/navigation/menu.svg"
+   }
+  },
+  {
+   "name": "arrow-up",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/arrow-up.svg",
+    "duotone": "duotone/navigation/arrow-up.svg",
+    "filled": "filled/navigation/arrow-up.svg"
+   }
+  },
+  {
+   "name": "arrow-right",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/arrow-right.svg",
+    "duotone": "duotone/navigation/arrow-right.svg",
+    "filled": "filled/navigation/arrow-right.svg"
+   }
+  },
+  {
+   "name": "arrow-down",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/arrow-down.svg",
+    "duotone": "duotone/navigation/arrow-down.svg",
+    "filled": "filled/navigation/arrow-down.svg"
+   }
+  },
+  {
+   "name": "arrow-left",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/arrow-left.svg",
+    "duotone": "duotone/navigation/arrow-left.svg",
+    "filled": "filled/navigation/arrow-left.svg"
+   }
+  },
+  {
+   "name": "arrow-up-right",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/arrow-up-right.svg",
+    "duotone": "duotone/navigation/arrow-up-right.svg",
+    "filled": "filled/navigation/arrow-up-right.svg"
+   }
+  },
+  {
+   "name": "arrow-down-left",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/arrow-down-left.svg",
+    "duotone": "duotone/navigation/arrow-down-left.svg",
+    "filled": "filled/navigation/arrow-down-left.svg"
+   }
+  },
+  {
+   "name": "chevron-up",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevron-up.svg",
+    "duotone": "duotone/navigation/chevron-up.svg",
+    "filled": "filled/navigation/chevron-up.svg"
+   }
+  },
+  {
+   "name": "chevron-right",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevron-right.svg",
+    "duotone": "duotone/navigation/chevron-right.svg",
+    "filled": "filled/navigation/chevron-right.svg"
+   }
+  },
+  {
+   "name": "chevron-down",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevron-down.svg",
+    "duotone": "duotone/navigation/chevron-down.svg",
+    "filled": "filled/navigation/chevron-down.svg"
+   }
+  },
+  {
+   "name": "chevron-left",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevron-left.svg",
+    "duotone": "duotone/navigation/chevron-left.svg",
+    "filled": "filled/navigation/chevron-left.svg"
+   }
+  },
+  {
+   "name": "chevrons-up-down",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevrons-up-down.svg",
+    "duotone": "duotone/navigation/chevrons-up-down.svg",
+    "filled": "filled/navigation/chevrons-up-down.svg"
+   }
+  },
+  {
+   "name": "chevrons-right",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevrons-right.svg",
+    "duotone": "duotone/navigation/chevrons-right.svg",
+    "filled": "filled/navigation/chevrons-right.svg"
+   }
+  },
+  {
+   "name": "external-link",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/external-link.svg",
+    "duotone": "duotone/navigation/external-link.svg",
+    "filled": "filled/navigation/external-link.svg"
+   }
+  },
+  {
+   "name": "map-pin",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/map-pin.svg",
+    "duotone": "duotone/navigation/map-pin.svg",
+    "filled": "filled/navigation/map-pin.svg"
+   }
+  },
+  {
+   "name": "compass",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/compass.svg",
+    "duotone": "duotone/navigation/compass.svg",
+    "filled": "filled/navigation/compass.svg"
+   }
+  },
+  {
+   "name": "navigation",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/navigation.svg",
+    "duotone": "duotone/navigation/navigation.svg",
+    "filled": "filled/navigation/navigation.svg"
+   }
+  },
+  {
+   "name": "undo",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/undo.svg",
+    "duotone": "duotone/navigation/undo.svg",
+    "filled": "filled/navigation/undo.svg"
+   }
+  },
+  {
+   "name": "redo",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/redo.svg",
+    "duotone": "duotone/navigation/redo.svg",
+    "filled": "filled/navigation/redo.svg"
+   }
+  },
+  {
+   "name": "corner-down-right",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/corner-down-right.svg",
+    "duotone": "duotone/navigation/corner-down-right.svg",
+    "filled": "filled/navigation/corner-down-right.svg"
+   }
+  },
+  {
+   "name": "more-horizontal",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/more-horizontal.svg",
+    "duotone": "duotone/navigation/more-horizontal.svg",
+    "filled": "filled/navigation/more-horizontal.svg"
+   }
+  },
+  {
+   "name": "more-vertical",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/more-vertical.svg",
+    "duotone": "duotone/navigation/more-vertical.svg",
+    "filled": "filled/navigation/more-vertical.svg"
+   }
+  },
+  {
+   "name": "grid",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/grid.svg",
+    "duotone": "duotone/navigation/grid.svg",
+    "filled": "filled/navigation/grid.svg"
+   }
+  },
+  {
+   "name": "list",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/list.svg",
+    "duotone": "duotone/navigation/list.svg",
+    "filled": "filled/navigation/list.svg"
+   }
+  },
+  {
+   "name": "sidebar",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/sidebar.svg",
+    "duotone": "duotone/navigation/sidebar.svg",
+    "filled": "filled/navigation/sidebar.svg"
+   }
+  },
+  {
+   "name": "expand",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/expand.svg",
+    "duotone": "duotone/navigation/expand.svg",
+    "filled": "filled/navigation/expand.svg"
+   }
+  },
+  {
+   "name": "shrink",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/shrink.svg",
+    "duotone": "duotone/navigation/shrink.svg",
+    "filled": "filled/navigation/shrink.svg"
+   }
+  },
+  {
+   "name": "locate",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/locate.svg",
+    "duotone": "duotone/navigation/locate.svg",
+    "filled": "filled/navigation/locate.svg"
+   }
+  },
+  {
+   "name": "route",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/route.svg",
+    "duotone": "duotone/navigation/route.svg",
+    "filled": "filled/navigation/route.svg"
+   }
+  },
+  {
+   "name": "signpost",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/signpost.svg",
+    "duotone": "duotone/navigation/signpost.svg",
+    "filled": "filled/navigation/signpost.svg"
+   }
+  },
+  {
+   "name": "back-to-top",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/back-to-top.svg",
+    "duotone": "duotone/navigation/back-to-top.svg",
+    "filled": "filled/navigation/back-to-top.svg"
+   }
+  },
+  {
+   "name": "panel-bottom",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/panel-bottom.svg",
+    "duotone": "duotone/navigation/panel-bottom.svg",
+    "filled": "filled/navigation/panel-bottom.svg"
+   }
+  },
+  {
+   "name": "chevrons-left",
+   "category": "navigation",
+   "files": {
+    "outline": "outline/navigation/chevrons-left.svg",
+    "duotone": "duotone/navigation/chevrons-left.svg",
+    "filled": "filled/navigation/chevrons-left.svg"
+   }
+  },
+  {
+   "name": "plus",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/plus.svg",
+    "duotone": "duotone/actions/plus.svg",
+    "filled": "filled/actions/plus.svg"
+   }
+  },
+  {
+   "name": "minus",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/minus.svg",
+    "duotone": "duotone/actions/minus.svg",
+    "filled": "filled/actions/minus.svg"
+   }
+  },
+  {
+   "name": "x",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/x.svg",
+    "duotone": "duotone/actions/x.svg",
+    "filled": "filled/actions/x.svg"
+   }
+  },
+  {
+   "name": "check",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/check.svg",
+    "duotone": "duotone/actions/check.svg",
+    "filled": "filled/actions/check.svg"
+   }
+  },
+  {
+   "name": "copy",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/copy.svg",
+    "duotone": "duotone/actions/copy.svg",
+    "filled": "filled/actions/copy.svg"
+   }
+  },
+  {
+   "name": "clipboard-paste",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/clipboard-paste.svg",
+    "duotone": "duotone/actions/clipboard-paste.svg",
+    "filled": "filled/actions/clipboard-paste.svg"
+   }
+  },
+  {
+   "name": "scissors",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/scissors.svg",
+    "duotone": "duotone/actions/scissors.svg",
+    "filled": "filled/actions/scissors.svg"
+   }
+  },
+  {
+   "name": "trash",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/trash.svg",
+    "duotone": "duotone/actions/trash.svg",
+    "filled": "filled/actions/trash.svg"
+   }
+  },
+  {
+   "name": "pencil",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/pencil.svg",
+    "duotone": "duotone/actions/pencil.svg",
+    "filled": "filled/actions/pencil.svg"
+   }
+  },
+  {
+   "name": "refresh-cw",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/refresh-cw.svg",
+    "duotone": "duotone/actions/refresh-cw.svg",
+    "filled": "filled/actions/refresh-cw.svg"
+   }
+  },
+  {
+   "name": "refresh-ccw",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/refresh-ccw.svg",
+    "duotone": "duotone/actions/refresh-ccw.svg",
+    "filled": "filled/actions/refresh-ccw.svg"
+   }
+  },
+  {
+   "name": "rotate-cw",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/rotate-cw.svg",
+    "duotone": "duotone/actions/rotate-cw.svg",
+    "filled": "filled/actions/rotate-cw.svg"
+   }
+  },
+  {
+   "name": "download",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/download.svg",
+    "duotone": "duotone/actions/download.svg",
+    "filled": "filled/actions/download.svg"
+   }
+  },
+  {
+   "name": "upload",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/upload.svg",
+    "duotone": "duotone/actions/upload.svg",
+    "filled": "filled/actions/upload.svg"
+   }
+  },
+  {
+   "name": "share",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/share.svg",
+    "duotone": "duotone/actions/share.svg",
+    "filled": "filled/actions/share.svg"
+   }
+  },
+  {
+   "name": "share-nodes",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/share-nodes.svg",
+    "duotone": "duotone/actions/share-nodes.svg",
+    "filled": "filled/actions/share-nodes.svg"
+   }
+  },
+  {
+   "name": "link",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/link.svg",
+    "duotone": "duotone/actions/link.svg",
+    "filled": "filled/actions/link.svg"
+   }
+  },
+  {
+   "name": "unlink",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/unlink.svg",
+    "duotone": "duotone/actions/unlink.svg",
+    "filled": "filled/actions/unlink.svg"
+   }
+  },
+  {
+   "name": "search",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/search.svg",
+    "duotone": "duotone/actions/search.svg",
+    "filled": "filled/actions/search.svg"
+   }
+  },
+  {
+   "name": "zoom-in",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/zoom-in.svg",
+    "duotone": "duotone/actions/zoom-in.svg",
+    "filled": "filled/actions/zoom-in.svg"
+   }
+  },
+  {
+   "name": "zoom-out",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/zoom-out.svg",
+    "duotone": "duotone/actions/zoom-out.svg",
+    "filled": "filled/actions/zoom-out.svg"
+   }
+  },
+  {
+   "name": "filter",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/filter.svg",
+    "duotone": "duotone/actions/filter.svg",
+    "filled": "filled/actions/filter.svg"
+   }
+  },
+  {
+   "name": "sort",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/sort.svg",
+    "duotone": "duotone/actions/sort.svg",
+    "filled": "filled/actions/sort.svg"
+   }
+  },
+  {
+   "name": "eye",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/eye.svg",
+    "duotone": "duotone/actions/eye.svg",
+    "filled": "filled/actions/eye.svg"
+   }
+  },
+  {
+   "name": "eye-off",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/eye-off.svg",
+    "duotone": "duotone/actions/eye-off.svg",
+    "filled": "filled/actions/eye-off.svg"
+   }
+  },
+  {
+   "name": "heart",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/heart.svg",
+    "duotone": "duotone/actions/heart.svg",
+    "filled": "filled/actions/heart.svg"
+   }
+  },
+  {
+   "name": "star",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/star.svg",
+    "duotone": "duotone/actions/star.svg",
+    "filled": "filled/actions/star.svg"
+   }
+  },
+  {
+   "name": "bookmark",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/bookmark.svg",
+    "duotone": "duotone/actions/bookmark.svg",
+    "filled": "filled/actions/bookmark.svg"
+   }
+  },
+  {
+   "name": "flag",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/flag.svg",
+    "duotone": "duotone/actions/flag.svg",
+    "filled": "filled/actions/flag.svg"
+   }
+  },
+  {
+   "name": "pin",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/pin.svg",
+    "duotone": "duotone/actions/pin.svg",
+    "filled": "filled/actions/pin.svg"
+   }
+  },
+  {
+   "name": "mouse-pointer",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/mouse-pointer.svg",
+    "duotone": "duotone/actions/mouse-pointer.svg",
+    "filled": "filled/actions/mouse-pointer.svg"
+   }
+  },
+  {
+   "name": "mouse",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/mouse.svg",
+    "duotone": "duotone/actions/mouse.svg",
+    "filled": "filled/actions/mouse.svg"
+   }
+  },
+  {
+   "name": "hand",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/hand.svg",
+    "duotone": "duotone/actions/hand.svg",
+    "filled": "filled/actions/hand.svg"
+   }
+  },
+  {
+   "name": "move",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/move.svg",
+    "duotone": "duotone/actions/move.svg",
+    "filled": "filled/actions/move.svg"
+   }
+  },
+  {
+   "name": "maximize",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/maximize.svg",
+    "duotone": "duotone/actions/maximize.svg",
+    "filled": "filled/actions/maximize.svg"
+   }
+  },
+  {
+   "name": "minimize",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/minimize.svg",
+    "duotone": "duotone/actions/minimize.svg",
+    "filled": "filled/actions/minimize.svg"
+   }
+  },
+  {
+   "name": "send",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/send.svg",
+    "duotone": "duotone/actions/send.svg",
+    "filled": "filled/actions/send.svg"
+   }
+  },
+  {
+   "name": "power",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/power.svg",
+    "duotone": "duotone/actions/power.svg",
+    "filled": "filled/actions/power.svg"
+   }
+  },
+  {
+   "name": "log-in",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/log-in.svg",
+    "duotone": "duotone/actions/log-in.svg",
+    "filled": "filled/actions/log-in.svg"
+   }
+  },
+  {
+   "name": "log-out",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/log-out.svg",
+    "duotone": "duotone/actions/log-out.svg",
+    "filled": "filled/actions/log-out.svg"
+   }
+  },
+  {
+   "name": "grip",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/grip.svg",
+    "duotone": "duotone/actions/grip.svg",
+    "filled": "filled/actions/grip.svg"
+   }
+  },
+  {
+   "name": "pointer-click",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/pointer-click.svg",
+    "duotone": "duotone/actions/pointer-click.svg",
+    "filled": "filled/actions/pointer-click.svg"
+   }
+  },
+  {
+   "name": "erase",
+   "category": "actions",
+   "files": {
+    "outline": "outline/actions/erase.svg",
+    "duotone": "duotone/actions/erase.svg",
+    "filled": "filled/actions/erase.svg"
+   }
+  },
+  {
+   "name": "file",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file.svg",
+    "duotone": "duotone/files/file.svg",
+    "filled": "filled/files/file.svg"
+   }
+  },
+  {
+   "name": "file-text",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-text.svg",
+    "duotone": "duotone/files/file-text.svg",
+    "filled": "filled/files/file-text.svg"
+   }
+  },
+  {
+   "name": "file-plus",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-plus.svg",
+    "duotone": "duotone/files/file-plus.svg",
+    "filled": "filled/files/file-plus.svg"
+   }
+  },
+  {
+   "name": "file-minus",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-minus.svg",
+    "duotone": "duotone/files/file-minus.svg",
+    "filled": "filled/files/file-minus.svg"
+   }
+  },
+  {
+   "name": "file-check",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-check.svg",
+    "duotone": "duotone/files/file-check.svg",
+    "filled": "filled/files/file-check.svg"
+   }
+  },
+  {
+   "name": "file-code",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-code.svg",
+    "duotone": "duotone/files/file-code.svg",
+    "filled": "filled/files/file-code.svg"
+   }
+  },
+  {
+   "name": "file-image",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-image.svg",
+    "duotone": "duotone/files/file-image.svg",
+    "filled": "filled/files/file-image.svg"
+   }
+  },
+  {
+   "name": "file-audio",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-audio.svg",
+    "duotone": "duotone/files/file-audio.svg",
+    "filled": "filled/files/file-audio.svg"
+   }
+  },
+  {
+   "name": "file-video",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-video.svg",
+    "duotone": "duotone/files/file-video.svg",
+    "filled": "filled/files/file-video.svg"
+   }
+  },
+  {
+   "name": "file-archive",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-archive.svg",
+    "duotone": "duotone/files/file-archive.svg",
+    "filled": "filled/files/file-archive.svg"
+   }
+  },
+  {
+   "name": "file-lock",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-lock.svg",
+    "duotone": "duotone/files/file-lock.svg",
+    "filled": "filled/files/file-lock.svg"
+   }
+  },
+  {
+   "name": "file-search",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-search.svg",
+    "duotone": "duotone/files/file-search.svg",
+    "filled": "filled/files/file-search.svg"
+   }
+  },
+  {
+   "name": "file-json",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-json.svg",
+    "duotone": "duotone/files/file-json.svg",
+    "filled": "filled/files/file-json.svg"
+   }
+  },
+  {
+   "name": "folder",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/folder.svg",
+    "duotone": "duotone/files/folder.svg",
+    "filled": "filled/files/folder.svg"
+   }
+  },
+  {
+   "name": "folder-open",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/folder-open.svg",
+    "duotone": "duotone/files/folder-open.svg",
+    "filled": "filled/files/folder-open.svg"
+   }
+  },
+  {
+   "name": "folder-plus",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/folder-plus.svg",
+    "duotone": "duotone/files/folder-plus.svg",
+    "filled": "filled/files/folder-plus.svg"
+   }
+  },
+  {
+   "name": "folder-lock",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/folder-lock.svg",
+    "duotone": "duotone/files/folder-lock.svg",
+    "filled": "filled/files/folder-lock.svg"
+   }
+  },
+  {
+   "name": "folder-tree",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/folder-tree.svg",
+    "duotone": "duotone/files/folder-tree.svg",
+    "filled": "filled/files/folder-tree.svg"
+   }
+  },
+  {
+   "name": "save",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/save.svg",
+    "duotone": "duotone/files/save.svg",
+    "filled": "filled/files/save.svg"
+   }
+  },
+  {
+   "name": "clipboard",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/clipboard.svg",
+    "duotone": "duotone/files/clipboard.svg",
+    "filled": "filled/files/clipboard.svg"
+   }
+  },
+  {
+   "name": "clipboard-check",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/clipboard-check.svg",
+    "duotone": "duotone/files/clipboard-check.svg",
+    "filled": "filled/files/clipboard-check.svg"
+   }
+  },
+  {
+   "name": "notebook",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/notebook.svg",
+    "duotone": "duotone/files/notebook.svg",
+    "filled": "filled/files/notebook.svg"
+   }
+  },
+  {
+   "name": "book",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/book.svg",
+    "duotone": "duotone/files/book.svg",
+    "filled": "filled/files/book.svg"
+   }
+  },
+  {
+   "name": "book-open",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/book-open.svg",
+    "duotone": "duotone/files/book-open.svg",
+    "filled": "filled/files/book-open.svg"
+   }
+  },
+  {
+   "name": "archive",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/archive.svg",
+    "duotone": "duotone/files/archive.svg",
+    "filled": "filled/files/archive.svg"
+   }
+  },
+  {
+   "name": "paperclip",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/paperclip.svg",
+    "duotone": "duotone/files/paperclip.svg",
+    "filled": "filled/files/paperclip.svg"
+   }
+  },
+  {
+   "name": "image",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/image.svg",
+    "duotone": "duotone/files/image.svg",
+    "filled": "filled/files/image.svg"
+   }
+  },
+  {
+   "name": "images",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/images.svg",
+    "duotone": "duotone/files/images.svg",
+    "filled": "filled/files/images.svg"
+   }
+  },
+  {
+   "name": "file-spreadsheet",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/file-spreadsheet.svg",
+    "duotone": "duotone/files/file-spreadsheet.svg",
+    "filled": "filled/files/file-spreadsheet.svg"
+   }
+  },
+  {
+   "name": "box",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/box.svg",
+    "duotone": "duotone/files/box.svg",
+    "filled": "filled/files/box.svg"
+   }
+  },
+  {
+   "name": "database-export",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/database-export.svg",
+    "duotone": "duotone/files/database-export.svg",
+    "filled": "filled/files/database-export.svg"
+   }
+  },
+  {
+   "name": "cloud-file",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/cloud-file.svg",
+    "duotone": "duotone/files/cloud-file.svg",
+    "filled": "filled/files/cloud-file.svg"
+   }
+  },
+  {
+   "name": "history",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/history.svg",
+    "duotone": "duotone/files/history.svg",
+    "filled": "filled/files/history.svg"
+   }
+  },
+  {
+   "name": "inbox",
+   "category": "files",
+   "files": {
+    "outline": "outline/files/inbox.svg",
+    "duotone": "duotone/files/inbox.svg",
+    "filled": "filled/files/inbox.svg"
+   }
+  },
+  {
+   "name": "cpu",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/cpu.svg",
+    "duotone": "duotone/system/cpu.svg",
+    "filled": "filled/system/cpu.svg"
+   }
+  },
+  {
+   "name": "hard-drive",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/hard-drive.svg",
+    "duotone": "duotone/system/hard-drive.svg",
+    "filled": "filled/system/hard-drive.svg"
+   }
+  },
+  {
+   "name": "server",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/server.svg",
+    "duotone": "duotone/system/server.svg",
+    "filled": "filled/system/server.svg"
+   }
+  },
+  {
+   "name": "monitor",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/monitor.svg",
+    "duotone": "duotone/system/monitor.svg",
+    "filled": "filled/system/monitor.svg"
+   }
+  },
+  {
+   "name": "laptop",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/laptop.svg",
+    "duotone": "duotone/system/laptop.svg",
+    "filled": "filled/system/laptop.svg"
+   }
+  },
+  {
+   "name": "smartphone",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/smartphone.svg",
+    "duotone": "duotone/system/smartphone.svg",
+    "filled": "filled/system/smartphone.svg"
+   }
+  },
+  {
+   "name": "tablet",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/tablet.svg",
+    "duotone": "duotone/system/tablet.svg",
+    "filled": "filled/system/tablet.svg"
+   }
+  },
+  {
+   "name": "keyboard",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/keyboard.svg",
+    "duotone": "duotone/system/keyboard.svg",
+    "filled": "filled/system/keyboard.svg"
+   }
+  },
+  {
+   "name": "printer",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/printer.svg",
+    "duotone": "duotone/system/printer.svg",
+    "filled": "filled/system/printer.svg"
+   }
+  },
+  {
+   "name": "wifi",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/wifi.svg",
+    "duotone": "duotone/system/wifi.svg",
+    "filled": "filled/system/wifi.svg"
+   }
+  },
+  {
+   "name": "wifi-off",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/wifi-off.svg",
+    "duotone": "duotone/system/wifi-off.svg",
+    "filled": "filled/system/wifi-off.svg"
+   }
+  },
+  {
+   "name": "bluetooth",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/bluetooth.svg",
+    "duotone": "duotone/system/bluetooth.svg",
+    "filled": "filled/system/bluetooth.svg"
+   }
+  },
+  {
+   "name": "battery",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/battery.svg",
+    "duotone": "duotone/system/battery.svg",
+    "filled": "filled/system/battery.svg"
+   }
+  },
+  {
+   "name": "battery-charging",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/battery-charging.svg",
+    "duotone": "duotone/system/battery-charging.svg",
+    "filled": "filled/system/battery-charging.svg"
+   }
+  },
+  {
+   "name": "plug",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/plug.svg",
+    "duotone": "duotone/system/plug.svg",
+    "filled": "filled/system/plug.svg"
+   }
+  },
+  {
+   "name": "cloud",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/cloud.svg",
+    "duotone": "duotone/system/cloud.svg",
+    "filled": "filled/system/cloud.svg"
+   }
+  },
+  {
+   "name": "cloud-upload",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/cloud-upload.svg",
+    "duotone": "duotone/system/cloud-upload.svg",
+    "filled": "filled/system/cloud-upload.svg"
+   }
+  },
+  {
+   "name": "cloud-download",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/cloud-download.svg",
+    "duotone": "duotone/system/cloud-download.svg",
+    "filled": "filled/system/cloud-download.svg"
+   }
+  },
+  {
+   "name": "globe",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/globe.svg",
+    "duotone": "duotone/system/globe.svg",
+    "filled": "filled/system/globe.svg"
+   }
+  },
+  {
+   "name": "clock",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/clock.svg",
+    "duotone": "duotone/system/clock.svg",
+    "filled": "filled/system/clock.svg"
+   }
+  },
+  {
+   "name": "timer",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/timer.svg",
+    "duotone": "duotone/system/timer.svg",
+    "filled": "filled/system/timer.svg"
+   }
+  },
+  {
+   "name": "hourglass",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/hourglass.svg",
+    "duotone": "duotone/system/hourglass.svg",
+    "filled": "filled/system/hourglass.svg"
+   }
+  },
+  {
+   "name": "calendar",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/calendar.svg",
+    "duotone": "duotone/system/calendar.svg",
+    "filled": "filled/system/calendar.svg"
+   }
+  },
+  {
+   "name": "bell",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/bell.svg",
+    "duotone": "duotone/system/bell.svg",
+    "filled": "filled/system/bell.svg"
+   }
+  },
+  {
+   "name": "bell-off",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/bell-off.svg",
+    "duotone": "duotone/system/bell-off.svg",
+    "filled": "filled/system/bell-off.svg"
+   }
+  },
+  {
+   "name": "mail",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/mail.svg",
+    "duotone": "duotone/system/mail.svg",
+    "filled": "filled/system/mail.svg"
+   }
+  },
+  {
+   "name": "headphones",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/headphones.svg",
+    "duotone": "duotone/system/headphones.svg",
+    "filled": "filled/system/headphones.svg"
+   }
+  },
+  {
+   "name": "usb",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/usb.svg",
+    "duotone": "duotone/system/usb.svg",
+    "filled": "filled/system/usb.svg"
+   }
+  },
+  {
+   "name": "memory-card",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/memory-card.svg",
+    "duotone": "duotone/system/memory-card.svg",
+    "filled": "filled/system/memory-card.svg"
+   }
+  },
+  {
+   "name": "power-plug-off",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/power-plug-off.svg",
+    "duotone": "duotone/system/power-plug-off.svg",
+    "filled": "filled/system/power-plug-off.svg"
+   }
+  },
+  {
+   "name": "signal",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/signal.svg",
+    "duotone": "duotone/system/signal.svg",
+    "filled": "filled/system/signal.svg"
+   }
+  },
+  {
+   "name": "airplane-mode",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/airplane-mode.svg",
+    "duotone": "duotone/system/airplane-mode.svg",
+    "filled": "filled/system/airplane-mode.svg"
+   }
+  },
+  {
+   "name": "qr-code",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/qr-code.svg",
+    "duotone": "duotone/system/qr-code.svg",
+    "filled": "filled/system/qr-code.svg"
+   }
+  },
+  {
+   "name": "disc",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/disc.svg",
+    "duotone": "duotone/system/disc.svg",
+    "filled": "filled/system/disc.svg"
+   }
+  },
+  {
+   "name": "webcam",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/webcam.svg",
+    "duotone": "duotone/system/webcam.svg",
+    "filled": "filled/system/webcam.svg"
+   }
+  },
+  {
+   "name": "terminal-window",
+   "category": "system",
+   "files": {
+    "outline": "outline/system/terminal-window.svg",
+    "duotone": "duotone/system/terminal-window.svg",
+    "filled": "filled/system/terminal-window.svg"
+   }
+  },
+  {
+   "name": "settings",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/settings.svg",
+    "duotone": "duotone/settings/settings.svg",
+    "filled": "filled/settings/settings.svg"
+   }
+  },
+  {
+   "name": "settings-2",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/settings-2.svg",
+    "duotone": "duotone/settings/settings-2.svg",
+    "filled": "filled/settings/settings-2.svg"
+   }
+  },
+  {
+   "name": "sliders",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/sliders.svg",
+    "duotone": "duotone/settings/sliders.svg",
+    "filled": "filled/settings/sliders.svg"
+   }
+  },
+  {
+   "name": "sliders-vertical",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/sliders-vertical.svg",
+    "duotone": "duotone/settings/sliders-vertical.svg",
+    "filled": "filled/settings/sliders-vertical.svg"
+   }
+  },
+  {
+   "name": "tools",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/tools.svg",
+    "duotone": "duotone/settings/tools.svg",
+    "filled": "filled/settings/tools.svg"
+   }
+  },
+  {
+   "name": "wrench",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/wrench.svg",
+    "duotone": "duotone/settings/wrench.svg",
+    "filled": "filled/settings/wrench.svg"
+   }
+  },
+  {
+   "name": "hammer",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/hammer.svg",
+    "duotone": "duotone/settings/hammer.svg",
+    "filled": "filled/settings/hammer.svg"
+   }
+  },
+  {
+   "name": "screwdriver",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/screwdriver.svg",
+    "duotone": "duotone/settings/screwdriver.svg",
+    "filled": "filled/settings/screwdriver.svg"
+   }
+  },
+  {
+   "name": "toggle-left",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/toggle-left.svg",
+    "duotone": "duotone/settings/toggle-left.svg",
+    "filled": "filled/settings/toggle-left.svg"
+   }
+  },
+  {
+   "name": "toggle-right",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/toggle-right.svg",
+    "duotone": "duotone/settings/toggle-right.svg",
+    "filled": "filled/settings/toggle-right.svg"
+   }
+  },
+  {
+   "name": "palette",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/palette.svg",
+    "duotone": "duotone/settings/palette.svg",
+    "filled": "filled/settings/palette.svg"
+   }
+  },
+  {
+   "name": "paintbrush",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/paintbrush.svg",
+    "duotone": "duotone/settings/paintbrush.svg",
+    "filled": "filled/settings/paintbrush.svg"
+   }
+  },
+  {
+   "name": "wand",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/wand.svg",
+    "duotone": "duotone/settings/wand.svg",
+    "filled": "filled/settings/wand.svg"
+   }
+  },
+  {
+   "name": "contrast",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/contrast.svg",
+    "duotone": "duotone/settings/contrast.svg",
+    "filled": "filled/settings/contrast.svg"
+   }
+  },
+  {
+   "name": "gauge",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/gauge.svg",
+    "duotone": "duotone/settings/gauge.svg",
+    "filled": "filled/settings/gauge.svg"
+   }
+  },
+  {
+   "name": "layers",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/layers.svg",
+    "duotone": "duotone/settings/layers.svg",
+    "filled": "filled/settings/layers.svg"
+   }
+  },
+  {
+   "name": "adjustments",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/adjustments.svg",
+    "duotone": "duotone/settings/adjustments.svg",
+    "filled": "filled/settings/adjustments.svg"
+   }
+  },
+  {
+   "name": "ruler",
+   "category": "settings",
+   "files": {
+    "outline": "outline/settings/ruler.svg",
+    "duotone": "duotone/settings/ruler.svg",
+    "filled": "filled/settings/ruler.svg"
+   }
+  },
+  {
+   "name": "shield",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield.svg",
+    "duotone": "duotone/security/shield.svg",
+    "filled": "filled/security/shield.svg"
+   }
+  },
+  {
+   "name": "shield-check",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-check.svg",
+    "duotone": "duotone/security/shield-check.svg",
+    "filled": "filled/security/shield-check.svg"
+   }
+  },
+  {
+   "name": "shield-alert",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-alert.svg",
+    "duotone": "duotone/security/shield-alert.svg",
+    "filled": "filled/security/shield-alert.svg"
+   }
+  },
+  {
+   "name": "shield-x",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-x.svg",
+    "duotone": "duotone/security/shield-x.svg",
+    "filled": "filled/security/shield-x.svg"
+   }
+  },
+  {
+   "name": "shield-off",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-off.svg",
+    "duotone": "duotone/security/shield-off.svg",
+    "filled": "filled/security/shield-off.svg"
+   }
+  },
+  {
+   "name": "shield-plus",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-plus.svg",
+    "duotone": "duotone/security/shield-plus.svg",
+    "filled": "filled/security/shield-plus.svg"
+   }
+  },
+  {
+   "name": "shield-half",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-half.svg",
+    "duotone": "duotone/security/shield-half.svg",
+    "filled": "filled/security/shield-half.svg"
+   }
+  },
+  {
+   "name": "lock",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/lock.svg",
+    "duotone": "duotone/security/lock.svg",
+    "filled": "filled/security/lock.svg"
+   }
+  },
+  {
+   "name": "unlock",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/unlock.svg",
+    "duotone": "duotone/security/unlock.svg",
+    "filled": "filled/security/unlock.svg"
+   }
+  },
+  {
+   "name": "key",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/key.svg",
+    "duotone": "duotone/security/key.svg",
+    "filled": "filled/security/key.svg"
+   }
+  },
+  {
+   "name": "fingerprint",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/fingerprint.svg",
+    "duotone": "duotone/security/fingerprint.svg",
+    "filled": "filled/security/fingerprint.svg"
+   }
+  },
+  {
+   "name": "bug",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/bug.svg",
+    "duotone": "duotone/security/bug.svg",
+    "filled": "filled/security/bug.svg"
+   }
+  },
+  {
+   "name": "scan-eye",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/scan-eye.svg",
+    "duotone": "duotone/security/scan-eye.svg",
+    "filled": "filled/security/scan-eye.svg"
+   }
+  },
+  {
+   "name": "id-card",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/id-card.svg",
+    "duotone": "duotone/security/id-card.svg",
+    "filled": "filled/security/id-card.svg"
+   }
+  },
+  {
+   "name": "user-check",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/user-check.svg",
+    "duotone": "duotone/security/user-check.svg",
+    "filled": "filled/security/user-check.svg"
+   }
+  },
+  {
+   "name": "siren",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/siren.svg",
+    "duotone": "duotone/security/siren.svg",
+    "filled": "filled/security/siren.svg"
+   }
+  },
+  {
+   "name": "ban",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/ban.svg",
+    "duotone": "duotone/security/ban.svg",
+    "filled": "filled/security/ban.svg"
+   }
+  },
+  {
+   "name": "badge-check",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/badge-check.svg",
+    "duotone": "duotone/security/badge-check.svg",
+    "filled": "filled/security/badge-check.svg"
+   }
+  },
+  {
+   "name": "eye-lock",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/eye-lock.svg",
+    "duotone": "duotone/security/eye-lock.svg",
+    "filled": "filled/security/eye-lock.svg"
+   }
+  },
+  {
+   "name": "password",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/password.svg",
+    "duotone": "duotone/security/password.svg",
+    "filled": "filled/security/password.svg"
+   }
+  },
+  {
+   "name": "firewall",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/firewall.svg",
+    "duotone": "duotone/security/firewall.svg",
+    "filled": "filled/security/firewall.svg"
+   }
+  },
+  {
+   "name": "shield-lock",
+   "category": "security",
+   "files": {
+    "outline": "outline/security/shield-lock.svg",
+    "duotone": "duotone/security/shield-lock.svg",
+    "filled": "filled/security/shield-lock.svg"
+   }
+  },
+  {
+   "name": "check-circle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/check-circle.svg",
+    "duotone": "duotone/status/check-circle.svg",
+    "filled": "filled/status/check-circle.svg"
+   }
+  },
+  {
+   "name": "x-circle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/x-circle.svg",
+    "duotone": "duotone/status/x-circle.svg",
+    "filled": "filled/status/x-circle.svg"
+   }
+  },
+  {
+   "name": "alert-circle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/alert-circle.svg",
+    "duotone": "duotone/status/alert-circle.svg",
+    "filled": "filled/status/alert-circle.svg"
+   }
+  },
+  {
+   "name": "alert-triangle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/alert-triangle.svg",
+    "duotone": "duotone/status/alert-triangle.svg",
+    "filled": "filled/status/alert-triangle.svg"
+   }
+  },
+  {
+   "name": "alert-octagon",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/alert-octagon.svg",
+    "duotone": "duotone/status/alert-octagon.svg",
+    "filled": "filled/status/alert-octagon.svg"
+   }
+  },
+  {
+   "name": "info",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/info.svg",
+    "duotone": "duotone/status/info.svg",
+    "filled": "filled/status/info.svg"
+   }
+  },
+  {
+   "name": "help-circle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/help-circle.svg",
+    "duotone": "duotone/status/help-circle.svg",
+    "filled": "filled/status/help-circle.svg"
+   }
+  },
+  {
+   "name": "loader",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/loader.svg",
+    "duotone": "duotone/status/loader.svg",
+    "filled": "filled/status/loader.svg"
+   }
+  },
+  {
+   "name": "spinner",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/spinner.svg",
+    "duotone": "duotone/status/spinner.svg",
+    "filled": "filled/status/spinner.svg"
+   }
+  },
+  {
+   "name": "activity",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/activity.svg",
+    "duotone": "duotone/status/activity.svg",
+    "filled": "filled/status/activity.svg"
+   }
+  },
+  {
+   "name": "heart-pulse",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/heart-pulse.svg",
+    "duotone": "duotone/status/heart-pulse.svg",
+    "filled": "filled/status/heart-pulse.svg"
+   }
+  },
+  {
+   "name": "thumbs-up",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/thumbs-up.svg",
+    "duotone": "duotone/status/thumbs-up.svg",
+    "filled": "filled/status/thumbs-up.svg"
+   }
+  },
+  {
+   "name": "thumbs-down",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/thumbs-down.svg",
+    "duotone": "duotone/status/thumbs-down.svg",
+    "filled": "filled/status/thumbs-down.svg"
+   }
+  },
+  {
+   "name": "bell-ring",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/bell-ring.svg",
+    "duotone": "duotone/status/bell-ring.svg",
+    "filled": "filled/status/bell-ring.svg"
+   }
+  },
+  {
+   "name": "circle-dot",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/circle-dot.svg",
+    "duotone": "duotone/status/circle-dot.svg",
+    "filled": "filled/status/circle-dot.svg"
+   }
+  },
+  {
+   "name": "verified",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/verified.svg",
+    "duotone": "duotone/status/verified.svg",
+    "filled": "filled/status/verified.svg"
+   }
+  },
+  {
+   "name": "zap",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/zap.svg",
+    "duotone": "duotone/status/zap.svg",
+    "filled": "filled/status/zap.svg"
+   }
+  },
+  {
+   "name": "progress",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/progress.svg",
+    "duotone": "duotone/status/progress.svg",
+    "filled": "filled/status/progress.svg"
+   }
+  },
+  {
+   "name": "online",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/online.svg",
+    "duotone": "duotone/status/online.svg",
+    "filled": "filled/status/online.svg"
+   }
+  },
+  {
+   "name": "offline",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/offline.svg",
+    "duotone": "duotone/status/offline.svg",
+    "filled": "filled/status/offline.svg"
+   }
+  },
+  {
+   "name": "pause-circle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/pause-circle.svg",
+    "duotone": "duotone/status/pause-circle.svg",
+    "filled": "filled/status/pause-circle.svg"
+   }
+  },
+  {
+   "name": "stop-circle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/stop-circle.svg",
+    "duotone": "duotone/status/stop-circle.svg",
+    "filled": "filled/status/stop-circle.svg"
+   }
+  },
+  {
+   "name": "clock-alert",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/clock-alert.svg",
+    "duotone": "duotone/status/clock-alert.svg",
+    "filled": "filled/status/clock-alert.svg"
+   }
+  },
+  {
+   "name": "target-check",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/target-check.svg",
+    "duotone": "duotone/status/target-check.svg",
+    "filled": "filled/status/target-check.svg"
+   }
+  },
+  {
+   "name": "sparkle",
+   "category": "status",
+   "files": {
+    "outline": "outline/status/sparkle.svg",
+    "duotone": "duotone/status/sparkle.svg",
+    "filled": "filled/status/sparkle.svg"
+   }
+  },
+  {
+   "name": "play",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/play.svg",
+    "duotone": "duotone/media/play.svg",
+    "filled": "filled/media/play.svg"
+   }
+  },
+  {
+   "name": "pause",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/pause.svg",
+    "duotone": "duotone/media/pause.svg",
+    "filled": "filled/media/pause.svg"
+   }
+  },
+  {
+   "name": "stop",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/stop.svg",
+    "duotone": "duotone/media/stop.svg",
+    "filled": "filled/media/stop.svg"
+   }
+  },
+  {
+   "name": "skip-forward",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/skip-forward.svg",
+    "duotone": "duotone/media/skip-forward.svg",
+    "filled": "filled/media/skip-forward.svg"
+   }
+  },
+  {
+   "name": "skip-back",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/skip-back.svg",
+    "duotone": "duotone/media/skip-back.svg",
+    "filled": "filled/media/skip-back.svg"
+   }
+  },
+  {
+   "name": "fast-forward",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/fast-forward.svg",
+    "duotone": "duotone/media/fast-forward.svg",
+    "filled": "filled/media/fast-forward.svg"
+   }
+  },
+  {
+   "name": "rewind",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/rewind.svg",
+    "duotone": "duotone/media/rewind.svg",
+    "filled": "filled/media/rewind.svg"
+   }
+  },
+  {
+   "name": "repeat",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/repeat.svg",
+    "duotone": "duotone/media/repeat.svg",
+    "filled": "filled/media/repeat.svg"
+   }
+  },
+  {
+   "name": "shuffle",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/shuffle.svg",
+    "duotone": "duotone/media/shuffle.svg",
+    "filled": "filled/media/shuffle.svg"
+   }
+  },
+  {
+   "name": "volume",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/volume.svg",
+    "duotone": "duotone/media/volume.svg",
+    "filled": "filled/media/volume.svg"
+   }
+  },
+  {
+   "name": "volume-low",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/volume-low.svg",
+    "duotone": "duotone/media/volume-low.svg",
+    "filled": "filled/media/volume-low.svg"
+   }
+  },
+  {
+   "name": "volume-mute",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/volume-mute.svg",
+    "duotone": "duotone/media/volume-mute.svg",
+    "filled": "filled/media/volume-mute.svg"
+   }
+  },
+  {
+   "name": "mic",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/mic.svg",
+    "duotone": "duotone/media/mic.svg",
+    "filled": "filled/media/mic.svg"
+   }
+  },
+  {
+   "name": "mic-off",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/mic-off.svg",
+    "duotone": "duotone/media/mic-off.svg",
+    "filled": "filled/media/mic-off.svg"
+   }
+  },
+  {
+   "name": "camera",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/camera.svg",
+    "duotone": "duotone/media/camera.svg",
+    "filled": "filled/media/camera.svg"
+   }
+  },
+  {
+   "name": "video",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/video.svg",
+    "duotone": "duotone/media/video.svg",
+    "filled": "filled/media/video.svg"
+   }
+  },
+  {
+   "name": "music",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/music.svg",
+    "duotone": "duotone/media/music.svg",
+    "filled": "filled/media/music.svg"
+   }
+  },
+  {
+   "name": "film",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/film.svg",
+    "duotone": "duotone/media/film.svg",
+    "filled": "filled/media/film.svg"
+   }
+  },
+  {
+   "name": "radio",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/radio.svg",
+    "duotone": "duotone/media/radio.svg",
+    "filled": "filled/media/radio.svg"
+   }
+  },
+  {
+   "name": "cast",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/cast.svg",
+    "duotone": "duotone/media/cast.svg",
+    "filled": "filled/media/cast.svg"
+   }
+  },
+  {
+   "name": "subtitles",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/subtitles.svg",
+    "duotone": "duotone/media/subtitles.svg",
+    "filled": "filled/media/subtitles.svg"
+   }
+  },
+  {
+   "name": "equalizer",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/equalizer.svg",
+    "duotone": "duotone/media/equalizer.svg",
+    "filled": "filled/media/equalizer.svg"
+   }
+  },
+  {
+   "name": "image-play",
+   "category": "media",
+   "files": {
+    "outline": "outline/media/image-play.svg",
+    "duotone": "duotone/media/image-play.svg",
+    "filled": "filled/media/image-play.svg"
+   }
+  },
+  {
+   "name": "user",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/user.svg",
+    "duotone": "duotone/social/user.svg",
+    "filled": "filled/social/user.svg"
+   }
+  },
+  {
+   "name": "users",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/users.svg",
+    "duotone": "duotone/social/users.svg",
+    "filled": "filled/social/users.svg"
+   }
+  },
+  {
+   "name": "user-plus",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/user-plus.svg",
+    "duotone": "duotone/social/user-plus.svg",
+    "filled": "filled/social/user-plus.svg"
+   }
+  },
+  {
+   "name": "user-minus",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/user-minus.svg",
+    "duotone": "duotone/social/user-minus.svg",
+    "filled": "filled/social/user-minus.svg"
+   }
+  },
+  {
+   "name": "user-circle",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/user-circle.svg",
+    "duotone": "duotone/social/user-circle.svg",
+    "filled": "filled/social/user-circle.svg"
+   }
+  },
+  {
+   "name": "message-circle",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/message-circle.svg",
+    "duotone": "duotone/social/message-circle.svg",
+    "filled": "filled/social/message-circle.svg"
+   }
+  },
+  {
+   "name": "message-square",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/message-square.svg",
+    "duotone": "duotone/social/message-square.svg",
+    "filled": "filled/social/message-square.svg"
+   }
+  },
+  {
+   "name": "chat-dots",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/chat-dots.svg",
+    "duotone": "duotone/social/chat-dots.svg",
+    "filled": "filled/social/chat-dots.svg"
+   }
+  },
+  {
+   "name": "smile",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/smile.svg",
+    "duotone": "duotone/social/smile.svg",
+    "filled": "filled/social/smile.svg"
+   }
+  },
+  {
+   "name": "frown",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/frown.svg",
+    "duotone": "duotone/social/frown.svg",
+    "filled": "filled/social/frown.svg"
+   }
+  },
+  {
+   "name": "meh",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/meh.svg",
+    "duotone": "duotone/social/meh.svg",
+    "filled": "filled/social/meh.svg"
+   }
+  },
+  {
+   "name": "at-sign",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/at-sign.svg",
+    "duotone": "duotone/social/at-sign.svg",
+    "filled": "filled/social/at-sign.svg"
+   }
+  },
+  {
+   "name": "hash",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/hash.svg",
+    "duotone": "duotone/social/hash.svg",
+    "filled": "filled/social/hash.svg"
+   }
+  },
+  {
+   "name": "gift",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/gift.svg",
+    "duotone": "duotone/social/gift.svg",
+    "filled": "filled/social/gift.svg"
+   }
+  },
+  {
+   "name": "megaphone",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/megaphone.svg",
+    "duotone": "duotone/social/megaphone.svg",
+    "filled": "filled/social/megaphone.svg"
+   }
+  },
+  {
+   "name": "share-2",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/share-2.svg",
+    "duotone": "duotone/social/share-2.svg",
+    "filled": "filled/social/share-2.svg"
+   }
+  },
+  {
+   "name": "group",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/group.svg",
+    "duotone": "duotone/social/group.svg",
+    "filled": "filled/social/group.svg"
+   }
+  },
+  {
+   "name": "send-message",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/send-message.svg",
+    "duotone": "duotone/social/send-message.svg",
+    "filled": "filled/social/send-message.svg"
+   }
+  },
+  {
+   "name": "link-2",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/link-2.svg",
+    "duotone": "duotone/social/link-2.svg",
+    "filled": "filled/social/link-2.svg"
+   }
+  },
+  {
+   "name": "rss",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/rss.svg",
+    "duotone": "duotone/social/rss.svg",
+    "filled": "filled/social/rss.svg"
+   }
+  },
+  {
+   "name": "bookmark-check",
+   "category": "social",
+   "files": {
+    "outline": "outline/social/bookmark-check.svg",
+    "duotone": "duotone/social/bookmark-check.svg",
+    "filled": "filled/social/bookmark-check.svg"
+   }
+  },
+  {
+   "name": "coins",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/coins.svg",
+    "duotone": "duotone/finance/coins.svg",
+    "filled": "filled/finance/coins.svg"
+   }
+  },
+  {
+   "name": "wallet",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/wallet.svg",
+    "duotone": "duotone/finance/wallet.svg",
+    "filled": "filled/finance/wallet.svg"
+   }
+  },
+  {
+   "name": "credit-card",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/credit-card.svg",
+    "duotone": "duotone/finance/credit-card.svg",
+    "filled": "filled/finance/credit-card.svg"
+   }
+  },
+  {
+   "name": "banknote",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/banknote.svg",
+    "duotone": "duotone/finance/banknote.svg",
+    "filled": "filled/finance/banknote.svg"
+   }
+  },
+  {
+   "name": "piggy-bank",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/piggy-bank.svg",
+    "duotone": "duotone/finance/piggy-bank.svg",
+    "filled": "filled/finance/piggy-bank.svg"
+   }
+  },
+  {
+   "name": "receipt",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/receipt.svg",
+    "duotone": "duotone/finance/receipt.svg",
+    "filled": "filled/finance/receipt.svg"
+   }
+  },
+  {
+   "name": "shopping-cart",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/shopping-cart.svg",
+    "duotone": "duotone/finance/shopping-cart.svg",
+    "filled": "filled/finance/shopping-cart.svg"
+   }
+  },
+  {
+   "name": "shopping-bag",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/shopping-bag.svg",
+    "duotone": "duotone/finance/shopping-bag.svg",
+    "filled": "filled/finance/shopping-bag.svg"
+   }
+  },
+  {
+   "name": "tag",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/tag.svg",
+    "duotone": "duotone/finance/tag.svg",
+    "filled": "filled/finance/tag.svg"
+   }
+  },
+  {
+   "name": "percent",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/percent.svg",
+    "duotone": "duotone/finance/percent.svg",
+    "filled": "filled/finance/percent.svg"
+   }
+  },
+  {
+   "name": "trending-up",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/trending-up.svg",
+    "duotone": "duotone/finance/trending-up.svg",
+    "filled": "filled/finance/trending-up.svg"
+   }
+  },
+  {
+   "name": "trending-down",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/trending-down.svg",
+    "duotone": "duotone/finance/trending-down.svg",
+    "filled": "filled/finance/trending-down.svg"
+   }
+  },
+  {
+   "name": "bar-chart",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/bar-chart.svg",
+    "duotone": "duotone/finance/bar-chart.svg",
+    "filled": "filled/finance/bar-chart.svg"
+   }
+  },
+  {
+   "name": "pie-chart",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/pie-chart.svg",
+    "duotone": "duotone/finance/pie-chart.svg",
+    "filled": "filled/finance/pie-chart.svg"
+   }
+  },
+  {
+   "name": "line-chart",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/line-chart.svg",
+    "duotone": "duotone/finance/line-chart.svg",
+    "filled": "filled/finance/line-chart.svg"
+   }
+  },
+  {
+   "name": "calculator",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/calculator.svg",
+    "duotone": "duotone/finance/calculator.svg",
+    "filled": "filled/finance/calculator.svg"
+   }
+  },
+  {
+   "name": "store",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/store.svg",
+    "duotone": "duotone/finance/store.svg",
+    "filled": "filled/finance/store.svg"
+   }
+  },
+  {
+   "name": "bank",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/bank.svg",
+    "duotone": "duotone/finance/bank.svg",
+    "filled": "filled/finance/bank.svg"
+   }
+  },
+  {
+   "name": "dollar-sign",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/dollar-sign.svg",
+    "duotone": "duotone/finance/dollar-sign.svg",
+    "filled": "filled/finance/dollar-sign.svg"
+   }
+  },
+  {
+   "name": "safe",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/safe.svg",
+    "duotone": "duotone/finance/safe.svg",
+    "filled": "filled/finance/safe.svg"
+   }
+  },
+  {
+   "name": "scale",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/scale.svg",
+    "duotone": "duotone/finance/scale.svg",
+    "filled": "filled/finance/scale.svg"
+   }
+  },
+  {
+   "name": "gem",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/gem.svg",
+    "duotone": "duotone/finance/gem.svg",
+    "filled": "filled/finance/gem.svg"
+   }
+  },
+  {
+   "name": "badge-dollar",
+   "category": "finance",
+   "files": {
+    "outline": "outline/finance/badge-dollar.svg",
+    "duotone": "duotone/finance/badge-dollar.svg",
+    "filled": "filled/finance/badge-dollar.svg"
+   }
+  },
+  {
+   "name": "sun",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/sun.svg",
+    "duotone": "duotone/nature/sun.svg",
+    "filled": "filled/nature/sun.svg"
+   }
+  },
+  {
+   "name": "moon",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/moon.svg",
+    "duotone": "duotone/nature/moon.svg",
+    "filled": "filled/nature/moon.svg"
+   }
+  },
+  {
+   "name": "sunrise",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/sunrise.svg",
+    "duotone": "duotone/nature/sunrise.svg",
+    "filled": "filled/nature/sunrise.svg"
+   }
+  },
+  {
+   "name": "cloud-rain",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/cloud-rain.svg",
+    "duotone": "duotone/nature/cloud-rain.svg",
+    "filled": "filled/nature/cloud-rain.svg"
+   }
+  },
+  {
+   "name": "cloud-snow",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/cloud-snow.svg",
+    "duotone": "duotone/nature/cloud-snow.svg",
+    "filled": "filled/nature/cloud-snow.svg"
+   }
+  },
+  {
+   "name": "cloud-lightning",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/cloud-lightning.svg",
+    "duotone": "duotone/nature/cloud-lightning.svg",
+    "filled": "filled/nature/cloud-lightning.svg"
+   }
+  },
+  {
+   "name": "wind",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/wind.svg",
+    "duotone": "duotone/nature/wind.svg",
+    "filled": "filled/nature/wind.svg"
+   }
+  },
+  {
+   "name": "snowflake",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/snowflake.svg",
+    "duotone": "duotone/nature/snowflake.svg",
+    "filled": "filled/nature/snowflake.svg"
+   }
+  },
+  {
+   "name": "droplet",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/droplet.svg",
+    "duotone": "duotone/nature/droplet.svg",
+    "filled": "filled/nature/droplet.svg"
+   }
+  },
+  {
+   "name": "flame",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/flame.svg",
+    "duotone": "duotone/nature/flame.svg",
+    "filled": "filled/nature/flame.svg"
+   }
+  },
+  {
+   "name": "leaf",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/leaf.svg",
+    "duotone": "duotone/nature/leaf.svg",
+    "filled": "filled/nature/leaf.svg"
+   }
+  },
+  {
+   "name": "tree",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/tree.svg",
+    "duotone": "duotone/nature/tree.svg",
+    "filled": "filled/nature/tree.svg"
+   }
+  },
+  {
+   "name": "sprout",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/sprout.svg",
+    "duotone": "duotone/nature/sprout.svg",
+    "filled": "filled/nature/sprout.svg"
+   }
+  },
+  {
+   "name": "mountain",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/mountain.svg",
+    "duotone": "duotone/nature/mountain.svg",
+    "filled": "filled/nature/mountain.svg"
+   }
+  },
+  {
+   "name": "waves",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/waves.svg",
+    "duotone": "duotone/nature/waves.svg",
+    "filled": "filled/nature/waves.svg"
+   }
+  },
+  {
+   "name": "flower",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/flower.svg",
+    "duotone": "duotone/nature/flower.svg",
+    "filled": "filled/nature/flower.svg"
+   }
+  },
+  {
+   "name": "bird",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/bird.svg",
+    "duotone": "duotone/nature/bird.svg",
+    "filled": "filled/nature/bird.svg"
+   }
+  },
+  {
+   "name": "fish",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/fish.svg",
+    "duotone": "duotone/nature/fish.svg",
+    "filled": "filled/nature/fish.svg"
+   }
+  },
+  {
+   "name": "paw",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/paw.svg",
+    "duotone": "duotone/nature/paw.svg",
+    "filled": "filled/nature/paw.svg"
+   }
+  },
+  {
+   "name": "umbrella",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/umbrella.svg",
+    "duotone": "duotone/nature/umbrella.svg",
+    "filled": "filled/nature/umbrella.svg"
+   }
+  },
+  {
+   "name": "thermometer",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/thermometer.svg",
+    "duotone": "duotone/nature/thermometer.svg",
+    "filled": "filled/nature/thermometer.svg"
+   }
+  },
+  {
+   "name": "rainbow",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/rainbow.svg",
+    "duotone": "duotone/nature/rainbow.svg",
+    "filled": "filled/nature/rainbow.svg"
+   }
+  },
+  {
+   "name": "cactus",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/cactus.svg",
+    "duotone": "duotone/nature/cactus.svg",
+    "filled": "filled/nature/cactus.svg"
+   }
+  },
+  {
+   "name": "mushroom",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/mushroom.svg",
+    "duotone": "duotone/nature/mushroom.svg",
+    "filled": "filled/nature/mushroom.svg"
+   }
+  },
+  {
+   "name": "earth",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/earth.svg",
+    "duotone": "duotone/nature/earth.svg",
+    "filled": "filled/nature/earth.svg"
+   }
+  },
+  {
+   "name": "volcano",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/volcano.svg",
+    "duotone": "duotone/nature/volcano.svg",
+    "filled": "filled/nature/volcano.svg"
+   }
+  },
+  {
+   "name": "moon-star",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/moon-star.svg",
+    "duotone": "duotone/nature/moon-star.svg",
+    "filled": "filled/nature/moon-star.svg"
+   }
+  },
+  {
+   "name": "tornado",
+   "category": "nature",
+   "files": {
+    "outline": "outline/nature/tornado.svg",
+    "duotone": "duotone/nature/tornado.svg",
+    "filled": "filled/nature/tornado.svg"
+   }
+  },
+  {
+   "name": "sword",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/sword.svg",
+    "duotone": "duotone/gaming/sword.svg",
+    "filled": "filled/gaming/sword.svg"
+   }
+  },
+  {
+   "name": "swords",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/swords.svg",
+    "duotone": "duotone/gaming/swords.svg",
+    "filled": "filled/gaming/swords.svg"
+   }
+  },
+  {
+   "name": "shield-sword",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/shield-sword.svg",
+    "duotone": "duotone/gaming/shield-sword.svg",
+    "filled": "filled/gaming/shield-sword.svg"
+   }
+  },
+  {
+   "name": "gamepad",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/gamepad.svg",
+    "duotone": "duotone/gaming/gamepad.svg",
+    "filled": "filled/gaming/gamepad.svg"
+   }
+  },
+  {
+   "name": "joystick",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/joystick.svg",
+    "duotone": "duotone/gaming/joystick.svg",
+    "filled": "filled/gaming/joystick.svg"
+   }
+  },
+  {
+   "name": "dpad",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/dpad.svg",
+    "duotone": "duotone/gaming/dpad.svg",
+    "filled": "filled/gaming/dpad.svg"
+   }
+  },
+  {
+   "name": "dice",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/dice.svg",
+    "duotone": "duotone/gaming/dice.svg",
+    "filled": "filled/gaming/dice.svg"
+   }
+  },
+  {
+   "name": "puzzle",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/puzzle.svg",
+    "duotone": "duotone/gaming/puzzle.svg",
+    "filled": "filled/gaming/puzzle.svg"
+   }
+  },
+  {
+   "name": "trophy",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/trophy.svg",
+    "duotone": "duotone/gaming/trophy.svg",
+    "filled": "filled/gaming/trophy.svg"
+   }
+  },
+  {
+   "name": "crown",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/crown.svg",
+    "duotone": "duotone/gaming/crown.svg",
+    "filled": "filled/gaming/crown.svg"
+   }
+  },
+  {
+   "name": "medal",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/medal.svg",
+    "duotone": "duotone/gaming/medal.svg",
+    "filled": "filled/gaming/medal.svg"
+   }
+  },
+  {
+   "name": "bow",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/bow.svg",
+    "duotone": "duotone/gaming/bow.svg",
+    "filled": "filled/gaming/bow.svg"
+   }
+  },
+  {
+   "name": "bomb",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/bomb.svg",
+    "duotone": "duotone/gaming/bomb.svg",
+    "filled": "filled/gaming/bomb.svg"
+   }
+  },
+  {
+   "name": "skull",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/skull.svg",
+    "duotone": "duotone/gaming/skull.svg",
+    "filled": "filled/gaming/skull.svg"
+   }
+  },
+  {
+   "name": "ghost",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/ghost.svg",
+    "duotone": "duotone/gaming/ghost.svg",
+    "filled": "filled/gaming/ghost.svg"
+   }
+  },
+  {
+   "name": "potion",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/potion.svg",
+    "duotone": "duotone/gaming/potion.svg",
+    "filled": "filled/gaming/potion.svg"
+   }
+  },
+  {
+   "name": "target",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/target.svg",
+    "duotone": "duotone/gaming/target.svg",
+    "filled": "filled/gaming/target.svg"
+   }
+  },
+  {
+   "name": "crosshair",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/crosshair.svg",
+    "duotone": "duotone/gaming/crosshair.svg",
+    "filled": "filled/gaming/crosshair.svg"
+   }
+  },
+  {
+   "name": "treasure-chest",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/treasure-chest.svg",
+    "duotone": "duotone/gaming/treasure-chest.svg",
+    "filled": "filled/gaming/treasure-chest.svg"
+   }
+  },
+  {
+   "name": "castle",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/castle.svg",
+    "duotone": "duotone/gaming/castle.svg",
+    "filled": "filled/gaming/castle.svg"
+   }
+  },
+  {
+   "name": "helmet",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/helmet.svg",
+    "duotone": "duotone/gaming/helmet.svg",
+    "filled": "filled/gaming/helmet.svg"
+   }
+  },
+  {
+   "name": "armor",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/armor.svg",
+    "duotone": "duotone/gaming/armor.svg",
+    "filled": "filled/gaming/armor.svg"
+   }
+  },
+  {
+   "name": "boots",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/boots.svg",
+    "duotone": "duotone/gaming/boots.svg",
+    "filled": "filled/gaming/boots.svg"
+   }
+  },
+  {
+   "name": "spell-book",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/spell-book.svg",
+    "duotone": "duotone/gaming/spell-book.svg",
+    "filled": "filled/gaming/spell-book.svg"
+   }
+  },
+  {
+   "name": "wizard-hat",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/wizard-hat.svg",
+    "duotone": "duotone/gaming/wizard-hat.svg",
+    "filled": "filled/gaming/wizard-hat.svg"
+   }
+  },
+  {
+   "name": "chess-pawn",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/chess-pawn.svg",
+    "duotone": "duotone/gaming/chess-pawn.svg",
+    "filled": "filled/gaming/chess-pawn.svg"
+   }
+  },
+  {
+   "name": "cards",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/cards.svg",
+    "duotone": "duotone/gaming/cards.svg",
+    "filled": "filled/gaming/cards.svg"
+   }
+  },
+  {
+   "name": "heart-health",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/heart-health.svg",
+    "duotone": "duotone/gaming/heart-health.svg",
+    "filled": "filled/gaming/heart-health.svg"
+   }
+  },
+  {
+   "name": "level-up",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/level-up.svg",
+    "duotone": "duotone/gaming/level-up.svg",
+    "filled": "filled/gaming/level-up.svg"
+   }
+  },
+  {
+   "name": "coin-xp",
+   "category": "gaming",
+   "files": {
+    "outline": "outline/gaming/coin-xp.svg",
+    "duotone": "duotone/gaming/coin-xp.svg",
+    "filled": "filled/gaming/coin-xp.svg"
+   }
+  },
+  {
+   "name": "player",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/player.svg",
+    "duotone": "duotone/roblox-ui/player.svg",
+    "filled": "filled/roblox-ui/player.svg"
+   }
+  },
+  {
+   "name": "leaderboard",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/leaderboard.svg",
+    "duotone": "duotone/roblox-ui/leaderboard.svg",
+    "filled": "filled/roblox-ui/leaderboard.svg"
+   }
+  },
+  {
+   "name": "inventory",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/inventory.svg",
+    "duotone": "duotone/roblox-ui/inventory.svg",
+    "filled": "filled/roblox-ui/inventory.svg"
+   }
+  },
+  {
+   "name": "backpack",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/backpack.svg",
+    "duotone": "duotone/roblox-ui/backpack.svg",
+    "filled": "filled/roblox-ui/backpack.svg"
+   }
+  },
+  {
+   "name": "health-bar",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/health-bar.svg",
+    "duotone": "duotone/roblox-ui/health-bar.svg",
+    "filled": "filled/roblox-ui/health-bar.svg"
+   }
+  },
+  {
+   "name": "respawn",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/respawn.svg",
+    "duotone": "duotone/roblox-ui/respawn.svg",
+    "filled": "filled/roblox-ui/respawn.svg"
+   }
+  },
+  {
+   "name": "teleport",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/teleport.svg",
+    "duotone": "duotone/roblox-ui/teleport.svg",
+    "filled": "filled/roblox-ui/teleport.svg"
+   }
+  },
+  {
+   "name": "portal",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/portal.svg",
+    "duotone": "duotone/roblox-ui/portal.svg",
+    "filled": "filled/roblox-ui/portal.svg"
+   }
+  },
+  {
+   "name": "checkpoint",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/checkpoint.svg",
+    "duotone": "duotone/roblox-ui/checkpoint.svg",
+    "filled": "filled/roblox-ui/checkpoint.svg"
+   }
+  },
+  {
+   "name": "map",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/map.svg",
+    "duotone": "duotone/roblox-ui/map.svg",
+    "filled": "filled/roblox-ui/map.svg"
+   }
+  },
+  {
+   "name": "radar",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/radar.svg",
+    "duotone": "duotone/roblox-ui/radar.svg",
+    "filled": "filled/roblox-ui/radar.svg"
+   }
+  },
+  {
+   "name": "gems",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/gems.svg",
+    "duotone": "duotone/roblox-ui/gems.svg",
+    "filled": "filled/roblox-ui/gems.svg"
+   }
+  },
+  {
+   "name": "xp",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/xp.svg",
+    "duotone": "duotone/roblox-ui/xp.svg",
+    "filled": "filled/roblox-ui/xp.svg"
+   }
+  },
+  {
+   "name": "rank",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/rank.svg",
+    "duotone": "duotone/roblox-ui/rank.svg",
+    "filled": "filled/roblox-ui/rank.svg"
+   }
+  },
+  {
+   "name": "quest",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/quest.svg",
+    "duotone": "duotone/roblox-ui/quest.svg",
+    "filled": "filled/roblox-ui/quest.svg"
+   }
+  },
+  {
+   "name": "npc",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/npc.svg",
+    "duotone": "duotone/roblox-ui/npc.svg",
+    "filled": "filled/roblox-ui/npc.svg"
+   }
+  },
+  {
+   "name": "emote",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/emote.svg",
+    "duotone": "duotone/roblox-ui/emote.svg",
+    "filled": "filled/roblox-ui/emote.svg"
+   }
+  },
+  {
+   "name": "avatar",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/avatar.svg",
+    "duotone": "duotone/roblox-ui/avatar.svg",
+    "filled": "filled/roblox-ui/avatar.svg"
+   }
+  },
+  {
+   "name": "dash",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/dash.svg",
+    "duotone": "duotone/roblox-ui/dash.svg",
+    "filled": "filled/roblox-ui/dash.svg"
+   }
+  },
+  {
+   "name": "double-jump",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/double-jump.svg",
+    "duotone": "duotone/roblox-ui/double-jump.svg",
+    "filled": "filled/roblox-ui/double-jump.svg"
+   }
+  },
+  {
+   "name": "fly",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/fly.svg",
+    "duotone": "duotone/roblox-ui/fly.svg",
+    "filled": "filled/roblox-ui/fly.svg"
+   }
+  },
+  {
+   "name": "noclip",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/noclip.svg",
+    "duotone": "duotone/roblox-ui/noclip.svg",
+    "filled": "filled/roblox-ui/noclip.svg"
+   }
+  },
+  {
+   "name": "esp",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/esp.svg",
+    "duotone": "duotone/roblox-ui/esp.svg",
+    "filled": "filled/roblox-ui/esp.svg"
+   }
+  },
+  {
+   "name": "halo",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/halo.svg",
+    "duotone": "duotone/roblox-ui/halo.svg",
+    "filled": "filled/roblox-ui/halo.svg"
+   }
+  },
+  {
+   "name": "script-scroll",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/script-scroll.svg",
+    "duotone": "duotone/roblox-ui/script-scroll.svg",
+    "filled": "filled/roblox-ui/script-scroll.svg"
+   }
+  },
+  {
+   "name": "execute",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/execute.svg",
+    "duotone": "duotone/roblox-ui/execute.svg",
+    "filled": "filled/roblox-ui/execute.svg"
+   }
+  },
+  {
+   "name": "inject",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/inject.svg",
+    "duotone": "duotone/roblox-ui/inject.svg",
+    "filled": "filled/roblox-ui/inject.svg"
+   }
+  },
+  {
+   "name": "hub",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/hub.svg",
+    "duotone": "duotone/roblox-ui/hub.svg",
+    "filled": "filled/roblox-ui/hub.svg"
+   }
+  },
+  {
+   "name": "auto-farm",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/auto-farm.svg",
+    "duotone": "duotone/roblox-ui/auto-farm.svg",
+    "filled": "filled/roblox-ui/auto-farm.svg"
+   }
+  },
+  {
+   "name": "server-hop",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/server-hop.svg",
+    "duotone": "duotone/roblox-ui/server-hop.svg",
+    "filled": "filled/roblox-ui/server-hop.svg"
+   }
+  },
+  {
+   "name": "rejoin",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/rejoin.svg",
+    "duotone": "duotone/roblox-ui/rejoin.svg",
+    "filled": "filled/roblox-ui/rejoin.svg"
+   }
+  },
+  {
+   "name": "fps-boost",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/fps-boost.svg",
+    "duotone": "duotone/roblox-ui/fps-boost.svg",
+    "filled": "filled/roblox-ui/fps-boost.svg"
+   }
+  },
+  {
+   "name": "sleep",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/sleep.svg",
+    "duotone": "duotone/roblox-ui/sleep.svg",
+    "filled": "filled/roblox-ui/sleep.svg"
+   }
+  },
+  {
+   "name": "aura",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/aura.svg",
+    "duotone": "duotone/roblox-ui/aura.svg",
+    "filled": "filled/roblox-ui/aura.svg"
+   }
+  },
+  {
+   "name": "camera-lock",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/camera-lock.svg",
+    "duotone": "duotone/roblox-ui/camera-lock.svg",
+    "filled": "filled/roblox-ui/camera-lock.svg"
+   }
+  },
+  {
+   "name": "speed-boots",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/speed-boots.svg",
+    "duotone": "duotone/roblox-ui/speed-boots.svg",
+    "filled": "filled/roblox-ui/speed-boots.svg"
+   }
+  },
+  {
+   "name": "currency-robux",
+   "category": "roblox-ui",
+   "files": {
+    "outline": "outline/roblox-ui/currency-robux.svg",
+    "duotone": "duotone/roblox-ui/currency-robux.svg",
+    "filled": "filled/roblox-ui/currency-robux.svg"
+   }
+  },
+  {
+   "name": "code",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/code.svg",
+    "duotone": "duotone/developer-tools/code.svg",
+    "filled": "filled/developer-tools/code.svg"
+   }
+  },
+  {
+   "name": "braces",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/braces.svg",
+    "duotone": "duotone/developer-tools/braces.svg",
+    "filled": "filled/developer-tools/braces.svg"
+   }
+  },
+  {
+   "name": "terminal",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/terminal.svg",
+    "duotone": "duotone/developer-tools/terminal.svg",
+    "filled": "filled/developer-tools/terminal.svg"
+   }
+  },
+  {
+   "name": "database",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/database.svg",
+    "duotone": "duotone/developer-tools/database.svg",
+    "filled": "filled/developer-tools/database.svg"
+   }
+  },
+  {
+   "name": "api",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/api.svg",
+    "duotone": "duotone/developer-tools/api.svg",
+    "filled": "filled/developer-tools/api.svg"
+   }
+  },
+  {
+   "name": "plugin",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/plugin.svg",
+    "duotone": "duotone/developer-tools/plugin.svg",
+    "filled": "filled/developer-tools/plugin.svg"
+   }
+  },
+  {
+   "name": "git-branch",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/git-branch.svg",
+    "duotone": "duotone/developer-tools/git-branch.svg",
+    "filled": "filled/developer-tools/git-branch.svg"
+   }
+  },
+  {
+   "name": "git-commit",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/git-commit.svg",
+    "duotone": "duotone/developer-tools/git-commit.svg",
+    "filled": "filled/developer-tools/git-commit.svg"
+   }
+  },
+  {
+   "name": "git-merge",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/git-merge.svg",
+    "duotone": "duotone/developer-tools/git-merge.svg",
+    "filled": "filled/developer-tools/git-merge.svg"
+   }
+  },
+  {
+   "name": "git-pull-request",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/git-pull-request.svg",
+    "duotone": "duotone/developer-tools/git-pull-request.svg",
+    "filled": "filled/developer-tools/git-pull-request.svg"
+   }
+  },
+  {
+   "name": "binary",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/binary.svg",
+    "duotone": "duotone/developer-tools/binary.svg",
+    "filled": "filled/developer-tools/binary.svg"
+   }
+  },
+  {
+   "name": "variable",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/variable.svg",
+    "duotone": "duotone/developer-tools/variable.svg",
+    "filled": "filled/developer-tools/variable.svg"
+   }
+  },
+  {
+   "name": "function",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/function.svg",
+    "duotone": "duotone/developer-tools/function.svg",
+    "filled": "filled/developer-tools/function.svg"
+   }
+  },
+  {
+   "name": "regex",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/regex.svg",
+    "duotone": "duotone/developer-tools/regex.svg",
+    "filled": "filled/developer-tools/regex.svg"
+   }
+  },
+  {
+   "name": "webhook",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/webhook.svg",
+    "duotone": "duotone/developer-tools/webhook.svg",
+    "filled": "filled/developer-tools/webhook.svg"
+   }
+  },
+  {
+   "name": "package",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/package.svg",
+    "duotone": "duotone/developer-tools/package.svg",
+    "filled": "filled/developer-tools/package.svg"
+   }
+  },
+  {
+   "name": "blocks",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/blocks.svg",
+    "duotone": "duotone/developer-tools/blocks.svg",
+    "filled": "filled/developer-tools/blocks.svg"
+   }
+  },
+  {
+   "name": "workflow",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/workflow.svg",
+    "duotone": "duotone/developer-tools/workflow.svg",
+    "filled": "filled/developer-tools/workflow.svg"
+   }
+  },
+  {
+   "name": "network",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/network.svg",
+    "duotone": "duotone/developer-tools/network.svg",
+    "filled": "filled/developer-tools/network.svg"
+   }
+  },
+  {
+   "name": "command",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/command.svg",
+    "duotone": "duotone/developer-tools/command.svg",
+    "filled": "filled/developer-tools/command.svg"
+   }
+  },
+  {
+   "name": "flask",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/flask.svg",
+    "duotone": "duotone/developer-tools/flask.svg",
+    "filled": "filled/developer-tools/flask.svg"
+   }
+  },
+  {
+   "name": "rocket",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/rocket.svg",
+    "duotone": "duotone/developer-tools/rocket.svg",
+    "filled": "filled/developer-tools/rocket.svg"
+   }
+  },
+  {
+   "name": "key-code",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/key-code.svg",
+    "duotone": "duotone/developer-tools/key-code.svg",
+    "filled": "filled/developer-tools/key-code.svg"
+   }
+  },
+  {
+   "name": "bracket-square",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/bracket-square.svg",
+    "duotone": "duotone/developer-tools/bracket-square.svg",
+    "filled": "filled/developer-tools/bracket-square.svg"
+   }
+  },
+  {
+   "name": "parentheses",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/parentheses.svg",
+    "duotone": "duotone/developer-tools/parentheses.svg",
+    "filled": "filled/developer-tools/parentheses.svg"
+   }
+  },
+  {
+   "name": "lua-moon",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/lua-moon.svg",
+    "duotone": "duotone/developer-tools/lua-moon.svg",
+    "filled": "filled/developer-tools/lua-moon.svg"
+   }
+  },
+  {
+   "name": "console",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/console.svg",
+    "duotone": "duotone/developer-tools/console.svg",
+    "filled": "filled/developer-tools/console.svg"
+   }
+  },
+  {
+   "name": "git-compare",
+   "category": "developer-tools",
+   "files": {
+    "outline": "outline/developer-tools/git-compare.svg",
+    "duotone": "duotone/developer-tools/git-compare.svg",
+    "filled": "filled/developer-tools/git-compare.svg"
+   }
+  },
+  {
+   "name": "car",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/car.svg",
+    "duotone": "duotone/transportation/car.svg",
+    "filled": "filled/transportation/car.svg"
+   }
+  },
+  {
+   "name": "bus",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/bus.svg",
+    "duotone": "duotone/transportation/bus.svg",
+    "filled": "filled/transportation/bus.svg"
+   }
+  },
+  {
+   "name": "truck",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/truck.svg",
+    "duotone": "duotone/transportation/truck.svg",
+    "filled": "filled/transportation/truck.svg"
+   }
+  },
+  {
+   "name": "bike",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/bike.svg",
+    "duotone": "duotone/transportation/bike.svg",
+    "filled": "filled/transportation/bike.svg"
+   }
+  },
+  {
+   "name": "motorcycle",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/motorcycle.svg",
+    "duotone": "duotone/transportation/motorcycle.svg",
+    "filled": "filled/transportation/motorcycle.svg"
+   }
+  },
+  {
+   "name": "train",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/train.svg",
+    "duotone": "duotone/transportation/train.svg",
+    "filled": "filled/transportation/train.svg"
+   }
+  },
+  {
+   "name": "tram",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/tram.svg",
+    "duotone": "duotone/transportation/tram.svg",
+    "filled": "filled/transportation/tram.svg"
+   }
+  },
+  {
+   "name": "plane",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/plane.svg",
+    "duotone": "duotone/transportation/plane.svg",
+    "filled": "filled/transportation/plane.svg"
+   }
+  },
+  {
+   "name": "helicopter",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/helicopter.svg",
+    "duotone": "duotone/transportation/helicopter.svg",
+    "filled": "filled/transportation/helicopter.svg"
+   }
+  },
+  {
+   "name": "ship",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/ship.svg",
+    "duotone": "duotone/transportation/ship.svg",
+    "filled": "filled/transportation/ship.svg"
+   }
+  },
+  {
+   "name": "cargo-ship",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/cargo-ship.svg",
+    "duotone": "duotone/transportation/cargo-ship.svg",
+    "filled": "filled/transportation/cargo-ship.svg"
+   }
+  },
+  {
+   "name": "tanker",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/tanker.svg",
+    "duotone": "duotone/transportation/tanker.svg",
+    "filled": "filled/transportation/tanker.svg"
+   }
+  },
+  {
+   "name": "sailboat",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/sailboat.svg",
+    "duotone": "duotone/transportation/sailboat.svg",
+    "filled": "filled/transportation/sailboat.svg"
+   }
+  },
+  {
+   "name": "anchor",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/anchor.svg",
+    "duotone": "duotone/transportation/anchor.svg",
+    "filled": "filled/transportation/anchor.svg"
+   }
+  },
+  {
+   "name": "fuel",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/fuel.svg",
+    "duotone": "duotone/transportation/fuel.svg",
+    "filled": "filled/transportation/fuel.svg"
+   }
+  },
+  {
+   "name": "traffic-cone",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/traffic-cone.svg",
+    "duotone": "duotone/transportation/traffic-cone.svg",
+    "filled": "filled/transportation/traffic-cone.svg"
+   }
+  },
+  {
+   "name": "parking",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/parking.svg",
+    "duotone": "duotone/transportation/parking.svg",
+    "filled": "filled/transportation/parking.svg"
+   }
+  },
+  {
+   "name": "road",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/road.svg",
+    "duotone": "duotone/transportation/road.svg",
+    "filled": "filled/transportation/road.svg"
+   }
+  },
+  {
+   "name": "map-route",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/map-route.svg",
+    "duotone": "duotone/transportation/map-route.svg",
+    "filled": "filled/transportation/map-route.svg"
+   }
+  },
+  {
+   "name": "submarine",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/submarine.svg",
+    "duotone": "duotone/transportation/submarine.svg",
+    "filled": "filled/transportation/submarine.svg"
+   }
+  },
+  {
+   "name": "ufo",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/ufo.svg",
+    "duotone": "duotone/transportation/ufo.svg",
+    "filled": "filled/transportation/ufo.svg"
+   }
+  },
+  {
+   "name": "scooter",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/scooter.svg",
+    "duotone": "duotone/transportation/scooter.svg",
+    "filled": "filled/transportation/scooter.svg"
+   }
+  },
+  {
+   "name": "taxi",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/taxi.svg",
+    "duotone": "duotone/transportation/taxi.svg",
+    "filled": "filled/transportation/taxi.svg"
+   }
+  },
+  {
+   "name": "ambulance",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/ambulance.svg",
+    "duotone": "duotone/transportation/ambulance.svg",
+    "filled": "filled/transportation/ambulance.svg"
+   }
+  },
+  {
+   "name": "container",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/container.svg",
+    "duotone": "duotone/transportation/container.svg",
+    "filled": "filled/transportation/container.svg"
+   }
+  },
+  {
+   "name": "forklift",
+   "category": "transportation",
+   "files": {
+    "outline": "outline/transportation/forklift.svg",
+    "duotone": "duotone/transportation/forklift.svg",
+    "filled": "filled/transportation/forklift.svg"
+   }
+  }
+ ]
+}

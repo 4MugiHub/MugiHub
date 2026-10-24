@@ -50,16 +50,22 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
   - [Performance](#performance)
   - [API (without the component)](#api-without-the-component)
 - [Key System](#key-system)
-  - [What It Provides](#what-it-provides)
-  - [Requirements and Platform Notes](#requirements-and-platform-notes)
+  - [How It Works](#how-it-works)
+  - [Quick Start: Password Mode (Key = false)](#quick-start-password-mode-key--false)
+  - [Quick Start: API Mode (Key = true)](#quick-start-api-mode-key--true)
+  - [Setting Up Providers, Get Key URL and Discord](#setting-up-providers-get-key-url-and-discord)
+  - [Integrating With a MugiHub Window](#integrating-with-a-mugihub-window)
+  - [Complete Example With Both Methods Prepared](#complete-example-with-several-passwords)
   - [Configuration Structure](#configuration-structure)
+  - [Key and Password Options](#key-and-password-options)
+  - [Requirements and Platform Notes](#requirements-and-platform-notes)
   - [General Options](#general-options)
   - [Window Options](#window-options)
   - [Appearance Options](#appearance-options)
   - [Authentication Options](#authentication-options)
   - [API Mode](#api-mode)
   - [Password Mode](#password-mode)
-  - [Mode Switching](#mode-switching)
+  - [Choosing the Method](#choosing-the-method)
   - [Discord Support](#discord-support)
   - [Account and Device Policy](#account-and-device-policy)
   - [Behavior Options](#behavior-options)
@@ -67,6 +73,7 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
   - [Controller Methods](#controller-methods)
   - [States, Feedback and Responsiveness](#states-feedback-and-responsiveness)
   - [Lifecycle and Cleanup](#lifecycle-and-cleanup)
+  - [Error Handling](#error-handling)
   - [Security Model and Known Limitations](#security-model-and-known-limitations)
 - [Color Picker Popup](#color-picker-popup)
 - [Notifications](#notifications)
@@ -125,7 +132,8 @@ No external dependencies. No build step. Just `loadstring` one URL.
 | **Style** | Monochrome (black and white gradient), no pink, compact |
 | **Icons** | 428 built in, 3 variants as `.svg` files in [`icons/`](icons) |
 | **Exports** | `MugiHub.Library`, `MugiHub.Webhook` |
-| **Executor functions used (all optional)** | `request`/`http_request`, `writefile`, `readfile`, `isfile`, `listfiles`, `delfile`, `makefolder`, `isfolder`, `getcustomasset`, `gethui`, `gethwid`, `setclipboard` |
+| **Key System** | `MugiHub.Library:CreateKeySystem` (see [Key System](#key-system)) |
+| **Executor functions used (all optional)** | `request`/`http_request`, `writefile`, `readfile`, `isfile`, `listfiles`, `delfile`, `makefolder`, `isfolder`, `getcustomasset`, `gethui`, `gethwid`, `setclipboard`/`toclipboard` |
 
 Everything that depends on an executor function degrades quietly: if a function is missing the feature is skipped, never an error.
 
@@ -142,7 +150,7 @@ Everything that depends on an executor function degrades quietly: if a function 
 - **Buttons with a mouse-pointer icon** instead of an arrow, so they are never mistaken for dropdowns
 - **Modern dropdown** with filter, multi-select, live `Refresh`, and an optional per-row **delete button**
 - **Popup color picker** with saturation/brightness box, hue bar, hex, RGB, presets and cancel/done
-- **Key System** - a ready-made verification window with API mode (provider links and your own verification), password mode, Discord support, device and account policy, and callbacks
+- **Key System** - an official verification window: set Key to true for API mode (provider Get Key links and your own verification) or to false for a password, with Discord support, account and device policy, persistence and callbacks
 - **Config manager** - name input, save, deletable dropdown of saved configs, load, auto load, auto save
 - **Configs follow the device OR the account** - the same config stays available if either the HWID or the Roblox account changes
 - **Global search**, **stacked notifications**, **ripple click**, and an **optional webhook**
@@ -534,20 +542,248 @@ Config names are cleaned to letters, digits, spaces, `-`, `_` and `.` (other cha
 
 ## Key System
 
-MugiHub includes a ready-made Key System window. It is created through the **CreateKeySystem** method of the library object, works on its own (no main window is required first), and reports its result through callbacks so your script decides what to load after the key is accepted. It uses the same monochrome gradient look, animated border, rounded corners, SVG icons and notification system as the rest of the library.
+MugiHub ships with an official, ready-made Key System: a compact verification window that matches the rest of the library (monochrome gradient, animated border, rounded corners, SVG icons, stacked notifications). You create it with one call on the library object, it verifies the key (or password) the user types, and it tells your script about the result through callbacks. Your hub is loaded only inside the success callback.
 
-The Key System is fully driven by one structured configuration table. Every option below is optional; anything you leave out falls back to the default shown in the tables. Nested groups are merged with their defaults, so you only need to provide the values you want to change.
+The window has an icon header, a key input, a Verify button, one Get Key button per provider (API mode only), a status line, a Discord support line and a red close button with an SVG X.
 
-### What It Provides
+### How It Works
 
-- A compact, responsive window with a title, a description, a key input, a Verify button, one Get Key button per enabled provider, a status line with a loading indicator, a Discord support line and a red rounded close button with an SVG X
-- Two authentication methods that can be enabled separately or together: **API mode** (provider links plus your own verification) and **Password mode** (a password stored in your script, no external service)
-- A modular provider system: each provider supplies its own link or key-fetching function and its own verification, and nothing is assumed to be shared between providers
-- Status states (idle, loading, success, error, warning, info) plus notifications through the normal MugiHub notification system
-- Timeouts, controlled retries, a cooldown after failures, protection against double submission, and clear messages for empty input, invalid keys, service errors, timeouts, missing configuration and clipboard failures
-- Optional device and account policy settings, with account-independent keys and no device binding as the default
-- Optional local key persistence with automatic re-verification
-- Callbacks for success, failure, accepted key, rejected key, closing and key requests, and a controller object for driving the window from code
+1. Your script calls CreateKeySystem with a configuration table.
+2. One option decides the method: **Key = true** uses API mode, **Key = false** uses Password mode.
+3. The user types a key (or password) and presses Verify. In API mode the user can press Get Key first, which copies the provider link to the clipboard.
+4. The Key System verifies the input: Password mode compares it with your configured password; API mode asks your verification (a function or a request to your own server).
+5. On success the window shows the success state, calls OnKeyAccepted, waits a short moment, calls OnSuccess and closes. On failure it shows a message, calls OnFailure and keeps the window open.
+6. Inside OnSuccess you build your MugiHub window or run your script.
+
+### Quick Start: Password Mode (Key = false)
+
+Password mode needs no external service and works offline. Use it for simple gating only; see the security notes at the end of this section.
+
+```lua
+local MugiHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
+local Library = MugiHub.Library
+
+Library:CreateKeySystem({
+    Title = "Access Verification",
+    Description = "Enter the password to continue.",
+
+    Key = false,
+    Password = "my-password",
+
+    Discord = {
+        InviteURL = "https://discord.gg/yourinvite",
+    },
+
+    Callbacks = {
+        OnSuccess = function()
+            print("Password accepted, load the script here")
+        end,
+    },
+})
+```
+
+What each part does:
+- **Key = false** turns on Password mode and turns off API mode. The Get Key buttons are not shown.
+- **Password = "my-password"** is the text the user must type. You can also give a list of accepted passwords. Matching is case sensitive unless you set CaseSensitive to false inside Authentication then Password.
+- **Discord InviteURL** is copied to the clipboard when the user presses the Discord link.
+- **OnSuccess** runs once after the password is accepted.
+
+If you leave Password empty, Verify reports that verification is not configured. It never accepts everything by accident.
+
+### Quick Start: API Mode (Key = true)
+
+API mode is for keys that users get from a provider link and that you verify on a server you control. Getting the key and verifying the key are two separate steps: the provider button only copies a link, and Verify checks the key.
+
+```lua
+local MugiHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
+local Library = MugiHub.Library
+
+Library:CreateKeySystem({
+    Title = "Access Verification",
+    Description = "Get a key, then verify it to continue.",
+
+    Key = true,
+
+    Discord = {
+        InviteURL = "https://discord.gg/yourinvite",
+    },
+
+    Authentication = {
+        API = {
+            Providers = {
+                {
+                    Id = "main",
+                    Name = "My Key Provider",
+                    Logo = "link",
+                    Url = "https://example.com/get-key",
+                    VerifyUrl = {
+                        Url = "https://your-server.example/verify?key={key}",
+                        SuccessJson = { Field = "valid", Value = true },
+                    },
+                },
+            },
+        },
+    },
+
+    Callbacks = {
+        OnSuccess = function(Key)
+            print("Key accepted:", Key)
+        end,
+    },
+})
+```
+
+What each part does:
+- **Key = true** turns on API mode and turns off Password mode.
+- **Providers** is a list. Each enabled provider gets its own Get Key button with its logo next to the text.
+- **Url** is the link copied to the clipboard when Get Key is pressed. The user opens it in a browser, finishes the provider steps and receives a key.
+- **VerifyUrl** describes a request to your own server. The placeholder key is replaced with the typed key (URL-encoded). The server must answer with a successful status and a JSON body whose valid field is true. Anything else is a rejection or an error.
+- Without any verifier (no VerifyUrl and no Verify function) the window reports that verification is not configured. It never reports success by itself.
+
+### Setting Up Providers, Get Key URL and Discord
+
+**Providers.** Every provider has its own link and its own verification. MugiHub does not assume that Linkvertise, Jnkie or any other service share an API. The Preset option only fills in a display name for Linkvertise or Jnkie. MugiHub has no verified official integration for either service, so you supply the verification yourself, either through your own server (VerifyUrl) or through a function (Verify). A provider with no link shows a dimmed button and a clear message when pressed.
+
+**Get Key URL.** Set Url on the provider for a fixed link, or set GetKey to a function that returns the link when the button is pressed. The returned link must start with http:// or https://. The link is copied automatically and a notification confirms it. If the clipboard is not available, the fallback from Behavior then ClipboardFallback runs (by default a selectable text box shows the link).
+
+**Logos.** Set Logo to a built-in icon name, SVG path data, full SVG text, an asset id or any image link. MugiHub does not bundle brand logos; use your own official asset. Without a Logo the link icon is used.
+
+**Several providers.** Add more entries to Providers. Each gets its own Get Key button, and when more than one exists the provider name is appended to the button text (turn this off with ShowProviderName). A key is accepted as soon as one verifier accepts it.
+
+**Discord.** Set Discord then InviteURL to your invite. The line reads Need Support? followed by a blue Discord link. You can change the text, link text, color, icon and messages, or hide the line with Enabled set to false. The invite is never hard-coded in the library; with no URL configured the user sees a message saying so.
+
+### Integrating With a MugiHub Window
+
+Create the Key System first and build your window inside OnSuccess. That way nothing of your hub is created, and no keybind or bubble exists, until the key is accepted. The Key System and the window are independent objects, so they can coexist without conflicts.
+
+```lua
+local MugiHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
+local Library = MugiHub.Library
+
+local function LoadHub()
+    local Window = Library:CreateWindow({
+        Title = "My Hub",
+        Description = "Verified",
+        Icon = "hub",
+    })
+
+    local Tab = Window:AddTab({ "Main", "home" })
+    local Section = Tab:AddSection("Welcome")
+    Section:AddLabel("Thanks for verifying your key.")
+    Section:AddConfigManager({})
+
+    Library:SetNotification({ Type = "success", Content = "Hub loaded", Delay = 3 })
+end
+
+Library:CreateKeySystem({
+    Title = "My Hub",
+    Description = "Verify your key to continue.",
+    Icon = "shield-check",
+
+    Key = true,
+
+    Discord = { InviteURL = "https://discord.gg/yourinvite" },
+
+    Authentication = {
+        API = {
+            Providers = {
+                {
+                    Id = "main",
+                    Name = "My Key Provider",
+                    Url = "https://example.com/get-key",
+                    VerifyUrl = {
+                        Url = "https://your-server.example/verify?key={key}",
+                        SuccessJson = { Field = "valid", Value = true },
+                    },
+                },
+            },
+        },
+    },
+
+    Behavior = {
+        Persist = { Enabled = true, Name = "MyHub", Days = 7 },
+    },
+
+    Callbacks = {
+        OnSuccess = function(Key, Info)
+            LoadHub()
+        end,
+        OnFailure = function(Message, Code)
+            warn("Key System:", Code, Message)
+        end,
+        OnClose = function()
+            print("Key System closed without a key")
+        end,
+    },
+})
+```
+
+Notes for this setup:
+- **Persist** saves an accepted key and checks it again automatically the next time, so returning users go straight to OnSuccess. The saved key goes through the same verification as a typed one.
+- **OnClose** runs when the user closes the window with the X. Your hub is not loaded in that case, which is the intended behavior.
+- Keep every action that should require a key inside OnSuccess. A client-side check cannot protect resources by itself; see the security notes below.
+
+### Complete Example With Several Passwords
+
+This example uses Password mode with two accepted passwords, custom window width, and keeps the controller so the script can query it. It reads nothing from any server:
+
+```lua
+local MugiHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/4MugiHub/MugiHub/refs/heads/main/Mugi"))()
+local Library = MugiHub.Library
+
+local KeySystem = Library:CreateKeySystem({
+    Title = "Private Access",
+    Description = "Enter the password you were given.",
+    Icon = "lock",
+
+    Key = false,
+    Password = { "first-password", "second-password" },
+
+    Window = { Width = 340, CloseBehavior = "Destroy" },
+    Appearance = { IconAlign = "Left" },
+    Discord = { InviteURL = "https://discord.gg/yourinvite" },
+
+    Callbacks = {
+        OnSuccess = function(Key, Info)
+            print("Accepted by", Info.Mode)
+        end,
+        OnFailure = function(Message, Code)
+            print(Code, Message)
+        end,
+    },
+})
+
+print(KeySystem:IsVerified())
+```
+
+The object returned by CreateKeySystem is a controller. See Controller Methods below.
+
+### Configuration Structure
+
+| Group | Purpose |
+|---|---|
+| Key, Password | The two main switches: Key chooses the method, Password sets the password |
+| Title, Description, Icon | Text and icon shown in the header |
+| AccountIndependent, AllowMultipleAccounts, HWIDMode | Account and device policy |
+| Window | Size, scale, position, border, backdrop, close button |
+| Appearance | Colors, fonts, icon size and alignment, animations |
+| Authentication | Texts, messages, timeouts, retries, API providers, advanced password options |
+| Discord | Support line and invite link |
+| Device | How a device identifier may be obtained and disclosed |
+| Account | Whether account information may be sent to the built-in URL verifier |
+| Behavior | Close on success, clipboard fallback, notifications, persistence |
+| Callbacks | Functions the Key System calls for each outcome |
+
+Every option is optional. Nested groups are merged with their defaults, so you only write what you want to change.
+
+### Key and Password Options
+
+| Option | Default | Description |
+|---|---|---|
+| Key | Not set | true selects API mode (API on, Password off). false selects Password mode (Password on, API off). When Key is not set at all, the advanced Enabled options in Authentication decide which methods exist. |
+| Password | Empty | The accepted password, or a list of accepted passwords. Only used in Password mode. Empty texts are ignored. |
+
+There is no mode switch in the window: the method is decided by your configuration. If you use the advanced Enabled options to enable both methods, DefaultMode picks the starting method and the SetMode controller method can change it from code.
 
 ### Requirements and Platform Notes
 
@@ -557,21 +793,6 @@ The Key System is fully driven by one structured configuration table. Every opti
 - Key persistence needs the executor file functions (writefile, readfile, isfile). Deleting a saved key also needs delfile.
 - Roblox does not give scripts an official way to open an external browser or to read a stable device identifier. The Key System therefore copies links for the user to open manually, and device identification is only possible through functions you supply or through an executor function you explicitly allow.
 - The Key System has not been tested in a real Roblox client or executor. Behavior that depends on executor functions follows their documented behavior and may differ between executors.
-
-### Configuration Structure
-
-| Group | Purpose |
-|---|---|
-| Title, Description, Icon | Text and icon shown in the header |
-| AccountIndependent, AllowMultipleAccounts, HWIDMode | Account and device policy (top level) |
-| Window | Size, scale, position, border, backdrop, close button |
-| Appearance | Colors, fonts, icon size and alignment, animations |
-| Authentication | Methods, texts, messages, timeouts, retries, API providers, password |
-| Discord | Support line and invite link |
-| Device | How a device identifier may be obtained and disclosed |
-| Account | Whether account information may be sent to the built-in URL verifier |
-| Behavior | Close on success, clipboard fallback, notifications, persistence |
-| Callbacks | Functions the Key System calls for each outcome |
 
 ### General Options
 
@@ -615,11 +836,11 @@ These options live in the Appearance group. All color options expect a Color3 va
 | Option | Default | Used for |
 |---|---|---|
 | Background | Library gradient | Window background. Leave it out for the standard MugiHub gradient. Setting a color replaces the gradient with a solid color. |
-| Panel | White (translucent) | Fill of the header icon box and the mode switch bar |
-| Accent | White | Header icon tint, the selected pill of the mode switch, and the default tint of provider icons |
-| Text | Light gray | Title, selected mode label and enabled provider button labels |
+| Panel | White (translucent) | Fill of the header icon box |
+| Accent | White | Header icon tint and the default tint of provider icons |
+| Text | Light gray | Title and enabled provider button labels |
 | SubText | Mid gray | Description, placeholders, idle status text, notices and inactive labels |
-| Border | White | Strokes around the window, header icon box, mode switch, input field, link box and default provider buttons |
+| Border | White | Strokes around the window, header icon box, input field, link box and default provider buttons |
 | Button | White | Fill of the Verify button. The soft white gradient is applied only while this stays at the default white. |
 | ButtonText | Near black | Label and icon color on the Verify button |
 | Secondary | White (translucent) | Fill of the Get Key buttons |
@@ -645,7 +866,7 @@ These options live in the Authentication group.
 
 | Option | Default | Description |
 |---|---|---|
-| DefaultMode | API | Which method is selected first: API or Password. If the requested method is not enabled, the enabled one is selected. |
+| DefaultMode | API | Which method is selected first when both are enabled through the advanced options: API or Password. Ignored when Key is set. |
 | Placeholder | Enter your key... | Placeholder of the input in API mode. |
 | PasswordPlaceholder | Enter the password... | Placeholder of the input in Password mode. |
 | VerifyText | Verify | Text of the Verify button. |
@@ -653,7 +874,6 @@ These options live in the Authentication group.
 | LoadingText | Verifying... | Text shown on the Verify button and in the status line while a key is being checked. |
 | GetKeyLoadingText | Preparing link... | Status text while a Get Key request is running. |
 | SuccessText | Key verified. | Status and notification text after a key is accepted. |
-| ModeLabels | Key and Password | Labels of the two pills in the mode switch. Provide a table with API and Password entries. |
 | Timeout | 10 | Seconds before one verification or key request attempt is treated as timed out. Limited to 2 to 60. |
 | Retry | Attempts 1, Delay 1.5 | Controlled retry policy. See the retry section below. |
 | Cooldown | 1 | Seconds a user must wait after a failed attempt before verifying again. Limited to 0 to 30. |
@@ -684,7 +904,7 @@ Message options (inside Messages):
 
 ### API Mode
 
-API mode is enabled through the Enabled option of the API group (inside Authentication). It separates **getting** a key from **verifying** a key, because those are different steps with different requirements.
+API mode is enabled with **Key = true** (or with the Enabled option of the API group inside Authentication when Key is not set). It separates **getting** a key from **verifying** a key, because those are different steps with different requirements.
 
 API group options:
 
@@ -784,24 +1004,24 @@ Retry has two options: Attempts (extra tries after a failure, default 1, limited
 
 ### Password Mode
 
-Password mode is enabled through the Enabled option of the Password group (inside Authentication). It needs no external service and works offline.
+Password mode is enabled with **Key = false** (or with the Enabled option of the Password group inside Authentication when Key is not set). The password itself is set with the top-level **Password** option. It needs no external service and works offline.
 
 | Option | Default | Description |
 |---|---|---|
-| Enabled | false | Turns Password mode on. |
-| Password | Empty | A password text, or a list of accepted password texts. Empty texts are ignored. |
+| Enabled | false | Turns Password mode on when Key is not set. |
+| Password | Empty | Advanced equivalent of the top-level Password option. The top-level option wins when both are given. |
 | CaseSensitive | true | When false, the typed text and the password are compared in lower case. |
 
 The user types the password and presses Verify. A match accepts it; anything else shows the invalid message. With no password configured, the not configured message is shown instead of accepting anything.
 
 **Security limits:** A password stored inside a Luau script that runs on the user's machine can be extracted by anyone who can read the script or inspect memory. Password mode is only suitable for simple gating, private groups or casual access control. It must never be treated as authentication that protects server resources. When real security is required, verify through a trusted backend using API mode with your own verification endpoint.
 
-### Mode Switching
+### Choosing the Method
 
-- If only one method is enabled, the mode switch is hidden and that method is used.
-- If both are enabled, a switch appears under the header. The input icon (key or lock), placeholder and Get Key buttons change with the mode. Get Key buttons are shown only in API mode.
-- If neither is enabled, the window shows the no method message and every verification attempt fails with it.
-- The SetMode controller method changes the mode from code and returns whether the mode is enabled.
+- **Key = true:** API mode only. The input uses the key icon and the Get Key buttons are shown when providers exist.
+- **Key = false:** Password mode only. The input uses the lock icon and no Get Key buttons are shown.
+- **Key not set:** the Enabled options inside Authentication then API and inside Authentication then Password decide. With both on, DefaultMode picks the starting method; with neither on, the window shows the no method message and every attempt fails with it.
+- The SetMode controller method switches between enabled methods from code and returns whether the switch happened.
 
 ### Discord Support
 
@@ -931,6 +1151,27 @@ The CreateKeySystem method returns a controller table.
 - Destroying the window disconnects every event, cancels the border and spinner animations and removes the interface. Results of requests that finish after destruction are ignored, so callbacks cannot fire twice and nothing indexes a removed interface.
 - Creating and destroying the Key System repeatedly leaves nothing behind.
 - The interface does not reset on respawn.
+
+### Error Handling
+
+Every failure is shown in the status line, shown as a notification (unless Notifications is false), and reported to OnFailure with a readable message and a reason code. The window stays open and usable after a failure.
+
+| Situation | What the user sees | Reason code | Notes |
+|---|---|---|---|
+| Empty input | Empty message | empty | No request is made |
+| Wrong key or password | Invalid message | invalid | OnKeyRejected also runs. In API mode every verifier must have rejected it. |
+| Key longer than MaxLength | Invalid message | invalid | Rejected without any check |
+| Verification service unreachable or failing | Service error message | api_error | Retried according to the retry policy before reporting |
+| Verification took too long | Timeout message | timeout | The attempt is abandoned; a late answer is ignored |
+| Nothing configured to verify with | Not configured message | not_configured | No password set, or API mode without a verifier |
+| Neither method enabled | No method message | no_method | Set Key or the advanced Enabled options |
+| Strict device mode without an identifier | Device unavailable message | device_unavailable | No request is sent |
+| Provider without link or key function | Provider missing message | not_configured | Shown when its Get Key button is pressed |
+| Clipboard missing or failing | Clipboard failed message | None | The clipboard fallback runs. Failures of Get Key itself still report through OnFailure. |
+| Pressing buttons during a request | Busy message | None | The extra press is ignored |
+| Verifying again too soon after a failure | Cooldown message | None | Controlled by Cooldown |
+
+A callback that raises an error cannot break the window; the error is printed as a warning.
 
 ### Security Model and Known Limitations
 
@@ -1474,122 +1715,4 @@ Every icon, grouped by category. The name under each tile is what you pass to `A
 <td align="center" width="16%"><img src="icons/tiles/battery-charging.svg" width="56" height="56" alt="battery-charging"><br><sub><code>battery-charging</code></sub></td>
 <td align="center" width="16%"><img src="icons/tiles/plug.svg" width="56" height="56" alt="plug"><br><sub><code>plug</code></sub></td>
 <td align="center" width="16%"><img src="icons/tiles/cloud.svg" width="56" height="56" alt="cloud"><br><sub><code>cloud</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud-upload.svg" width="56" height="56" alt="cloud-upload"><br><sub><code>cloud-upload</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud-download.svg" width="56" height="56" alt="cloud-download"><br><sub><code>cloud-download</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/globe.svg" width="56" height="56" alt="globe"><br><sub><code>globe</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/clock.svg" width="56" height="56" alt="clock"><br><sub><code>clock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/timer.svg" width="56" height="56" alt="timer"><br><sub><code>timer</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/hourglass.svg" width="56" height="56" alt="hourglass"><br><sub><code>hourglass</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/calendar.svg" width="56" height="56" alt="calendar"><br><sub><code>calendar</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bell.svg" width="56" height="56" alt="bell"><br><sub><code>bell</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/bell-off.svg" width="56" height="56" alt="bell-off"><br><sub><code>bell-off</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/mail.svg" width="56" height="56" alt="mail"><br><sub><code>mail</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/headphones.svg" width="56" height="56" alt="headphones"><br><sub><code>headphones</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/usb.svg" width="56" height="56" alt="usb"><br><sub><code>usb</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/memory-card.svg" width="56" height="56" alt="memory-card"><br><sub><code>memory-card</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/power-plug-off.svg" width="56" height="56" alt="power-plug-off"><br><sub><code>power-plug-off</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/signal.svg" width="56" height="56" alt="signal"><br><sub><code>signal</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/airplane-mode.svg" width="56" height="56" alt="airplane-mode"><br><sub><code>airplane-mode</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/qr-code.svg" width="56" height="56" alt="qr-code"><br><sub><code>qr-code</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/disc.svg" width="56" height="56" alt="disc"><br><sub><code>disc</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/webcam.svg" width="56" height="56" alt="webcam"><br><sub><code>webcam</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/terminal-window.svg" width="56" height="56" alt="terminal-window"><br><sub><code>terminal-window</code></sub></td>
-</tr>
-</table>
-
-### Settings (18)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/settings.svg" width="56" height="56" alt="settings"><br><sub><code>settings</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/settings-2.svg" width="56" height="56" alt="settings-2"><br><sub><code>settings-2</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/sliders.svg" width="56" height="56" alt="sliders"><br><sub><code>sliders</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/sliders-vertical.svg" width="56" height="56" alt="sliders-vertical"><br><sub><code>sliders-vertical</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/tools.svg" width="56" height="56" alt="tools"><br><sub><code>tools</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/wrench.svg" width="56" height="56" alt="wrench"><br><sub><code>wrench</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/hammer.svg" width="56" height="56" alt="hammer"><br><sub><code>hammer</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/screwdriver.svg" width="56" height="56" alt="screwdriver"><br><sub><code>screwdriver</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/toggle-left.svg" width="56" height="56" alt="toggle-left"><br><sub><code>toggle-left</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/toggle-right.svg" width="56" height="56" alt="toggle-right"><br><sub><code>toggle-right</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/palette.svg" width="56" height="56" alt="palette"><br><sub><code>palette</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/paintbrush.svg" width="56" height="56" alt="paintbrush"><br><sub><code>paintbrush</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/wand.svg" width="56" height="56" alt="wand"><br><sub><code>wand</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/contrast.svg" width="56" height="56" alt="contrast"><br><sub><code>contrast</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/gauge.svg" width="56" height="56" alt="gauge"><br><sub><code>gauge</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/layers.svg" width="56" height="56" alt="layers"><br><sub><code>layers</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/adjustments.svg" width="56" height="56" alt="adjustments"><br><sub><code>adjustments</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/ruler.svg" width="56" height="56" alt="ruler"><br><sub><code>ruler</code></sub></td>
-</tr>
-</table>
-
-### Security (22)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/shield.svg" width="56" height="56" alt="shield"><br><sub><code>shield</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-check.svg" width="56" height="56" alt="shield-check"><br><sub><code>shield-check</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-alert.svg" width="56" height="56" alt="shield-alert"><br><sub><code>shield-alert</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-x.svg" width="56" height="56" alt="shield-x"><br><sub><code>shield-x</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-off.svg" width="56" height="56" alt="shield-off"><br><sub><code>shield-off</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-plus.svg" width="56" height="56" alt="shield-plus"><br><sub><code>shield-plus</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/shield-half.svg" width="56" height="56" alt="shield-half"><br><sub><code>shield-half</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/lock.svg" width="56" height="56" alt="lock"><br><sub><code>lock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/unlock.svg" width="56" height="56" alt="unlock"><br><sub><code>unlock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/key.svg" width="56" height="56" alt="key"><br><sub><code>key</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/fingerprint.svg" width="56" height="56" alt="fingerprint"><br><sub><code>fingerprint</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bug.svg" width="56" height="56" alt="bug"><br><sub><code>bug</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/scan-eye.svg" width="56" height="56" alt="scan-eye"><br><sub><code>scan-eye</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/id-card.svg" width="56" height="56" alt="id-card"><br><sub><code>id-card</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/user-check.svg" width="56" height="56" alt="user-check"><br><sub><code>user-check</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/siren.svg" width="56" height="56" alt="siren"><br><sub><code>siren</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/ban.svg" width="56" height="56" alt="ban"><br><sub><code>ban</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/badge-check.svg" width="56" height="56" alt="badge-check"><br><sub><code>badge-check</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/eye-lock.svg" width="56" height="56" alt="eye-lock"><br><sub><code>eye-lock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/password.svg" width="56" height="56" alt="password"><br><sub><code>password</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/firewall.svg" width="56" height="56" alt="firewall"><br><sub><code>firewall</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/shield-lock.svg" width="56" height="56" alt="shield-lock"><br><sub><code>shield-lock</code></sub></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Status (25)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/check-circle.svg" width="56" height="56" alt="check-circle"><br><sub><code>check-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/x-circle.svg" width="56" height="56" alt="x-circle"><br><sub><code>x-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/alert-circle.svg" width="56" height="56" alt="alert-circle"><br><sub><code>alert-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/alert-triangle.svg" width="56" height="56" alt="alert-triangle"><br><sub><code>alert-triangle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/alert-octagon.svg" width="56" height="56" alt="alert-octagon"><br><sub><code>alert-octagon</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/info.svg" width="56" height="56" alt="info"><br><sub><code>info</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/help-circle.svg" width="56" height="56" alt="help-circle"><br><sub><code>help-circle</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/loader.svg" width="56" height="56" alt="loader"><br><sub><code>loader</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/spinner.svg" width="56" height="56" alt="spinner"><br><sub><code>spinner</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/activity.svg" width="56" height="56" alt="activity"><br><sub><code>activity</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/heart-pulse.svg" width="56" height="56" alt="heart-pulse"><br><sub><code>heart-pulse</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/thumbs-up.svg" width="56" height="56" alt="thumbs-up"><br><sub><code>thumbs-up</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/thumbs-down.svg" width="56" height="56" alt="thumbs-down"><br><sub><code>thumbs-down</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bell-ring.svg" width="56" height="56" alt="bell-ring"><br><sub><code>bell-ring</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/circle-dot.svg" width="56" height="56" alt="circle-dot"><br><sub><code>circle-dot</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/verified.svg" width="56" height="56" alt="verified"><br><sub><code>verified</code><
+<td align="center" width="16%"><img src="icons/tiles

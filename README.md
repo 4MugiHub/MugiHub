@@ -1770,4 +1770,662 @@ Every icon, grouped by category. The name under each tile is what you pass to `A
 <tr>
 <td align="center" width="16%"><img src="icons/tiles/search.svg" width="56" height="56" alt="search"><br><sub><code>search</code></sub></td>
 <td align="center" width="16%"><img src="icons/tiles/zoom-in.svg" width="56" height="56" alt="zoom-in"><br><sub><code>zoom-in</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/zoom-out.svg" width="56" hei
+<td align="center" width="16%"><img src="icons/tiles/zoom-out.svg" width="56" height="56" alt="zoom-out"><br><sub><code>zoom-out</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/filter.svg" width="56" height="56" alt="filter"><br><sub><code>filter</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/sort.svg" width="56" height="56" alt="sort"><br><sub><code>sort</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/eye.svg" width="56" height="56" alt="eye"><br><sub><code>eye</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/eye-off.svg" width="56" height="56" alt="eye-off"><br><sub><code>eye-off</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/heart.svg" width="56" height="56" alt="heart"><br><sub><code>heart</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/star.svg" width="56" height="56" alt="star"><br><sub><code>star</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bookmark.svg" width="56" height="56" alt="bookmark"><br><sub><code>bookmark</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/flag.svg" width="56" height="56" alt="flag"><br><sub><code>flag</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/pin.svg" width="56" height="56" alt="pin"><br><sub><code>pin</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/mouse-pointer.svg" width="56" height="56" alt="mouse-pointer"><br><sub><code>mouse-pointer</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/mouse.svg" width="56" height="56" alt="mouse"><br><sub><code>mouse</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/hand.svg" width="56" height="56" alt="hand"><br><sub><code>hand</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/move.svg" width="56" height="56" alt="move"><br><sub><code>move</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/maximize.svg" width="56" height="56" alt="maximize"><br><sub><code>maximize</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/minimize.svg" width="56" height="56" alt="minimize"><br><sub><code>minimize</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/send.svg" width="56" height="56" alt="send"><br><sub><code>send</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/power.svg" width="56" height="56" alt="power"><br><sub><code>power</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/log-in.svg" width="56" height="56" alt="log-in"><br><sub><code>log-in</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/log-out.svg" width="56" height="56" alt="log-out"><br><sub><code>log-out</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/grip.svg" width="56" height="56" alt="grip"><br><sub><code>grip</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/pointer-click.svg" width="56" height="56" alt="pointer-click"><br><sub><code>pointer-click</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/erase.svg" width="56" height="56" alt="erase"><br><sub><code>erase</code></sub></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Files (34)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/file.svg" width="56" height="56" alt="file"><br><sub><code>file</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-text.svg" width="56" height="56" alt="file-text"><br><sub><code>file-text</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-plus.svg" width="56" height="56" alt="file-plus"><br><sub><code>file-plus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-minus.svg" width="56" height="56" alt="file-minus"><br><sub><code>file-minus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-check.svg" width="56" height="56" alt="file-check"><br><sub><code>file-check</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-code.svg" width="56" height="56" alt="file-code"><br><sub><code>file-code</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/file-image.svg" width="56" height="56" alt="file-image"><br><sub><code>file-image</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-audio.svg" width="56" height="56" alt="file-audio"><br><sub><code>file-audio</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-video.svg" width="56" height="56" alt="file-video"><br><sub><code>file-video</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-archive.svg" width="56" height="56" alt="file-archive"><br><sub><code>file-archive</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-lock.svg" width="56" height="56" alt="file-lock"><br><sub><code>file-lock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-search.svg" width="56" height="56" alt="file-search"><br><sub><code>file-search</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/file-json.svg" width="56" height="56" alt="file-json"><br><sub><code>file-json</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/folder.svg" width="56" height="56" alt="folder"><br><sub><code>folder</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/folder-open.svg" width="56" height="56" alt="folder-open"><br><sub><code>folder-open</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/folder-plus.svg" width="56" height="56" alt="folder-plus"><br><sub><code>folder-plus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/folder-lock.svg" width="56" height="56" alt="folder-lock"><br><sub><code>folder-lock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/folder-tree.svg" width="56" height="56" alt="folder-tree"><br><sub><code>folder-tree</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/save.svg" width="56" height="56" alt="save"><br><sub><code>save</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/clipboard.svg" width="56" height="56" alt="clipboard"><br><sub><code>clipboard</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/clipboard-check.svg" width="56" height="56" alt="clipboard-check"><br><sub><code>clipboard-check</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/notebook.svg" width="56" height="56" alt="notebook"><br><sub><code>notebook</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/book.svg" width="56" height="56" alt="book"><br><sub><code>book</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/book-open.svg" width="56" height="56" alt="book-open"><br><sub><code>book-open</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/archive.svg" width="56" height="56" alt="archive"><br><sub><code>archive</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/paperclip.svg" width="56" height="56" alt="paperclip"><br><sub><code>paperclip</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/image.svg" width="56" height="56" alt="image"><br><sub><code>image</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/images.svg" width="56" height="56" alt="images"><br><sub><code>images</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/file-spreadsheet.svg" width="56" height="56" alt="file-spreadsheet"><br><sub><code>file-spreadsheet</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/box.svg" width="56" height="56" alt="box"><br><sub><code>box</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/database-export.svg" width="56" height="56" alt="database-export"><br><sub><code>database-export</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud-file.svg" width="56" height="56" alt="cloud-file"><br><sub><code>cloud-file</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/history.svg" width="56" height="56" alt="history"><br><sub><code>history</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/inbox.svg" width="56" height="56" alt="inbox"><br><sub><code>inbox</code></sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### System (36)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/cpu.svg" width="56" height="56" alt="cpu"><br><sub><code>cpu</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/hard-drive.svg" width="56" height="56" alt="hard-drive"><br><sub><code>hard-drive</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/server.svg" width="56" height="56" alt="server"><br><sub><code>server</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/monitor.svg" width="56" height="56" alt="monitor"><br><sub><code>monitor</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/laptop.svg" width="56" height="56" alt="laptop"><br><sub><code>laptop</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/smartphone.svg" width="56" height="56" alt="smartphone"><br><sub><code>smartphone</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/tablet.svg" width="56" height="56" alt="tablet"><br><sub><code>tablet</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/keyboard.svg" width="56" height="56" alt="keyboard"><br><sub><code>keyboard</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/printer.svg" width="56" height="56" alt="printer"><br><sub><code>printer</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/wifi.svg" width="56" height="56" alt="wifi"><br><sub><code>wifi</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/wifi-off.svg" width="56" height="56" alt="wifi-off"><br><sub><code>wifi-off</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bluetooth.svg" width="56" height="56" alt="bluetooth"><br><sub><code>bluetooth</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/battery.svg" width="56" height="56" alt="battery"><br><sub><code>battery</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/battery-charging.svg" width="56" height="56" alt="battery-charging"><br><sub><code>battery-charging</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/plug.svg" width="56" height="56" alt="plug"><br><sub><code>plug</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud.svg" width="56" height="56" alt="cloud"><br><sub><code>cloud</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud-upload.svg" width="56" height="56" alt="cloud-upload"><br><sub><code>cloud-upload</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud-download.svg" width="56" height="56" alt="cloud-download"><br><sub><code>cloud-download</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/globe.svg" width="56" height="56" alt="globe"><br><sub><code>globe</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/clock.svg" width="56" height="56" alt="clock"><br><sub><code>clock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/timer.svg" width="56" height="56" alt="timer"><br><sub><code>timer</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/hourglass.svg" width="56" height="56" alt="hourglass"><br><sub><code>hourglass</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/calendar.svg" width="56" height="56" alt="calendar"><br><sub><code>calendar</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bell.svg" width="56" height="56" alt="bell"><br><sub><code>bell</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/bell-off.svg" width="56" height="56" alt="bell-off"><br><sub><code>bell-off</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/mail.svg" width="56" height="56" alt="mail"><br><sub><code>mail</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/headphones.svg" width="56" height="56" alt="headphones"><br><sub><code>headphones</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/usb.svg" width="56" height="56" alt="usb"><br><sub><code>usb</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/memory-card.svg" width="56" height="56" alt="memory-card"><br><sub><code>memory-card</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/power-plug-off.svg" width="56" height="56" alt="power-plug-off"><br><sub><code>power-plug-off</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/signal.svg" width="56" height="56" alt="signal"><br><sub><code>signal</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/airplane-mode.svg" width="56" height="56" alt="airplane-mode"><br><sub><code>airplane-mode</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/qr-code.svg" width="56" height="56" alt="qr-code"><br><sub><code>qr-code</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/disc.svg" width="56" height="56" alt="disc"><br><sub><code>disc</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/webcam.svg" width="56" height="56" alt="webcam"><br><sub><code>webcam</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/terminal-window.svg" width="56" height="56" alt="terminal-window"><br><sub><code>terminal-window</code></sub></td>
+</tr>
+</table>
+
+### Settings (18)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/settings.svg" width="56" height="56" alt="settings"><br><sub><code>settings</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/settings-2.svg" width="56" height="56" alt="settings-2"><br><sub><code>settings-2</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/sliders.svg" width="56" height="56" alt="sliders"><br><sub><code>sliders</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/sliders-vertical.svg" width="56" height="56" alt="sliders-vertical"><br><sub><code>sliders-vertical</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/tools.svg" width="56" height="56" alt="tools"><br><sub><code>tools</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/wrench.svg" width="56" height="56" alt="wrench"><br><sub><code>wrench</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/hammer.svg" width="56" height="56" alt="hammer"><br><sub><code>hammer</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/screwdriver.svg" width="56" height="56" alt="screwdriver"><br><sub><code>screwdriver</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/toggle-left.svg" width="56" height="56" alt="toggle-left"><br><sub><code>toggle-left</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/toggle-right.svg" width="56" height="56" alt="toggle-right"><br><sub><code>toggle-right</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/palette.svg" width="56" height="56" alt="palette"><br><sub><code>palette</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/paintbrush.svg" width="56" height="56" alt="paintbrush"><br><sub><code>paintbrush</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/wand.svg" width="56" height="56" alt="wand"><br><sub><code>wand</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/contrast.svg" width="56" height="56" alt="contrast"><br><sub><code>contrast</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/gauge.svg" width="56" height="56" alt="gauge"><br><sub><code>gauge</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/layers.svg" width="56" height="56" alt="layers"><br><sub><code>layers</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/adjustments.svg" width="56" height="56" alt="adjustments"><br><sub><code>adjustments</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/ruler.svg" width="56" height="56" alt="ruler"><br><sub><code>ruler</code></sub></td>
+</tr>
+</table>
+
+### Security (22)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/shield.svg" width="56" height="56" alt="shield"><br><sub><code>shield</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-check.svg" width="56" height="56" alt="shield-check"><br><sub><code>shield-check</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-alert.svg" width="56" height="56" alt="shield-alert"><br><sub><code>shield-alert</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-x.svg" width="56" height="56" alt="shield-x"><br><sub><code>shield-x</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-off.svg" width="56" height="56" alt="shield-off"><br><sub><code>shield-off</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-plus.svg" width="56" height="56" alt="shield-plus"><br><sub><code>shield-plus</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/shield-half.svg" width="56" height="56" alt="shield-half"><br><sub><code>shield-half</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/lock.svg" width="56" height="56" alt="lock"><br><sub><code>lock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/unlock.svg" width="56" height="56" alt="unlock"><br><sub><code>unlock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/key.svg" width="56" height="56" alt="key"><br><sub><code>key</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/fingerprint.svg" width="56" height="56" alt="fingerprint"><br><sub><code>fingerprint</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bug.svg" width="56" height="56" alt="bug"><br><sub><code>bug</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/scan-eye.svg" width="56" height="56" alt="scan-eye"><br><sub><code>scan-eye</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/id-card.svg" width="56" height="56" alt="id-card"><br><sub><code>id-card</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/user-check.svg" width="56" height="56" alt="user-check"><br><sub><code>user-check</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/siren.svg" width="56" height="56" alt="siren"><br><sub><code>siren</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/ban.svg" width="56" height="56" alt="ban"><br><sub><code>ban</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/badge-check.svg" width="56" height="56" alt="badge-check"><br><sub><code>badge-check</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/eye-lock.svg" width="56" height="56" alt="eye-lock"><br><sub><code>eye-lock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/password.svg" width="56" height="56" alt="password"><br><sub><code>password</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/firewall.svg" width="56" height="56" alt="firewall"><br><sub><code>firewall</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-lock.svg" width="56" height="56" alt="shield-lock"><br><sub><code>shield-lock</code></sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Status (25)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/check-circle.svg" width="56" height="56" alt="check-circle"><br><sub><code>check-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/x-circle.svg" width="56" height="56" alt="x-circle"><br><sub><code>x-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/alert-circle.svg" width="56" height="56" alt="alert-circle"><br><sub><code>alert-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/alert-triangle.svg" width="56" height="56" alt="alert-triangle"><br><sub><code>alert-triangle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/alert-octagon.svg" width="56" height="56" alt="alert-octagon"><br><sub><code>alert-octagon</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/info.svg" width="56" height="56" alt="info"><br><sub><code>info</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/help-circle.svg" width="56" height="56" alt="help-circle"><br><sub><code>help-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/loader.svg" width="56" height="56" alt="loader"><br><sub><code>loader</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/spinner.svg" width="56" height="56" alt="spinner"><br><sub><code>spinner</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/activity.svg" width="56" height="56" alt="activity"><br><sub><code>activity</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/heart-pulse.svg" width="56" height="56" alt="heart-pulse"><br><sub><code>heart-pulse</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/thumbs-up.svg" width="56" height="56" alt="thumbs-up"><br><sub><code>thumbs-up</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/thumbs-down.svg" width="56" height="56" alt="thumbs-down"><br><sub><code>thumbs-down</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bell-ring.svg" width="56" height="56" alt="bell-ring"><br><sub><code>bell-ring</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/circle-dot.svg" width="56" height="56" alt="circle-dot"><br><sub><code>circle-dot</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/verified.svg" width="56" height="56" alt="verified"><br><sub><code>verified</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/zap.svg" width="56" height="56" alt="zap"><br><sub><code>zap</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/progress.svg" width="56" height="56" alt="progress"><br><sub><code>progress</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/online.svg" width="56" height="56" alt="online"><br><sub><code>online</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/offline.svg" width="56" height="56" alt="offline"><br><sub><code>offline</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/pause-circle.svg" width="56" height="56" alt="pause-circle"><br><sub><code>pause-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/stop-circle.svg" width="56" height="56" alt="stop-circle"><br><sub><code>stop-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/clock-alert.svg" width="56" height="56" alt="clock-alert"><br><sub><code>clock-alert</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/target-check.svg" width="56" height="56" alt="target-check"><br><sub><code>target-check</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/sparkle.svg" width="56" height="56" alt="sparkle"><br><sub><code>sparkle</code></sub></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Media (23)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/play.svg" width="56" height="56" alt="play"><br><sub><code>play</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/pause.svg" width="56" height="56" alt="pause"><br><sub><code>pause</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/stop.svg" width="56" height="56" alt="stop"><br><sub><code>stop</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/skip-forward.svg" width="56" height="56" alt="skip-forward"><br><sub><code>skip-forward</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/skip-back.svg" width="56" height="56" alt="skip-back"><br><sub><code>skip-back</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/fast-forward.svg" width="56" height="56" alt="fast-forward"><br><sub><code>fast-forward</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/rewind.svg" width="56" height="56" alt="rewind"><br><sub><code>rewind</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/repeat.svg" width="56" height="56" alt="repeat"><br><sub><code>repeat</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shuffle.svg" width="56" height="56" alt="shuffle"><br><sub><code>shuffle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/volume.svg" width="56" height="56" alt="volume"><br><sub><code>volume</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/volume-low.svg" width="56" height="56" alt="volume-low"><br><sub><code>volume-low</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/volume-mute.svg" width="56" height="56" alt="volume-mute"><br><sub><code>volume-mute</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/mic.svg" width="56" height="56" alt="mic"><br><sub><code>mic</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/mic-off.svg" width="56" height="56" alt="mic-off"><br><sub><code>mic-off</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/camera.svg" width="56" height="56" alt="camera"><br><sub><code>camera</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/video.svg" width="56" height="56" alt="video"><br><sub><code>video</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/music.svg" width="56" height="56" alt="music"><br><sub><code>music</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/film.svg" width="56" height="56" alt="film"><br><sub><code>film</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/radio.svg" width="56" height="56" alt="radio"><br><sub><code>radio</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cast.svg" width="56" height="56" alt="cast"><br><sub><code>cast</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/subtitles.svg" width="56" height="56" alt="subtitles"><br><sub><code>subtitles</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/equalizer.svg" width="56" height="56" alt="equalizer"><br><sub><code>equalizer</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/image-play.svg" width="56" height="56" alt="image-play"><br><sub><code>image-play</code></sub></td>
+<td></td>
+</tr>
+</table>
+
+### Social (21)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/user.svg" width="56" height="56" alt="user"><br><sub><code>user</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/users.svg" width="56" height="56" alt="users"><br><sub><code>users</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/user-plus.svg" width="56" height="56" alt="user-plus"><br><sub><code>user-plus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/user-minus.svg" width="56" height="56" alt="user-minus"><br><sub><code>user-minus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/user-circle.svg" width="56" height="56" alt="user-circle"><br><sub><code>user-circle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/message-circle.svg" width="56" height="56" alt="message-circle"><br><sub><code>message-circle</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/message-square.svg" width="56" height="56" alt="message-square"><br><sub><code>message-square</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/chat-dots.svg" width="56" height="56" alt="chat-dots"><br><sub><code>chat-dots</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/smile.svg" width="56" height="56" alt="smile"><br><sub><code>smile</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/frown.svg" width="56" height="56" alt="frown"><br><sub><code>frown</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/meh.svg" width="56" height="56" alt="meh"><br><sub><code>meh</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/at-sign.svg" width="56" height="56" alt="at-sign"><br><sub><code>at-sign</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/hash.svg" width="56" height="56" alt="hash"><br><sub><code>hash</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/gift.svg" width="56" height="56" alt="gift"><br><sub><code>gift</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/megaphone.svg" width="56" height="56" alt="megaphone"><br><sub><code>megaphone</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/share-2.svg" width="56" height="56" alt="share-2"><br><sub><code>share-2</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/group.svg" width="56" height="56" alt="group"><br><sub><code>group</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/send-message.svg" width="56" height="56" alt="send-message"><br><sub><code>send-message</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/link-2.svg" width="56" height="56" alt="link-2"><br><sub><code>link-2</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/rss.svg" width="56" height="56" alt="rss"><br><sub><code>rss</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bookmark-check.svg" width="56" height="56" alt="bookmark-check"><br><sub><code>bookmark-check</code></sub></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Finance (23)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/coins.svg" width="56" height="56" alt="coins"><br><sub><code>coins</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/wallet.svg" width="56" height="56" alt="wallet"><br><sub><code>wallet</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/credit-card.svg" width="56" height="56" alt="credit-card"><br><sub><code>credit-card</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/banknote.svg" width="56" height="56" alt="banknote"><br><sub><code>banknote</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/piggy-bank.svg" width="56" height="56" alt="piggy-bank"><br><sub><code>piggy-bank</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/receipt.svg" width="56" height="56" alt="receipt"><br><sub><code>receipt</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/shopping-cart.svg" width="56" height="56" alt="shopping-cart"><br><sub><code>shopping-cart</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shopping-bag.svg" width="56" height="56" alt="shopping-bag"><br><sub><code>shopping-bag</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/tag.svg" width="56" height="56" alt="tag"><br><sub><code>tag</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/percent.svg" width="56" height="56" alt="percent"><br><sub><code>percent</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/trending-up.svg" width="56" height="56" alt="trending-up"><br><sub><code>trending-up</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/trending-down.svg" width="56" height="56" alt="trending-down"><br><sub><code>trending-down</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/bar-chart.svg" width="56" height="56" alt="bar-chart"><br><sub><code>bar-chart</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/pie-chart.svg" width="56" height="56" alt="pie-chart"><br><sub><code>pie-chart</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/line-chart.svg" width="56" height="56" alt="line-chart"><br><sub><code>line-chart</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/calculator.svg" width="56" height="56" alt="calculator"><br><sub><code>calculator</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/store.svg" width="56" height="56" alt="store"><br><sub><code>store</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bank.svg" width="56" height="56" alt="bank"><br><sub><code>bank</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/dollar-sign.svg" width="56" height="56" alt="dollar-sign"><br><sub><code>dollar-sign</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/safe.svg" width="56" height="56" alt="safe"><br><sub><code>safe</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/scale.svg" width="56" height="56" alt="scale"><br><sub><code>scale</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/gem.svg" width="56" height="56" alt="gem"><br><sub><code>gem</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/badge-dollar.svg" width="56" height="56" alt="badge-dollar"><br><sub><code>badge-dollar</code></sub></td>
+<td></td>
+</tr>
+</table>
+
+### Nature (28)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/sun.svg" width="56" height="56" alt="sun"><br><sub><code>sun</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/moon.svg" width="56" height="56" alt="moon"><br><sub><code>moon</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/sunrise.svg" width="56" height="56" alt="sunrise"><br><sub><code>sunrise</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud-rain.svg" width="56" height="56" alt="cloud-rain"><br><sub><code>cloud-rain</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud-snow.svg" width="56" height="56" alt="cloud-snow"><br><sub><code>cloud-snow</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cloud-lightning.svg" width="56" height="56" alt="cloud-lightning"><br><sub><code>cloud-lightning</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/wind.svg" width="56" height="56" alt="wind"><br><sub><code>wind</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/snowflake.svg" width="56" height="56" alt="snowflake"><br><sub><code>snowflake</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/droplet.svg" width="56" height="56" alt="droplet"><br><sub><code>droplet</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/flame.svg" width="56" height="56" alt="flame"><br><sub><code>flame</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/leaf.svg" width="56" height="56" alt="leaf"><br><sub><code>leaf</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/tree.svg" width="56" height="56" alt="tree"><br><sub><code>tree</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/sprout.svg" width="56" height="56" alt="sprout"><br><sub><code>sprout</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/mountain.svg" width="56" height="56" alt="mountain"><br><sub><code>mountain</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/waves.svg" width="56" height="56" alt="waves"><br><sub><code>waves</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/flower.svg" width="56" height="56" alt="flower"><br><sub><code>flower</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bird.svg" width="56" height="56" alt="bird"><br><sub><code>bird</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/fish.svg" width="56" height="56" alt="fish"><br><sub><code>fish</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/paw.svg" width="56" height="56" alt="paw"><br><sub><code>paw</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/umbrella.svg" width="56" height="56" alt="umbrella"><br><sub><code>umbrella</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/thermometer.svg" width="56" height="56" alt="thermometer"><br><sub><code>thermometer</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/rainbow.svg" width="56" height="56" alt="rainbow"><br><sub><code>rainbow</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cactus.svg" width="56" height="56" alt="cactus"><br><sub><code>cactus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/mushroom.svg" width="56" height="56" alt="mushroom"><br><sub><code>mushroom</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/earth.svg" width="56" height="56" alt="earth"><br><sub><code>earth</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/volcano.svg" width="56" height="56" alt="volcano"><br><sub><code>volcano</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/moon-star.svg" width="56" height="56" alt="moon-star"><br><sub><code>moon-star</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/tornado.svg" width="56" height="56" alt="tornado"><br><sub><code>tornado</code></sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Gaming (30)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/sword.svg" width="56" height="56" alt="sword"><br><sub><code>sword</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/swords.svg" width="56" height="56" alt="swords"><br><sub><code>swords</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/shield-sword.svg" width="56" height="56" alt="shield-sword"><br><sub><code>shield-sword</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/gamepad.svg" width="56" height="56" alt="gamepad"><br><sub><code>gamepad</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/joystick.svg" width="56" height="56" alt="joystick"><br><sub><code>joystick</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/dpad.svg" width="56" height="56" alt="dpad"><br><sub><code>dpad</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/dice.svg" width="56" height="56" alt="dice"><br><sub><code>dice</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/puzzle.svg" width="56" height="56" alt="puzzle"><br><sub><code>puzzle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/trophy.svg" width="56" height="56" alt="trophy"><br><sub><code>trophy</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/crown.svg" width="56" height="56" alt="crown"><br><sub><code>crown</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/medal.svg" width="56" height="56" alt="medal"><br><sub><code>medal</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bow.svg" width="56" height="56" alt="bow"><br><sub><code>bow</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/bomb.svg" width="56" height="56" alt="bomb"><br><sub><code>bomb</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/skull.svg" width="56" height="56" alt="skull"><br><sub><code>skull</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/ghost.svg" width="56" height="56" alt="ghost"><br><sub><code>ghost</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/potion.svg" width="56" height="56" alt="potion"><br><sub><code>potion</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/target.svg" width="56" height="56" alt="target"><br><sub><code>target</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/crosshair.svg" width="56" height="56" alt="crosshair"><br><sub><code>crosshair</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/treasure-chest.svg" width="56" height="56" alt="treasure-chest"><br><sub><code>treasure-chest</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/castle.svg" width="56" height="56" alt="castle"><br><sub><code>castle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/helmet.svg" width="56" height="56" alt="helmet"><br><sub><code>helmet</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/armor.svg" width="56" height="56" alt="armor"><br><sub><code>armor</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/boots.svg" width="56" height="56" alt="boots"><br><sub><code>boots</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/spell-book.svg" width="56" height="56" alt="spell-book"><br><sub><code>spell-book</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/wizard-hat.svg" width="56" height="56" alt="wizard-hat"><br><sub><code>wizard-hat</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/chess-pawn.svg" width="56" height="56" alt="chess-pawn"><br><sub><code>chess-pawn</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cards.svg" width="56" height="56" alt="cards"><br><sub><code>cards</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/heart-health.svg" width="56" height="56" alt="heart-health"><br><sub><code>heart-health</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/level-up.svg" width="56" height="56" alt="level-up"><br><sub><code>level-up</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/coin-xp.svg" width="56" height="56" alt="coin-xp"><br><sub><code>coin-xp</code></sub></td>
+</tr>
+</table>
+
+### Roblox Ui (37)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/player.svg" width="56" height="56" alt="player"><br><sub><code>player</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/leaderboard.svg" width="56" height="56" alt="leaderboard"><br><sub><code>leaderboard</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/inventory.svg" width="56" height="56" alt="inventory"><br><sub><code>inventory</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/backpack.svg" width="56" height="56" alt="backpack"><br><sub><code>backpack</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/health-bar.svg" width="56" height="56" alt="health-bar"><br><sub><code>health-bar</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/respawn.svg" width="56" height="56" alt="respawn"><br><sub><code>respawn</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/teleport.svg" width="56" height="56" alt="teleport"><br><sub><code>teleport</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/portal.svg" width="56" height="56" alt="portal"><br><sub><code>portal</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/checkpoint.svg" width="56" height="56" alt="checkpoint"><br><sub><code>checkpoint</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/map.svg" width="56" height="56" alt="map"><br><sub><code>map</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/radar.svg" width="56" height="56" alt="radar"><br><sub><code>radar</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/gems.svg" width="56" height="56" alt="gems"><br><sub><code>gems</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/xp.svg" width="56" height="56" alt="xp"><br><sub><code>xp</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/rank.svg" width="56" height="56" alt="rank"><br><sub><code>rank</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/quest.svg" width="56" height="56" alt="quest"><br><sub><code>quest</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/npc.svg" width="56" height="56" alt="npc"><br><sub><code>npc</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/emote.svg" width="56" height="56" alt="emote"><br><sub><code>emote</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/avatar.svg" width="56" height="56" alt="avatar"><br><sub><code>avatar</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/dash.svg" width="56" height="56" alt="dash"><br><sub><code>dash</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/double-jump.svg" width="56" height="56" alt="double-jump"><br><sub><code>double-jump</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/fly.svg" width="56" height="56" alt="fly"><br><sub><code>fly</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/noclip.svg" width="56" height="56" alt="noclip"><br><sub><code>noclip</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/esp.svg" width="56" height="56" alt="esp"><br><sub><code>esp</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/halo.svg" width="56" height="56" alt="halo"><br><sub><code>halo</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/script-scroll.svg" width="56" height="56" alt="script-scroll"><br><sub><code>script-scroll</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/execute.svg" width="56" height="56" alt="execute"><br><sub><code>execute</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/inject.svg" width="56" height="56" alt="inject"><br><sub><code>inject</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/hub.svg" width="56" height="56" alt="hub"><br><sub><code>hub</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/auto-farm.svg" width="56" height="56" alt="auto-farm"><br><sub><code>auto-farm</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/server-hop.svg" width="56" height="56" alt="server-hop"><br><sub><code>server-hop</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/rejoin.svg" width="56" height="56" alt="rejoin"><br><sub><code>rejoin</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/fps-boost.svg" width="56" height="56" alt="fps-boost"><br><sub><code>fps-boost</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/sleep.svg" width="56" height="56" alt="sleep"><br><sub><code>sleep</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/aura.svg" width="56" height="56" alt="aura"><br><sub><code>aura</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/camera-lock.svg" width="56" height="56" alt="camera-lock"><br><sub><code>camera-lock</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/speed-boots.svg" width="56" height="56" alt="speed-boots"><br><sub><code>speed-boots</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/currency-robux.svg" width="56" height="56" alt="currency-robux"><br><sub><code>currency-robux</code></sub></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Developer Tools (28)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/code.svg" width="56" height="56" alt="code"><br><sub><code>code</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/braces.svg" width="56" height="56" alt="braces"><br><sub><code>braces</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/terminal.svg" width="56" height="56" alt="terminal"><br><sub><code>terminal</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/database.svg" width="56" height="56" alt="database"><br><sub><code>database</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/api.svg" width="56" height="56" alt="api"><br><sub><code>api</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/plugin.svg" width="56" height="56" alt="plugin"><br><sub><code>plugin</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/git-branch.svg" width="56" height="56" alt="git-branch"><br><sub><code>git-branch</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/git-commit.svg" width="56" height="56" alt="git-commit"><br><sub><code>git-commit</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/git-merge.svg" width="56" height="56" alt="git-merge"><br><sub><code>git-merge</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/git-pull-request.svg" width="56" height="56" alt="git-pull-request"><br><sub><code>git-pull-request</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/binary.svg" width="56" height="56" alt="binary"><br><sub><code>binary</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/variable.svg" width="56" height="56" alt="variable"><br><sub><code>variable</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/function.svg" width="56" height="56" alt="function"><br><sub><code>function</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/regex.svg" width="56" height="56" alt="regex"><br><sub><code>regex</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/webhook.svg" width="56" height="56" alt="webhook"><br><sub><code>webhook</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/package.svg" width="56" height="56" alt="package"><br><sub><code>package</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/blocks.svg" width="56" height="56" alt="blocks"><br><sub><code>blocks</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/workflow.svg" width="56" height="56" alt="workflow"><br><sub><code>workflow</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/network.svg" width="56" height="56" alt="network"><br><sub><code>network</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/command.svg" width="56" height="56" alt="command"><br><sub><code>command</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/flask.svg" width="56" height="56" alt="flask"><br><sub><code>flask</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/rocket.svg" width="56" height="56" alt="rocket"><br><sub><code>rocket</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/key-code.svg" width="56" height="56" alt="key-code"><br><sub><code>key-code</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bracket-square.svg" width="56" height="56" alt="bracket-square"><br><sub><code>bracket-square</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/parentheses.svg" width="56" height="56" alt="parentheses"><br><sub><code>parentheses</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/lua-moon.svg" width="56" height="56" alt="lua-moon"><br><sub><code>lua-moon</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/console.svg" width="56" height="56" alt="console"><br><sub><code>console</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/git-compare.svg" width="56" height="56" alt="git-compare"><br><sub><code>git-compare</code></sub></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+### Transportation (26)
+
+<table>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/car.svg" width="56" height="56" alt="car"><br><sub><code>car</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bus.svg" width="56" height="56" alt="bus"><br><sub><code>bus</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/truck.svg" width="56" height="56" alt="truck"><br><sub><code>truck</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/bike.svg" width="56" height="56" alt="bike"><br><sub><code>bike</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/motorcycle.svg" width="56" height="56" alt="motorcycle"><br><sub><code>motorcycle</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/train.svg" width="56" height="56" alt="train"><br><sub><code>train</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/tram.svg" width="56" height="56" alt="tram"><br><sub><code>tram</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/plane.svg" width="56" height="56" alt="plane"><br><sub><code>plane</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/helicopter.svg" width="56" height="56" alt="helicopter"><br><sub><code>helicopter</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/ship.svg" width="56" height="56" alt="ship"><br><sub><code>ship</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/cargo-ship.svg" width="56" height="56" alt="cargo-ship"><br><sub><code>cargo-ship</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/tanker.svg" width="56" height="56" alt="tanker"><br><sub><code>tanker</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/sailboat.svg" width="56" height="56" alt="sailboat"><br><sub><code>sailboat</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/anchor.svg" width="56" height="56" alt="anchor"><br><sub><code>anchor</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/fuel.svg" width="56" height="56" alt="fuel"><br><sub><code>fuel</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/traffic-cone.svg" width="56" height="56" alt="traffic-cone"><br><sub><code>traffic-cone</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/parking.svg" width="56" height="56" alt="parking"><br><sub><code>parking</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/road.svg" width="56" height="56" alt="road"><br><sub><code>road</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/map-route.svg" width="56" height="56" alt="map-route"><br><sub><code>map-route</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/submarine.svg" width="56" height="56" alt="submarine"><br><sub><code>submarine</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/ufo.svg" width="56" height="56" alt="ufo"><br><sub><code>ufo</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/scooter.svg" width="56" height="56" alt="scooter"><br><sub><code>scooter</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/taxi.svg" width="56" height="56" alt="taxi"><br><sub><code>taxi</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/ambulance.svg" width="56" height="56" alt="ambulance"><br><sub><code>ambulance</code></sub></td>
+</tr>
+<tr>
+<td align="center" width="16%"><img src="icons/tiles/container.svg" width="56" height="56" alt="container"><br><sub><code>container</code></sub></td>
+<td align="center" width="16%"><img src="icons/tiles/forklift.svg" width="56" height="56" alt="forklift"><br><sub><code>forklift</code></sub></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+
+## Validation Report
+
+What was actually checked for this release, and how.
+
+**Icon pack**
+- 428 icons in 15 categories, each in 3 variants (outline, filled, duotone) plus a preview tile
+- SVG structure check on every file: well-formed XML, `viewBox="0 0 24 24"` on every outline/filled/duotone file, only `path`, `circle`, `rect`, `g`, `mask` and `defs` elements, no scripts, links or external references
+- Name check: unique kebab-case names, the same names in all variants and in `manifest.json`
+- Geometry check: no two icons with identical geometry
+- Visual check: every outline icon was rendered in Chromium and the contact sheets were looked at category by category. `sword`, `refresh-cw` and `tools` were redrawn from scratch and inspected at large and small sizes. Filled variants were rendered and inspected for every category; duotone variants were rendered and inspected as samples, not one by one.
+
+**Library (`Mugi`)**
+- Compiled and statically analyzed with the real Luau compiler: no syntax errors
+- Source check: line 1 is the only comment in the file, no non-ASCII characters (no emoji), no pink colors (the only magenta is a keypoint of the hue spectrum in the color picker)
+- Run in a simulated Roblox environment (a strict mock that rejects unknown properties and wrong value types, with a fake file system and HTTP): window creation, every component, tags with icons, tab icons, search icon, notifications, popup color picker (hex, RGB, presets, cancel, done), background via link and via `og:image` page, bubble customization, all 428 icons drawing without errors, config save/load/delete with the HWID-or-account rule (same account other device: visible; other account same device: visible; both changed: hidden), delete confirmation, auto save, notification cleanup and full cleanup on `Destroy`
+- **Added after the checks above and not compiled or run:** the anti-aliased icon renderer, the Key System, the Topbar bubble type and Popups were added after the compiler and mock runs listed here. After the last change they were checked only for balanced blocks, the single-comment rule, ASCII-only source and undefined names; the PNG encoding logic was mirrored and verified in Python. They have not been compiled with Luau or run in any simulated environment. The author tested the Key System window on a real phone before the latest changes and reported no bugs. Topbar placement (which relies on the GuiService TopbarInset property) and Popups have not been seen on a real client.
+- **Not tested in the real Roblox client or in a real executor.** Behavior that depends on executor functions (`request`, `getcustomasset`, `gethwid`, file functions) follows their documented behavior but could differ per executor.
+
+**Thumbnail**
+- The thumbnail at the top of this file uses the Dropbox link you provided (`raw=1`). Dropbox could not be reached from the build environment, so the image was **not** downloaded or checked there. If it does not show on GitHub, download the image once, save it as `assets/thumbnail.png`, and replace the `src` of the first `<img>` with `assets/thumbnail.png`.
+
+## Troubleshooting
+
+**`attempt to call a nil value` right after the `loadstring` line**
+The library failed to load - usually a stale GitHub raw cache shortly after a push, or a restricted `loadstring`/HTTP function. Wait about 60 seconds and re-run, or try another executor.
+
+**An icon name shows nothing**
+Names are exact (`sword`, not `Sword `). Check the [gallery](#icon-gallery) or `MugiHub.Library:GetIcons()`. Unknown names are ignored silently.
+
+**An image link shows nothing**
+The link must lead to an image (or to a page with an `og:image`). Your executor needs `request`, `writefile` and `getcustomasset`. Try `rbxassetid://...` to confirm the rest works, and `MugiHub.Library:ClearImageCache()` if an old broken file was cached.
+
+**Configs do not appear in the dropdown**
+Press **Refresh list**. Your executor needs `writefile`, `readfile`, `isfile` and `listfiles`. A config is hidden only when both the device and the account differ from the ones that saved it.
+
+**Auto save never saves**
+It needs a selected/typed config name, flagged components (`Flag = "..."`), and it starts about 3 seconds after the window opens (or after the auto load finishes).
+
+**Slider won't accept decimals**
+Set `Increment` to a decimal value, e.g. `Increment = 0.1`.
+
+**Webhook isn't sending**
+- Confirm `URL` is set and correct
+- Confirm your executor supports HTTP requests (`syn.request`, `http.request`, `request`, or `http_request`)
+- Check `config:GetStats()` - a rising `failed` count means the URL or request itself is failing
+- Try `config:Flush()` to force-send whatever is queued
+
+## License
+
+MIT - use it, fork it, ship it.

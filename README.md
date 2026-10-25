@@ -26,11 +26,12 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Library Reference](#library-reference)
 - [Window API](#window-api)
 - [Icons](#icons)
 - [Images and Links](#images-and-links)
 - [Window Background](#window-background)
-- [Bubble (Minimize Button)](#bubble-minimize-button)
+- [Bubble and Topbar Button](#bubble-and-topbar-button)
 - [Tags API](#tags-api)
 - [Tab and Section API](#tab-and-section-api)
 - [Components](#components)
@@ -55,7 +56,7 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
   - [Quick Start: API Mode (Key = true)](#quick-start-api-mode-key--true)
   - [Setting Up Providers, Get Key URL and Discord](#setting-up-providers-get-key-url-and-discord)
   - [Integrating With a MugiHub Window](#integrating-with-a-mugihub-window)
-  - [Complete Example With Both Methods Prepared](#complete-example-with-several-passwords)
+  - [Complete Example With Several Passwords](#complete-example-with-several-passwords)
   - [Configuration Structure](#configuration-structure)
   - [Key and Password Options](#key-and-password-options)
   - [Requirements and Platform Notes](#requirements-and-platform-notes)
@@ -76,6 +77,12 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
   - [Error Handling](#error-handling)
   - [Security Model and Known Limitations](#security-model-and-known-limitations)
 - [Color Picker Popup](#color-picker-popup)
+- [Popups](#popups)
+  - [Quick Start: Toggle That Opens a Popup](#quick-start-toggle-that-opens-a-popup)
+  - [Popup Options](#popup-options)
+  - [Popup Methods](#popup-methods)
+  - [Custom Content](#custom-content)
+  - [Popup Behavior and Limits](#popup-behavior-and-limits)
 - [Notifications](#notifications)
 - [Search](#search)
 - [Webhook (Optional)](#webhook-optional)
@@ -139,7 +146,8 @@ Everything that depends on an executor function degrades quietly: if a function 
 
 ## Features
 
-- **Draggable window** with a minimize bubble you can fully customize (icon name, SVG, or any image link)
+- **Draggable window** with a minimize button in two types: a draggable bubble or a **Topbar** pill with icon and title next to the Roblox chat button, both with any icon (name, SVG or image link)
+- **Popups** - draggable panels with a red X, adjustable width, a toggle link that switches the toggle off when the popup is closed, and free custom content
 - **Compact black + white gradient look** inspired by Rayfield Gen 2: section cards, white accents, no pink
 - **Animated border** - a white gradient runs around the window edge while the stroke softly fades
 - **Red rounded-square close button** with a clean X, plus minimize button and confirmation dialog
@@ -194,6 +202,29 @@ Section:AddConfigManager({})
 MugiHub.Library:SetNotification({Type = "success", Content = "Loaded!", Delay = 3})
 ```
 
+## Library Reference
+
+Everything on the MugiHub.Library table:
+
+| Member | Description |
+|---|---|
+| CreateWindow(config) | Create a window. See [Window API](#window-api). |
+| CreateKeySystem(config) | Create the Key System. See [Key System](#key-system). |
+| SetNotification(config) and Notify(config) | Show a notification. Notify is the same function under a second name. See [Notifications](#notifications). |
+| RegisterIcon(name, source), HasIcon(name), GetIcons() | Icon registry. See [Icons](#icons). |
+| ClearImageCache() | Delete cached downloaded images. |
+| SaveConfig, LoadConfig, DeleteConfig, GetConfigs, RescanConfigs, LoadAutoConfig, OnConfigsChanged | Config system. See [Configs](#configs-hwid--account). |
+| SetAutoLoad(name), GetAutoLoad() | Set or read the config that loads at start. |
+| SetAutoSave(name), GetAutoSave() | Set or read the config that saves after changes. |
+| GetOwner() | Returns a table with Hwid and Account, both one-way hashes used for config ownership. |
+| RefreshOwner() | Re-read the owner hashes and return them. |
+| MarkDirty() | Tell auto save that something changed. Flagged components call it for you. |
+| Flags | Table that returns the current value of any flagged component, for example Flags.AutoFarm. |
+| Elements | Registry of flagged components, with Get and Set functions per flag. |
+| Loading | True while a config is being applied. |
+| Unloaded | True after the window is destroyed. |
+| ConfigFolder, LegacyFolder | Folder names used for configs and for older config files. |
+
 ## Window API
 
 ```lua
@@ -218,7 +249,8 @@ Named fields can be used instead of (or together with) positions:
 | `BackgroundTransparency` | Image transparency, default `0.35` |
 | `BackgroundDim` | Black overlay transparency, default `0.45` |
 | `BackgroundFit` | `"crop"` (default), `"fit"` or `"stretch"` |
-| `Bubble` | Bubble icon: a string or `{Icon, Size, Position}` (see [Bubble](#bubble-minimize-button)) |
+| `Bubble` | Minimize/open button: an icon string or `{Type, Icon, Size, Position, Title, Offset}` (see [Bubble and Topbar Button](#bubble-and-topbar-button)) |
+| `BubbleType` | `"Draggable"` (default) or `"Topbar"`; same as `Bubble.Type` |
 
 | Method | Description |
 |---|---|
@@ -227,7 +259,10 @@ Named fields can be used instead of (or together with) positions:
 | `Window:SetBackground(source, {Fit, Transparency, Dim})` | Set or replace the background image |
 | `Window:ClearBackground()` | Remove the background |
 | `Window:SetBackgroundTransparency(n)` | Change background image transparency |
-| `Window:SetBubbleIcon(source)` | Change the bubble icon at runtime |
+| `Window:SetBubbleIcon(source)` | Change the bubble or topbar icon at runtime |
+| `Window:SetBubbleType(type)` / `Window:GetBubbleType()` | Switch between `"Draggable"` and `"Topbar"`, or read the current type |
+| `Window:SetBubbleTitle(text)` | Change the topbar button text |
+| `Window:CreatePopup({...})` | Create a draggable popup panel (see [Popups](#popups)) |
 | `Window:ColorPicker({Title, Color, Callback, OnDone, OnCancel})` | Open the popup color picker without a component |
 | `Window:AddTab({name, icon})` | Create a tab |
 | `Window:AddTabDivider(text)` | Group label between tabs |
@@ -269,7 +304,7 @@ print(MugiHub.Library:HasIcon("sword"))   -- true
 print(#MugiHub.Library:GetIcons())        -- number of registered names
 ```
 
-The SVG parser understands `M L H V C S Q T A Z` (absolute and relative), `<path>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, `<polygon>` and `<rect>`. Icons are stroke icons (stroke width 1.75 on a 24x24 grid); fills are not drawn for custom SVG text.
+The SVG parser understands `M L H V C S Q T A Z` (absolute and relative), `<path>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, `<polygon>` and `<rect>`. Icons are stroke icons (default stroke width about 2.05 on a 24x24 grid, never thinner than 1.75 pixels); fills are not drawn for custom SVG text.
 
 ## Images and Links
 
@@ -302,25 +337,52 @@ Window:ClearBackground()
 
 Pass a Pinterest/page link and the library uses the page's preview image.
 
-## Bubble (Minimize Button)
+## Bubble and Topbar Button
 
-The round draggable button shown when the window is minimized.
+The button that brings the window back after it is minimized has **two types**. Pick one with the Type option of the Bubble field (or the top-level BubbleType option). The default is Draggable, so existing scripts behave exactly as before.
+
+| Type | What it is |
+|---|---|
+| Draggable | A round floating button that appears when the window is minimized. You can drag it anywhere on screen (it stays inside the screen), and tapping it opens the window. |
+| Topbar | A small pill button with an icon and a title, placed in the Roblox top bar right after the core buttons (menu and chat). It is always visible, and tapping it opens or closes the window. |
+
+Options of the Bubble field. It can be a plain icon source, or a table with these entries:
+
+| Option | Applies to | Default | Description |
+|---|---|---|---|
+| Icon (or Image, or the first entry) | Both | Window icon | Icon source: a name, SVG, asset id or any image link. |
+| Type | Both | Draggable | Draggable or Topbar. The words topbarplus and roblox are accepted as aliases for Topbar. |
+| Size | Draggable | 42 | Diameter in pixels. |
+| Position | Draggable | Top left area | A UDim2 start position. |
+| Title | Topbar | Window title | Text shown next to the icon. |
+| Offset | Topbar | Vector2 0, 0 | Pixel nudge added to the automatic position, useful if another top bar item overlaps. |
 
 ```lua
--- from the window icon (default)
-MugiHub.Library:CreateWindow({"Title", "", 105, UDim2.fromOffset(480, 275), Enum.KeyCode.RightControl, "sword"})
-
--- fully custom
-MugiHub.Library:CreateWindow({
-    Title = "Title",
-    Bubble = { Icon = "https://i.imgur.com/abc.png", Size = 48, Position = UDim2.new(0.05, 0, 0.1, 0) },
+local Window = MugiHub.Library:CreateWindow({
+    Title = "My Hub",
+    Icon = "hub",
+    Bubble = { Type = "Topbar", Icon = "hub", Title = "My Hub" },
 })
 
-Window:SetBubbleIcon("shield")      -- change at runtime
-Window:SetBubbleIcon("rbxassetid://123")
+local Floating = MugiHub.Library:CreateWindow({
+    Title = "My Hub",
+    Bubble = { Type = "Draggable", Icon = "https://i.imgur.com/abc.png", Size = 48, Position = UDim2.new(0.05, 0, 0.1, 0) },
+})
+
+Window:SetBubbleType("Draggable")   -- switch at runtime
+Window:SetBubbleType("Topbar")
+Window:SetBubbleTitle("New title")  -- topbar text
+Window:SetBubbleIcon("shield")      -- icon for both types
+print(Window:GetBubbleType())       -- "Draggable" or "Topbar"
 ```
 
-It stays inside the screen while dragging and keeps its animated border.
+**How the Topbar type is placed.** MugiHub does not load the TopbarPlus module. It builds its own pill in a separate screen interface and places it using Roblox's official GuiService TopbarInset property, which describes the free area of the top bar after the core controls. The button is positioned at the start of that area, vertically centered, and moves again whenever the inset or the screen size changes. If the property cannot be read, a fixed fallback of 164 pixels from the left is used. While the window is open the pill border is brighter; the window minimize button and the keybind still work and simply change that state.
+
+**Topbar notes and limits.**
+- Other items that executors or games add to the top bar are not part of the inset, so they can overlap the pill. Use the Offset option to move it.
+- Only left-side placement exists, and there is one button per window.
+- In Topbar mode the floating bubble is never shown.
+- The Topbar placement has not been verified on a real Roblox client or executor.
 
 ## Tags API
 
@@ -377,6 +439,8 @@ local Toggle = Section:AddToggle({ "Feature", false, function(value) end })
 Toggle.Set(true)
 print(Toggle.Get())
 ```
+
+Optional `Content` (a description line) and `Popup` (a popup object that opens and closes with the toggle, see [Popups](#popups)).
 
 ### Slider
 
@@ -1204,6 +1268,113 @@ Window:ColorPicker({
 })
 ```
 
+## Popups
+
+A popup is a small draggable panel that belongs to a window. It is meant as a helper surface: settings for a feature, a mini panel, an info card or anything else you decide. Create one with the CreatePopup method of the window.
+
+Popups keep the MugiHub monochrome style. Components placed inside them (buttons, toggles, sliders, inputs, dropdowns and so on) are the normal MugiHub components and keep the normal MugiHub look; the popup itself puts no limit on what else you place in it.
+
+### Quick Start: Toggle That Opens a Popup
+
+```lua
+local Tab = Window:AddTab({"Combat", "sword"})
+local Section = Tab:AddSection("Aimbot")
+
+local Popup = Window:CreatePopup({
+    Title = "Aimbot Settings",
+    Icon = "settings",
+    Width = 300,
+    Height = 240,
+})
+
+Popup:AddSlider({ Name = "FOV", Min = 30, Max = 120, Default = 70, Flag = "AimFov" })
+Popup:AddToggle({ Name = "Wall check", Default = true, Flag = "AimWall" })
+
+Section:AddToggle({
+    Name = "Aimbot",
+    Default = false,
+    Popup = Popup,
+    Callback = function(enabled) print("Aimbot:", enabled) end,
+})
+```
+
+What happens:
+- Turning the Aimbot toggle on opens the popup, and turning it off closes the popup.
+- Pressing the red X in the popup closes it and **turns the toggle off automatically**. The toggle callback runs with false, exactly as if the user had switched it off.
+- If the toggle starts with Default set to true, the popup opens when the toggle is created.
+- The popup must be created before the toggle, because the toggle receives the popup object.
+
+You can also link them the other way: give the popup a Toggle option, or call BindToggle later, when you created the toggle first and open the popup yourself from its callback.
+
+```lua
+local Popup = Window:CreatePopup({ Title = "Extra", Toggle = MyToggle })
+```
+
+The link works in both directions: opening or closing the popup from code also moves the bound toggle, and the toggle callback runs.
+
+### Popup Options
+
+| Option | Default | Description |
+|---|---|---|
+| Title (or the first entry, or Name) | Popup | Header text. |
+| Icon | None | Header icon: a name, SVG, asset id or any image link. |
+| Width | 300 | Width in pixels, between 180 and 800. |
+| Height | 260 | Height in pixels, between 100 and 700. Taller content scrolls inside the popup. |
+| Position | Screen center | A UDim2 position of the popup center. |
+| Draggable | true | Lets the user drag the popup by its header. It is kept inside the screen after dragging. |
+| Toggle | None | A toggle object to bind. Closing the popup turns it off. |
+| Open | false | Open the popup immediately. |
+| OnOpen | None | Function called with the popup when it opens. |
+| OnClose | None | Function called with the popup when it closes, from the X, from code or from the toggle. |
+
+### Popup Methods
+
+| Method | Description |
+|---|---|
+| Open, Close, Toggle, SetOpen(bool), IsOpen | Show, hide, flip, set or read the state. Opening and closing are animated. |
+| BindToggle(toggle) | Bind a toggle object. Returns whether the object was valid. |
+| SetTitle(text), SetIcon(source) | Change the header. |
+| SetWidth(n), SetHeight(n) | Resize with a short animation, using the same limits as the options. |
+| SetPosition(udim2) | Move the popup. |
+| AddSection(config) | Add a titled section card, same as a normal Section. Returns a section object. |
+| AddButton, AddToggle, AddSlider, AddInput, AddDropdown, AddKeybind, AddColorPicker, AddLabel, AddProgress, AddParagraph, AddReadMe, AddSeparator, AddLine, AddSocial, AddCopyGroup, AddConfigManager | The same components and options documented in [Components](#components), added straight into the popup. |
+| AddCustom(classNameOrInstance, properties) | Add any GuiObject of your own. See below. |
+| Destroy() | Remove the popup. |
+
+Fields: Frame (the popup frame), Content (the scrolling area that holds everything) and Header.
+
+### Custom Content
+
+Anything that is not a MugiHub component is yours to design.
+
+- **AddCustom** takes a class name such as Frame, TextLabel or ImageLabel, or an instance you already created, plus an optional table of properties. It must be a GuiObject. The item is placed in the popup in order and returned, so you can fill it with children, layouts, images, text or scripts of your own.
+- **Content** is the scrolling frame of the popup. You can parent your own instances to it directly. Give them a LayoutOrder if you care about the order.
+- Components added with the Add methods are grouped together. After an AddCustom or AddSection call, the next component starts a new group below it, so the order on screen always matches the order of your calls.
+
+```lua
+local Card = Popup:AddCustom("Frame", {
+    Size = UDim2.new(1, 0, 0, 80),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+})
+local Text = Instance.new("TextLabel")
+Text.BackgroundTransparency = 1
+Text.Size = UDim2.new(1, 0, 1, 0)
+Text.Text = "Anything you want"
+Text.TextColor3 = Color3.new(1, 1, 1)
+Text.Parent = Card
+
+Popup:AddButton({ "Close me", "Buttons keep the MugiHub style", function() Popup:Close() end })
+```
+
+### Popup Behavior and Limits
+
+- Popups sit above the window. Dialogs and the color picker open inside the window, so while one of them is shown the window is raised above popups, then returns to normal.
+- Clicking a popup brings it in front of other popups. Dragging works with mouse and touch.
+- The popup follows the window scale (Window:SetScale) and is removed when the window is destroyed.
+- Components inside a popup are not included in the window search. Their Flag values still work with configs.
+- The Add methods create real components, so every component option and return value described in [Components](#components) applies.
+- Popups have not been verified on a real Roblox client or executor.
+
 ## Notifications
 
 ```lua
@@ -1599,120 +1770,4 @@ Every icon, grouped by category. The name under each tile is what you pass to `A
 <tr>
 <td align="center" width="16%"><img src="icons/tiles/search.svg" width="56" height="56" alt="search"><br><sub><code>search</code></sub></td>
 <td align="center" width="16%"><img src="icons/tiles/zoom-in.svg" width="56" height="56" alt="zoom-in"><br><sub><code>zoom-in</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/zoom-out.svg" width="56" height="56" alt="zoom-out"><br><sub><code>zoom-out</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/filter.svg" width="56" height="56" alt="filter"><br><sub><code>filter</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/sort.svg" width="56" height="56" alt="sort"><br><sub><code>sort</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/eye.svg" width="56" height="56" alt="eye"><br><sub><code>eye</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/eye-off.svg" width="56" height="56" alt="eye-off"><br><sub><code>eye-off</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/heart.svg" width="56" height="56" alt="heart"><br><sub><code>heart</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/star.svg" width="56" height="56" alt="star"><br><sub><code>star</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bookmark.svg" width="56" height="56" alt="bookmark"><br><sub><code>bookmark</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/flag.svg" width="56" height="56" alt="flag"><br><sub><code>flag</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/pin.svg" width="56" height="56" alt="pin"><br><sub><code>pin</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/mouse-pointer.svg" width="56" height="56" alt="mouse-pointer"><br><sub><code>mouse-pointer</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/mouse.svg" width="56" height="56" alt="mouse"><br><sub><code>mouse</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/hand.svg" width="56" height="56" alt="hand"><br><sub><code>hand</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/move.svg" width="56" height="56" alt="move"><br><sub><code>move</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/maximize.svg" width="56" height="56" alt="maximize"><br><sub><code>maximize</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/minimize.svg" width="56" height="56" alt="minimize"><br><sub><code>minimize</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/send.svg" width="56" height="56" alt="send"><br><sub><code>send</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/power.svg" width="56" height="56" alt="power"><br><sub><code>power</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/log-in.svg" width="56" height="56" alt="log-in"><br><sub><code>log-in</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/log-out.svg" width="56" height="56" alt="log-out"><br><sub><code>log-out</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/grip.svg" width="56" height="56" alt="grip"><br><sub><code>grip</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/pointer-click.svg" width="56" height="56" alt="pointer-click"><br><sub><code>pointer-click</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/erase.svg" width="56" height="56" alt="erase"><br><sub><code>erase</code></sub></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### Files (34)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/file.svg" width="56" height="56" alt="file"><br><sub><code>file</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-text.svg" width="56" height="56" alt="file-text"><br><sub><code>file-text</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-plus.svg" width="56" height="56" alt="file-plus"><br><sub><code>file-plus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-minus.svg" width="56" height="56" alt="file-minus"><br><sub><code>file-minus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-check.svg" width="56" height="56" alt="file-check"><br><sub><code>file-check</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-code.svg" width="56" height="56" alt="file-code"><br><sub><code>file-code</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/file-image.svg" width="56" height="56" alt="file-image"><br><sub><code>file-image</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-audio.svg" width="56" height="56" alt="file-audio"><br><sub><code>file-audio</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-video.svg" width="56" height="56" alt="file-video"><br><sub><code>file-video</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-archive.svg" width="56" height="56" alt="file-archive"><br><sub><code>file-archive</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-lock.svg" width="56" height="56" alt="file-lock"><br><sub><code>file-lock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-search.svg" width="56" height="56" alt="file-search"><br><sub><code>file-search</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/file-json.svg" width="56" height="56" alt="file-json"><br><sub><code>file-json</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/folder.svg" width="56" height="56" alt="folder"><br><sub><code>folder</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/folder-open.svg" width="56" height="56" alt="folder-open"><br><sub><code>folder-open</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/folder-plus.svg" width="56" height="56" alt="folder-plus"><br><sub><code>folder-plus</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/folder-lock.svg" width="56" height="56" alt="folder-lock"><br><sub><code>folder-lock</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/folder-tree.svg" width="56" height="56" alt="folder-tree"><br><sub><code>folder-tree</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/save.svg" width="56" height="56" alt="save"><br><sub><code>save</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/clipboard.svg" width="56" height="56" alt="clipboard"><br><sub><code>clipboard</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/clipboard-check.svg" width="56" height="56" alt="clipboard-check"><br><sub><code>clipboard-check</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/notebook.svg" width="56" height="56" alt="notebook"><br><sub><code>notebook</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/book.svg" width="56" height="56" alt="book"><br><sub><code>book</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/book-open.svg" width="56" height="56" alt="book-open"><br><sub><code>book-open</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/archive.svg" width="56" height="56" alt="archive"><br><sub><code>archive</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/paperclip.svg" width="56" height="56" alt="paperclip"><br><sub><code>paperclip</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/image.svg" width="56" height="56" alt="image"><br><sub><code>image</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/images.svg" width="56" height="56" alt="images"><br><sub><code>images</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/file-spreadsheet.svg" width="56" height="56" alt="file-spreadsheet"><br><sub><code>file-spreadsheet</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/box.svg" width="56" height="56" alt="box"><br><sub><code>box</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/database-export.svg" width="56" height="56" alt="database-export"><br><sub><code>database-export</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud-file.svg" width="56" height="56" alt="cloud-file"><br><sub><code>cloud-file</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/history.svg" width="56" height="56" alt="history"><br><sub><code>history</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/inbox.svg" width="56" height="56" alt="inbox"><br><sub><code>inbox</code></sub></td>
-<td></td>
-<td></td>
-</tr>
-</table>
-
-### System (36)
-
-<table>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/cpu.svg" width="56" height="56" alt="cpu"><br><sub><code>cpu</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/hard-drive.svg" width="56" height="56" alt="hard-drive"><br><sub><code>hard-drive</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/server.svg" width="56" height="56" alt="server"><br><sub><code>server</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/monitor.svg" width="56" height="56" alt="monitor"><br><sub><code>monitor</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/laptop.svg" width="56" height="56" alt="laptop"><br><sub><code>laptop</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/smartphone.svg" width="56" height="56" alt="smartphone"><br><sub><code>smartphone</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/tablet.svg" width="56" height="56" alt="tablet"><br><sub><code>tablet</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/keyboard.svg" width="56" height="56" alt="keyboard"><br><sub><code>keyboard</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/printer.svg" width="56" height="56" alt="printer"><br><sub><code>printer</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/wifi.svg" width="56" height="56" alt="wifi"><br><sub><code>wifi</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/wifi-off.svg" width="56" height="56" alt="wifi-off"><br><sub><code>wifi-off</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/bluetooth.svg" width="56" height="56" alt="bluetooth"><br><sub><code>bluetooth</code></sub></td>
-</tr>
-<tr>
-<td align="center" width="16%"><img src="icons/tiles/battery.svg" width="56" height="56" alt="battery"><br><sub><code>battery</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/battery-charging.svg" width="56" height="56" alt="battery-charging"><br><sub><code>battery-charging</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/plug.svg" width="56" height="56" alt="plug"><br><sub><code>plug</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles/cloud.svg" width="56" height="56" alt="cloud"><br><sub><code>cloud</code></sub></td>
-<td align="center" width="16%"><img src="icons/tiles
+<td align="center" width="16%"><img src="icons/tiles/zoom-out.svg" width="56" hei

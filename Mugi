@@ -6,6 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local HttpService = game:GetService("HttpService")
 local TextService = game:GetService("TextService")
+local GuiService = game:GetService("GuiService")
 local Player = Players.LocalPlayer
 
 local function SafeGetExecutor()
@@ -2875,10 +2876,22 @@ function MugiHub_Library:CreateWindow(Config)
 	local BubbleSize = 42
 	local BubbleSrc = (Icon ~= "" and Icon) or "hub"
 	local BubblePos = UDim2.new(0.1021, 0, 0.0743, 0)
+	local BubbleMode = "Draggable"
+	local BubbleTitle = nil
+	local BubbleOffset = Vector2.new(0, 0)
+	local function ParseBubbleMode(V)
+		local M = string.lower(tostring(V or ""))
+		if M == "topbar" or M == "topbarplus" or M == "roblox" or M == "roblox topbar" then return "Topbar" end
+		return "Draggable"
+	end
+	if type(Config.BubbleType) == "string" then BubbleMode = ParseBubbleMode(Config.BubbleType) end
 	if type(BubbleCfg) == "table" then
 		BubbleSrc = BubbleCfg.Icon or BubbleCfg.Image or BubbleCfg[1] or BubbleSrc
 		BubbleSize = tonumber(BubbleCfg.Size) or BubbleSize
 		if typeof(BubbleCfg.Position) == "UDim2" then BubblePos = BubbleCfg.Position end
+		if BubbleCfg.Type ~= nil then BubbleMode = ParseBubbleMode(BubbleCfg.Type) end
+		if BubbleCfg.Title ~= nil then BubbleTitle = tostring(BubbleCfg.Title) end
+		if typeof(BubbleCfg.Offset) == "Vector2" then BubbleOffset = BubbleCfg.Offset end
 	elseif BubbleCfg ~= nil and BubbleCfg ~= false and BubbleCfg ~= "" then
 		BubbleSrc = BubbleCfg
 	end
@@ -2892,7 +2905,11 @@ function MugiHub_Library:CreateWindow(Config)
 	Loop(BubbleGradient, { Rotation = 360 }, 4)
 	Loop(BubbleStroke, { Transparency = 0.7 }, 1.6, true, Enum.EasingStyle.Sine)
 	local BubbleContent = nil
+	local CurrentBubbleSrc = BubbleSrc
+	local RefreshTopbarIcon = function() end
 	local function ApplyBubble(Src)
+		CurrentBubbleSrc = Src
+		RefreshTopbarIcon()
 		if BubbleContent then BubbleContent:Destroy() end
 		BubbleContent = Custom:Create("Frame", {
 			BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true, Size = UDim2.new(1, 0, 1, 0), Name = "BubbleContent",
@@ -2945,9 +2962,11 @@ function MugiHub_Library:CreateWindow(Config)
 		end
 	end))
 
+	local UpdateTopbarState = function() end
 	local function SetOpen(State)
 		if Destroyed then return end
 		Opened = State
+		UpdateTopbarState()
 		if State then
 			Bubble.Visible = false
 			DropShadowHolder.Visible = true
@@ -2957,10 +2976,97 @@ function MugiHub_Library:CreateWindow(Config)
 			task.delay(0.15, function()
 				if Destroyed or Opened then return end
 				DropShadowHolder.Visible = false
-				Bubble.Visible = true
+				Bubble.Visible = BubbleMode == "Draggable"
 			end)
 		end
 	end
+
+	local TopGui, TopBtn, TopStroke, TopLabel, TopSlot, TopIcon = nil, nil, nil, nil, nil, nil
+	local function TopbarMetrics()
+		local MinX, MinY, Height = 164, 0, 58
+		local Ok, Inset = pcall(function() return GuiService.TopbarInset end)
+		if Ok and typeof(Inset) == "Rect" and Inset.Width > 0 and Inset.Height > 0 then
+			MinX, MinY, Height = Inset.Min.X, Inset.Min.Y, Inset.Height
+		end
+		return MinX, MinY, Height
+	end
+	local function PlaceTopbar()
+		if not TopBtn or Destroyed then return end
+		local MinX, MinY, Height = TopbarMetrics()
+		local H = math.clamp(Height - 14, 28, 44)
+		TopBtn.Size = UDim2.new(0, 0, 0, H)
+		TopBtn.Position = UDim2.new(0, MinX + 8 + BubbleOffset.X, 0, MinY + math.floor((Height - H) / 2) + BubbleOffset.Y)
+	end
+	RefreshTopbarIcon = function()
+		if not TopSlot then return end
+		if TopIcon then pcall(function() TopIcon.Destroy() end) TopIcon = nil end
+		TopIcon = Custom:MakeIcon(TopSlot, CurrentBubbleSrc, {
+			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 18, 0, 18),
+			Color = Theme.White, Name = "TopbarIcon",
+		})
+		if not TopIcon then
+			TopIcon = Custom:MakeIcon(TopSlot, "hub", {
+				AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 18, 0, 18),
+				Color = Theme.White, Name = "TopbarIcon",
+			})
+		end
+	end
+	UpdateTopbarState = function()
+		if TopStroke then Custom:Tween(TopStroke, 0.2, { Transparency = Opened and 0.35 or 0.8 }) end
+	end
+	local function BuildTopbar()
+		if TopGui then return end
+		TopGui = Custom:Create("ScreenGui", {
+			Name = "MugiHubTopbar", ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false,
+			IgnoreGuiInset = true, DisplayOrder = 99,
+		}, Custom:GetGuiParent())
+		TopBtn = Custom:Create("TextButton", {
+			Text = "", AutoButtonColor = false, AutomaticSize = Enum.AutomaticSize.X, BackgroundColor3 = Theme.Dark,
+			BackgroundTransparency = 0.1, BorderSizePixel = 0, ClipsDescendants = true, Size = UDim2.new(0, 0, 0, 36), Name = "TopbarButton",
+		}, TopGui)
+		Custom:Round(TopBtn)
+		TopStroke = Custom:Stroke(TopBtn, Theme.White, Opened and 0.35 or 0.8, 1)
+		Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 14) }, TopBtn)
+		Custom:Create("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal, VerticalAlignment = Enum.VerticalAlignment.Center,
+			SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 7),
+		}, TopBtn)
+		TopSlot = Custom:Create("Frame", {
+			BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 18, 0, 18), Name = "IconSlot",
+		}, TopBtn)
+		TopLabel = Custom:Label(TopBtn, {
+			Text = BubbleTitle or Title, TextColor3 = Theme.White, TextSize = 12, AutomaticSize = Enum.AutomaticSize.X,
+			Size = UDim2.new(0, 0, 0, 18), LayoutOrder = 2, Name = "Title",
+		})
+		TopBtn.MouseEnter:Connect(function() Custom:Tween(TopBtn, 0.15, { BackgroundTransparency = 0.02 }) end)
+		TopBtn.MouseLeave:Connect(function() Custom:Tween(TopBtn, 0.2, { BackgroundTransparency = 0.1 }) end)
+		TopBtn.Activated:Connect(function()
+			CircleClick(TopBtn)
+			SetOpen(not Opened)
+		end)
+		RefreshTopbarIcon()
+		pcall(function() Track(GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(PlaceTopbar)) end)
+		pcall(function()
+			local Cam = workspace.CurrentCamera
+			if Cam then Track(Cam:GetPropertyChangedSignal("ViewportSize"):Connect(PlaceTopbar)) end
+		end)
+		Track(MugiHubGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(PlaceTopbar))
+	end
+	local function ApplyBubbleMode(Mode)
+		BubbleMode = ParseBubbleMode(Mode)
+		if BubbleMode == "Topbar" then
+			BuildTopbar()
+			TopGui.Enabled = true
+			Bubble.Visible = false
+			PlaceTopbar()
+			task.defer(PlaceTopbar)
+			UpdateTopbarState()
+		else
+			if TopGui then TopGui.Enabled = false end
+			Bubble.Visible = not Opened and not Destroyed
+		end
+	end
+	ApplyBubbleMode(BubbleMode)
 
 	Bubble.Activated:Connect(function()
 		if BMoved then BMoved = false return end
@@ -3058,6 +3164,7 @@ function MugiHub_Library:CreateWindow(Config)
 		for _, c in ipairs(Conns) do pcall(function() c:Disconnect() end) end
 		for _, t in ipairs(Loops) do pcall(function() t:Cancel() end) end
 		pcall(function() MugiHubGui:Destroy() end)
+		if TopGui then pcall(function() TopGui:Destroy() end) end
 	end
 
 	CancelButton.Activated:Connect(function()
@@ -3083,6 +3190,8 @@ function MugiHub_Library:CreateWindow(Config)
 	local Tabs = {}
 	local ActiveTab = nil
 	local TabOrder = 0
+	local PopupList = {}
+	local PopupTop = 2
 
 	function Funcs:AddTabDivider(DividerText)
 		TabOrder = TabOrder + 1
@@ -3115,6 +3224,7 @@ function MugiHub_Library:CreateWindow(Config)
 		local TSz = TextService:GetTextSize(DText, 11, Enum.Font.Gotham, Vector2.new(206, 1000))
 		local DH = 34 + TSz.Y + 12 + 28 + 12
 
+		DropShadowHolder.ZIndex = 100
 		local DBackdrop = Custom:Create("Frame", {
 			Active = true, BackgroundColor3 = Theme.Black, BackgroundTransparency = 1, BorderSizePixel = 0,
 			Size = UDim2.new(1, 0, 1, 0), ZIndex = 59, Name = "DialogBackdrop",
@@ -3146,6 +3256,7 @@ function MugiHub_Library:CreateWindow(Config)
 			Shrink.Completed:Wait()
 			DBackdrop:Destroy()
 			DFrame:Destroy()
+			if not Destroyed then DropShadowHolder.ZIndex = 1 end
 		end
 		local Count = #Btns
 		local Row = Custom:Create("Frame", {
@@ -3180,6 +3291,7 @@ function MugiHub_Library:CreateWindow(Config)
 	function Funcs:SetScale(NewScale)
 		Base = math.clamp(tonumber(NewScale) or Base, 0.5, 1.5)
 		if Opened and not Destroyed then Custom:Tween(WindowScale, 0.2, { Scale = Base }) end
+		for _, Apply in ipairs(PopupList) do pcall(Apply) end
 	end
 
 
@@ -3424,6 +3536,7 @@ function MugiHub_Library:CreateWindow(Config)
 				if Ticket == My then
 					Overlay.Visible = false
 					Panel.Visible = false
+					DropShadowHolder.ZIndex = 1
 				end
 			end)
 		end
@@ -3514,6 +3627,7 @@ function MugiHub_Library:CreateWindow(Config)
 			Ticket = Ticket + 1
 			Shown = true
 			Overlay.BackgroundTransparency = 1
+			DropShadowHolder.ZIndex = 100
 			Overlay.Visible = true
 			Panel.Visible = true
 			PanelScale.Scale = FitScale() * 0.9
@@ -3543,6 +3657,12 @@ function MugiHub_Library:CreateWindow(Config)
 	function Funcs:SetBackground(Src, Opts) return ApplyBackground(Src, Opts) end
 	function Funcs:ClearBackground() ApplyBackground(nil) end
 	function Funcs:SetBubbleIcon(Src) ApplyBubble(Src) end
+	function Funcs:SetBubbleType(Mode) if not Destroyed then ApplyBubbleMode(Mode) end end
+	function Funcs:GetBubbleType() return BubbleMode end
+	function Funcs:SetBubbleTitle(Text)
+		BubbleTitle = tostring(Text)
+		if TopLabel then TopLabel.Text = BubbleTitle end
+	end
 	function Funcs:SetBackgroundTransparency(T)
 		BgImageT = tonumber(T) or BgImageT
 		BgImage.ImageTransparency = BgImageT
@@ -3553,15 +3673,248 @@ function MugiHub_Library:CreateWindow(Config)
 		if StartBg ~= nil and StartBg ~= "" and StartBg ~= false then task.defer(ApplyBackground, StartBg) end
 	end
 
+	local PopupComponents = {
+		"AddButton", "AddToggle", "AddSlider", "AddInput", "AddDropdown", "AddKeybind", "AddColorPicker", "AddLabel",
+		"AddProgress", "AddParagraph", "AddReadMe", "AddSeparator", "AddLine", "AddSocial", "AddCopyGroup", "AddConfigManager",
+	}
+
+	function Funcs:CreatePopup(PConfig)
+		if Destroyed then return nil end
+		if type(PConfig) == "string" then PConfig = { PConfig } end
+		PConfig = PConfig or {}
+		local PTitle = tostring(PConfig[1] or PConfig.Title or PConfig.Name or "Popup")
+		local PWidth = math.clamp(tonumber(PConfig.Width) or 300, 180, 800)
+		local PHeight = math.clamp(tonumber(PConfig.Height) or 260, 100, 700)
+		local Draggable = PConfig.Draggable ~= false
+		local OnOpen, OnClose = PConfig.OnOpen, PConfig.OnClose
+		local Popup = {}
+		local POpened = false
+		local PDestroyed = false
+		local BoundToggle = nil
+		local Ticket = 0
+		local CurrentSec = nil
+
+		local Frame = Custom:Create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Theme.White, BackgroundTransparency = 0.02, BorderSizePixel = 0,
+			ClipsDescendants = true, Position = typeof(PConfig.Position) == "UDim2" and PConfig.Position or UDim2.new(0.5, 0, 0.5, 0),
+			Size = UDim2.new(0, PWidth, 0, PHeight), Visible = false, ZIndex = 2, Name = "Popup",
+		}, MugiHubGui)
+		Custom:Corner(Frame, 12)
+		Custom:AddGradient(Frame, 125, Custom.GradientWindow)
+		local PStroke = Custom:Stroke(Frame, Theme.White, 0.25, 1.5)
+		local PStrokeGradient = Custom:AddGradient(PStroke, 0, Custom.GradientBorder)
+		local PLoop = Loop(PStrokeGradient, { Rotation = 360 }, 6)
+		local PScale = Custom:Create("UIScale", { Scale = Base * 0.9 }, Frame)
+
+		local PHead = Custom:Create("Frame", {
+			BackgroundTransparency = 1, BorderSizePixel = 0, Size = UDim2.new(1, 0, 0, 34), Name = "PopupHeader",
+		}, Frame)
+		local PTitleLabel = Custom:Label(PHead, {
+			Text = PTitle, TextColor3 = Theme.White, TextSize = 12, TextTruncate = Enum.TextTruncate.AtEnd,
+			Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -48, 1, 0), Name = "PopupTitle",
+		})
+		local PIconObj = nil
+		local function ApplyPopupIcon(Src)
+			if PIconObj then pcall(function() PIconObj.Destroy() end) PIconObj = nil end
+			if Src ~= nil and Src ~= false and Src ~= "" then
+				PIconObj = Custom:MakeIcon(PHead, Src, {
+					AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 10, 0.5, 0), Size = UDim2.new(0, 16, 0, 16),
+					Color = Theme.White, Name = "PopupIcon",
+				})
+			end
+			PTitleLabel.Position = UDim2.new(0, PIconObj and 32 or 12, 0, 0)
+			PTitleLabel.Size = UDim2.new(1, PIconObj and -68 or -48, 1, 0)
+		end
+		ApplyPopupIcon(PConfig.Icon)
+
+		local PClose = Custom:Create("TextButton", {
+			Text = "", AutoButtonColor = false, AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Theme.Red, BorderSizePixel = 0,
+			ClipsDescendants = true, Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.new(0, 22, 0, 22), Name = "PopupClose",
+		}, PHead)
+		Custom:Corner(PClose, 6)
+		for _, Rot in ipairs({ 45, -45 }) do
+			local Bar = Custom:Create("Frame", {
+				AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Theme.White, BorderSizePixel = 0,
+				Position = UDim2.new(0.5, 0, 0.5, 0), Rotation = Rot, Size = UDim2.new(0, 11, 0, 2), Name = "XBar",
+			}, PClose)
+			Custom:Round(Bar)
+		end
+		PClose.MouseEnter:Connect(function() Custom:Tween(PClose, 0.15, { BackgroundColor3 = Theme.RedHover }) end)
+		PClose.MouseLeave:Connect(function() Custom:Tween(PClose, 0.2, { BackgroundColor3 = Theme.Red }) end)
+
+		Custom:Create("Frame", {
+			BackgroundColor3 = Theme.White, BackgroundTransparency = 0.9, BorderSizePixel = 0,
+			Position = UDim2.new(0, 10, 0, 34), Size = UDim2.new(1, -20, 0, 1), Name = "PopupDivider",
+		}, Frame)
+		local PBody = Custom:Create("Frame", {
+			BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.new(0, 6, 0, 38), Size = UDim2.new(1, -12, 1, -44),
+			Name = "PopupBody",
+		}, Frame)
+		local PHolder = Custom:Create("Frame", {
+			BackgroundTransparency = 1, BorderSizePixel = 0, Visible = false, Size = UDim2.new(0, 0, 0, 0), Name = "PopupTabHolder",
+		}, Frame)
+		local PTab = Funcs:AddTab({ PTitle, "", __Detached = { Body = PBody, Holder = PHolder } })
+
+		local function Sec()
+			if not CurrentSec then CurrentSec = PTab:AddSection({ "Items", Flat = true }) end
+			return CurrentSec
+		end
+		for _, Name in ipairs(PopupComponents) do
+			Popup[Name] = function(_, ...)
+				local S = Sec()
+				return S[Name](S, ...)
+			end
+		end
+		function Popup:AddSection(SectionConfig)
+			CurrentSec = nil
+			return PTab:AddSection(SectionConfig)
+		end
+		function Popup:AddCustom(Item, Props)
+			local Inst = Item
+			if type(Item) == "string" then
+				local Ok, Made = pcall(Instance.new, Item)
+				Inst = Ok and Made or nil
+			end
+			if typeof(Inst) ~= "Instance" or not Inst:IsA("GuiObject") then return nil end
+			if type(Props) == "table" then
+				for K, V in pairs(Props) do pcall(function() Inst[K] = V end) end
+			end
+			Inst.LayoutOrder = #PTab.Frame:GetChildren() + 1
+			Inst.Parent = PTab.Frame
+			CurrentSec = nil
+			return Inst
+		end
+
+		local function ClampPopup()
+			local Scr = MugiHubGui.AbsoluteSize
+			local Pos, Sz = Frame.AbsolutePosition, Frame.AbsoluteSize
+			if Scr.X <= 0 or Scr.Y <= 0 then return end
+			local Dx = math.clamp(Pos.X, 0, math.max(Scr.X - Sz.X, 0)) - Pos.X
+			local Dy = math.clamp(Pos.Y, 0, math.max(Scr.Y - Sz.Y, 0)) - Pos.Y
+			if Dx ~= 0 or Dy ~= 0 then
+				local Cur = Frame.Position
+				Frame.Position = UDim2.new(Cur.X.Scale, Cur.X.Offset + Dx, Cur.Y.Scale, Cur.Y.Offset + Dy)
+			end
+		end
+
+		local PDrag, PDragStart, PDragPos = false, nil, nil
+		PHead.InputBegan:Connect(function(i)
+			if Draggable and (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then
+				PDrag = true
+				PDragStart = i.Position
+				PDragPos = Frame.Position
+				i.Changed:Connect(function()
+					if i.UserInputState == Enum.UserInputState.End then
+						PDrag = false
+						ClampPopup()
+					end
+				end)
+			end
+		end)
+		Track(UserInputService.InputChanged:Connect(function(i)
+			if PDrag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+				local d = i.Position - PDragStart
+				Frame.Position = UDim2.new(PDragPos.X.Scale, PDragPos.X.Offset + d.X, PDragPos.Y.Scale, PDragPos.Y.Offset + d.Y)
+			end
+		end))
+		Frame.InputBegan:Connect(function(i)
+			if POpened and (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then
+				PopupTop = math.min(PopupTop + 1, 90)
+				Frame.ZIndex = PopupTop
+			end
+		end)
+
+		local function SetPopupOpen(State)
+			if PDestroyed or Destroyed then return end
+			State = State and true or false
+			if POpened == State then return end
+			POpened = State
+			Ticket = Ticket + 1
+			local My = Ticket
+			if BoundToggle and BoundToggle.Get() ~= State then
+				pcall(BoundToggle.Set, State)
+			end
+			if State then
+				PopupTop = math.min(PopupTop + 1, 90)
+				Frame.ZIndex = PopupTop
+				Frame.Visible = true
+				PScale.Scale = Base * 0.9
+				Custom:Tween(PScale, 0.25, { Scale = Base }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+				if type(OnOpen) == "function" then task.spawn(OnOpen, Popup) end
+			else
+				PDrag = false
+				Custom:Tween(PScale, 0.15, { Scale = Base * 0.9 }, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+				task.delay(0.15, function()
+					if Ticket == My and not POpened and not PDestroyed then Frame.Visible = false end
+				end)
+				if type(OnClose) == "function" then task.spawn(OnClose, Popup) end
+			end
+		end
+
+		PClose.Activated:Connect(function()
+			CircleClick(PClose)
+			SetPopupOpen(false)
+		end)
+
+		function Popup:SetOpen(State) SetPopupOpen(State) end
+		function Popup:Open() SetPopupOpen(true) end
+		function Popup:Close() SetPopupOpen(false) end
+		function Popup:Toggle() SetPopupOpen(not POpened) end
+		function Popup:IsOpen() return POpened end
+		function Popup:BindToggle(ToggleObj)
+			if type(ToggleObj) == "table" and type(ToggleObj.Get) == "function" and type(ToggleObj.Set) == "function" then
+				BoundToggle = ToggleObj
+				return true
+			end
+			return false
+		end
+		function Popup:SetTitle(Text)
+			PTitle = tostring(Text)
+			PTitleLabel.Text = PTitle
+		end
+		function Popup:SetIcon(Src) ApplyPopupIcon(Src) end
+		function Popup:SetWidth(Value)
+			PWidth = math.clamp(tonumber(Value) or PWidth, 180, 800)
+			Custom:Tween(Frame, 0.15, { Size = UDim2.new(0, PWidth, 0, PHeight) })
+		end
+		function Popup:SetHeight(Value)
+			PHeight = math.clamp(tonumber(Value) or PHeight, 100, 700)
+			Custom:Tween(Frame, 0.15, { Size = UDim2.new(0, PWidth, 0, PHeight) })
+		end
+		function Popup:SetPosition(Pos)
+			if typeof(Pos) == "UDim2" then Frame.Position = Pos end
+		end
+		function Popup:Destroy()
+			if PDestroyed then return end
+			PDestroyed = true
+			POpened = false
+			BoundToggle = nil
+			pcall(function() PLoop:Cancel() end)
+			pcall(function() Frame:Destroy() end)
+		end
+
+		Popup.Frame = Frame
+		Popup.Content = PTab.Frame
+		Popup.Header = PHead
+		table.insert(PopupList, function()
+			if POpened and not PDestroyed then Custom:Tween(PScale, 0.2, { Scale = Base }) end
+		end)
+		if PConfig.Toggle ~= nil then Popup:BindToggle(PConfig.Toggle) end
+		if PConfig.Open == true then SetPopupOpen(true) end
+		return Popup
+	end
+
 	function Funcs:AddTab(Config)
 		local TabName = Config[1] or Config.Name or Config.Title or "Tab"
 		local TabIcon = Config[2] or Config.Icon or ""
+		local Det = type(Config.__Detached) == "table" and Config.__Detached or nil
+		local RegisterSearch = Det and function() end or RegisterSearch
 
 		TabOrder = TabOrder + 1
 		local TabBtn = Custom:Create("TextButton", {
 			Text = "", AutoButtonColor = false, BackgroundTransparency = 1, BorderSizePixel = 0,
 			ClipsDescendants = true, LayoutOrder = TabOrder, Size = UDim2.new(1, 0, 0, 26), Name = TabName .. "TabBtn",
-		}, ScrollTab)
+		}, Det and Det.Holder or ScrollTab)
 		Custom:Corner(TabBtn, 7)
 		local TabFill = Custom:Create("Frame", {
 			BackgroundColor3 = Theme.White, BackgroundTransparency = 1, BorderSizePixel = 0,
@@ -3588,8 +3941,8 @@ function MugiHub_Library:CreateWindow(Config)
 			CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			ScrollingDirection = Enum.ScrollingDirection.Y, ScrollBarThickness = 2,
 			ScrollBarImageColor3 = Theme.White, ScrollBarImageTransparency = 0.5,
-			Name = TabName .. "Frame", Visible = false,
-		}, LayersReal)
+			Name = TabName .. "Frame", Visible = Det ~= nil,
+		}, Det and Det.Body or LayersReal)
 		Custom:Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, TabFrame)
 		Custom:Create("UIPadding", { PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 1), PaddingRight = UDim.new(0, 6) }, TabFrame)
 
@@ -3630,8 +3983,10 @@ function MugiHub_Library:CreateWindow(Config)
 		TabFuncs.IconImg = TabIconImg
 		TabBtn.Activated:Connect(function() CircleClick(TabBtn) SelectTab() end)
 		TabFuncs.Select = SelectTab
-		table.insert(Tabs, TabFuncs)
-		if #Tabs == 1 then SelectTab() end
+		if not Det then
+			table.insert(Tabs, TabFuncs)
+			if #Tabs == 1 then SelectTab() end
+		end
 
 		function TabFuncs:AddSection(SectionConfig)
 			if type(SectionConfig) == "string" then SectionConfig = { SectionConfig } end
@@ -3643,7 +3998,7 @@ function MugiHub_Library:CreateWindow(Config)
 				LayoutOrder = #TabFrame:GetChildren(), Name = SectionName .. "Section",
 			}, TabFrame)
 			Custom:Corner(SectionFrame, 9)
-			Custom:Stroke(SectionFrame, Theme.White, 0.93, 1)
+			local SecStroke = Custom:Stroke(SectionFrame, Theme.White, 0.93, 1)
 			Custom:Create("UIListLayout", { Padding = UDim.new(0, 0), SortOrder = Enum.SortOrder.LayoutOrder }, SectionFrame)
 
 			local Header = Custom:Create("TextButton", {
@@ -3667,6 +4022,12 @@ function MugiHub_Library:CreateWindow(Config)
 				Position = UDim2.new(0, 10, 0, 0), Size = UDim2.new(1, -32, 1, 0), Name = "SectionTitle",
 			})
 			Custom:AddGradient(HeaderLabel, 0)
+			if SectionConfig.Flat == true then
+				SectionFrame.BackgroundTransparency = 1
+				SecStroke.Enabled = false
+				Header.Visible = false
+				Header.Size = UDim2.new(1, 0, 0, 0)
+			end
 
 			local SectionContent = Custom:Create("Frame", {
 				BackgroundTransparency = 1, BorderSizePixel = 0, AutomaticSize = Enum.AutomaticSize.Y,
@@ -3756,6 +4117,7 @@ function MugiHub_Library:CreateWindow(Config)
 				local ToggleName = ToggleConfig[1] or ToggleConfig.Name or "Toggle"
 				local Default = ToggleConfig[2] or ToggleConfig.Default or false
 				local Callback = ToggleConfig[3] or ToggleConfig.Callback or function() end
+				local LinkedPopup = ToggleConfig.Popup
 				local ToggleDesc = ToggleConfig.Content or ToggleConfig.Description or ToggleConfig[4]
 				local HasDesc = type(ToggleDesc) == "string" and ToggleDesc ~= ""
 				Default = Default and true or false
@@ -3814,14 +4176,25 @@ function MugiHub_Library:CreateWindow(Config)
 				ToggleFrame.Activated:Connect(function()
 					CircleClick(ToggleFrame)
 					UpdateToggle(not ToggleState, true)
+					if LinkedPopup then LinkedPopup:SetOpen(ToggleState) end
 					task.spawn(Callback, ToggleState)
 				end)
 				RegisterSearch(ToggleName, ToggleFrame, Where, SelectTab, EnsureOpen, TabFrame)
-				return {
+				local ToggleObj = {
 					Toggle = ToggleFrame,
-					Set = function(State) State = State and true or false UpdateToggle(State, true) task.spawn(Callback, State) end,
+					Set = function(State)
+						State = State and true or false
+						UpdateToggle(State, true)
+						if LinkedPopup then LinkedPopup:SetOpen(State) end
+						task.spawn(Callback, State)
+					end,
 					Get = function() return ToggleState end,
 				}
+				if LinkedPopup then
+					LinkedPopup:BindToggle(ToggleObj)
+					if ToggleState then LinkedPopup:SetOpen(true) end
+				end
+				return ToggleObj
 			end
 
 			function SecFuncs:AddSlider(SliderConfig)

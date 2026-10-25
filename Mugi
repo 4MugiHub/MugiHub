@@ -2982,6 +2982,9 @@ function MugiHub_Library:CreateWindow(Config)
 	end
 
 	local TopGui, TopBtn, TopStroke, TopLabel, TopSlot, TopIcon = nil, nil, nil, nil, nil, nil
+	local TopHolder, TopHolderConn = nil, nil
+	local TopBase = Color3.fromRGB(18, 18, 21)
+	local TopOpen = Color3.fromRGB(46, 46, 52)
 	local function TopbarMetrics()
 		local MinX, MinY, Height = 164, 0, 58
 		local Ok, Inset = pcall(function() return GuiService.TopbarInset end)
@@ -2990,29 +2993,79 @@ function MugiHub_Library:CreateWindow(Config)
 		end
 		return MinX, MinY, Height
 	end
+	local function FindTopbarHolder()
+		local Ok, PG = pcall(function() return Player:FindFirstChildOfClass("PlayerGui") end)
+		if not Ok or not PG then return nil end
+		local Best = nil
+		for _, G in ipairs(PG:GetChildren()) do
+			if G:IsA("ScreenGui") and G ~= MugiHubGui then
+				local Holders = G:FindFirstChild("Holders")
+				local Left = Holders and Holders:FindFirstChild("Left")
+				if Left and Left:IsA("GuiObject") then
+					local Layout = Left:FindFirstChildWhichIsA("UIListLayout")
+					if Layout and Layout.SortOrder == Enum.SortOrder.LayoutOrder then
+						if G.Name == "TopbarStandard" then return Left end
+						Best = Best or Left
+					end
+				end
+			end
+		end
+		return Best
+	end
 	local function PlaceTopbar()
 		if not TopBtn or Destroyed then return end
+		local H = 44
+		if TopHolder and TopBtn.Parent == TopHolder then
+			local Tallest = 0
+			for _, C in ipairs(TopHolder:GetChildren()) do
+				if C ~= TopBtn and C:IsA("GuiObject") and C.Visible and C.AbsoluteSize.Y > 20 then
+					Tallest = math.max(Tallest, C.AbsoluteSize.Y)
+				end
+			end
+			if Tallest > 0 then H = Tallest end
+			TopBtn.Size = UDim2.new(0, 0, 0, math.clamp(H, 28, 56))
+			return
+		end
 		local MinX, MinY, Height = TopbarMetrics()
-		local H = math.clamp(Height - 14, 28, 44)
+		H = math.clamp(math.min(H, Height - 8), 28, 56)
 		TopBtn.Size = UDim2.new(0, 0, 0, H)
 		TopBtn.Position = UDim2.new(0, MinX + 8 + BubbleOffset.X, 0, MinY + math.floor((Height - H) / 2) + BubbleOffset.Y)
+	end
+	local function AttachTopbar()
+		if not TopBtn or not TopGui or Destroyed then return end
+		local Holder = FindTopbarHolder()
+		if TopHolderConn then
+			TopHolderConn:Disconnect()
+			TopHolderConn = nil
+		end
+		if Holder then
+			TopHolder = Holder
+			TopBtn.LayoutOrder = 100000
+			TopBtn.Parent = Holder
+			TopHolderConn = Holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(PlaceTopbar)
+		else
+			TopHolder = nil
+			TopBtn.Parent = TopGui
+		end
+		PlaceTopbar()
 	end
 	RefreshTopbarIcon = function()
 		if not TopSlot then return end
 		if TopIcon then pcall(function() TopIcon.Destroy() end) TopIcon = nil end
 		TopIcon = Custom:MakeIcon(TopSlot, CurrentBubbleSrc, {
-			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 18, 0, 18),
+			AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 22, 0, 22),
 			Color = Theme.White, Name = "TopbarIcon",
 		})
 		if not TopIcon then
 			TopIcon = Custom:MakeIcon(TopSlot, "hub", {
-				AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 18, 0, 18),
+				AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 22, 0, 22),
 				Color = Theme.White, Name = "TopbarIcon",
 			})
 		end
 	end
 	UpdateTopbarState = function()
-		if TopStroke then Custom:Tween(TopStroke, 0.2, { Transparency = Opened and 0.35 or 0.8 }) end
+		if TopStroke then Custom:Tween(TopStroke, 0.2, { Transparency = Opened and 0.6 or 1 }) end
+		if TopBtn then Custom:Tween(TopBtn, 0.2, { BackgroundColor3 = Opened and TopOpen or TopBase }) end
 	end
 	local function BuildTopbar()
 		if TopGui then return end
@@ -3021,25 +3074,25 @@ function MugiHub_Library:CreateWindow(Config)
 			IgnoreGuiInset = true, DisplayOrder = 99,
 		}, Custom:GetGuiParent())
 		TopBtn = Custom:Create("TextButton", {
-			Text = "", AutoButtonColor = false, AutomaticSize = Enum.AutomaticSize.X, BackgroundColor3 = Theme.Dark,
-			BackgroundTransparency = 0.1, BorderSizePixel = 0, ClipsDescendants = true, Size = UDim2.new(0, 0, 0, 36), Name = "TopbarButton",
+			Text = "", AutoButtonColor = false, AutomaticSize = Enum.AutomaticSize.X, BackgroundColor3 = Opened and TopOpen or TopBase,
+			BackgroundTransparency = 0.15, BorderSizePixel = 0, ClipsDescendants = true, Size = UDim2.new(0, 0, 0, 44), Name = "MugiHubTopbarButton",
 		}, TopGui)
 		Custom:Round(TopBtn)
-		TopStroke = Custom:Stroke(TopBtn, Theme.White, Opened and 0.35 or 0.8, 1)
-		Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 14) }, TopBtn)
+		TopStroke = Custom:Stroke(TopBtn, Theme.White, Opened and 0.6 or 1, 1)
+		Custom:Create("UIPadding", { PaddingLeft = UDim.new(0, 13), PaddingRight = UDim.new(0, 16) }, TopBtn)
 		Custom:Create("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal, VerticalAlignment = Enum.VerticalAlignment.Center,
-			SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 7),
+			SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8),
 		}, TopBtn)
 		TopSlot = Custom:Create("Frame", {
-			BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 18, 0, 18), Name = "IconSlot",
+			BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = 1, Size = UDim2.new(0, 22, 0, 22), Name = "IconSlot",
 		}, TopBtn)
 		TopLabel = Custom:Label(TopBtn, {
-			Text = BubbleTitle or Title, TextColor3 = Theme.White, TextSize = 12, AutomaticSize = Enum.AutomaticSize.X,
-			Size = UDim2.new(0, 0, 0, 18), LayoutOrder = 2, Name = "Title",
+			Font = Enum.Font.GothamMedium, Text = BubbleTitle or Title, TextColor3 = Theme.White, TextSize = 16,
+			AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.new(0, 0, 0, 22), LayoutOrder = 2, Name = "Title",
 		})
-		TopBtn.MouseEnter:Connect(function() Custom:Tween(TopBtn, 0.15, { BackgroundTransparency = 0.02 }) end)
-		TopBtn.MouseLeave:Connect(function() Custom:Tween(TopBtn, 0.2, { BackgroundTransparency = 0.1 }) end)
+		TopBtn.MouseEnter:Connect(function() Custom:Tween(TopBtn, 0.15, { BackgroundTransparency = 0.05 }) end)
+		TopBtn.MouseLeave:Connect(function() Custom:Tween(TopBtn, 0.2, { BackgroundTransparency = 0.15 }) end)
 		TopBtn.Activated:Connect(function()
 			CircleClick(TopBtn)
 			SetOpen(not Opened)
@@ -3050,19 +3103,35 @@ function MugiHub_Library:CreateWindow(Config)
 			local Cam = workspace.CurrentCamera
 			if Cam then Track(Cam:GetPropertyChangedSignal("ViewportSize"):Connect(PlaceTopbar)) end
 		end)
-		Track(MugiHubGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(PlaceTopbar))
+		pcall(function()
+			local PG = Player:FindFirstChildOfClass("PlayerGui")
+			if PG then
+				Track(PG.ChildAdded:Connect(function(Child)
+					if Child:IsA("ScreenGui") then task.delay(0.6, AttachTopbar) end
+				end))
+			end
+		end)
+		Track(TopBtn.AncestryChanged:Connect(function()
+			if not Destroyed and not TopBtn:IsDescendantOf(game) then task.defer(AttachTopbar) end
+		end))
+		AttachTopbar()
+		task.delay(1.5, AttachTopbar)
 	end
 	local function ApplyBubbleMode(Mode)
 		BubbleMode = ParseBubbleMode(Mode)
 		if BubbleMode == "Topbar" then
 			BuildTopbar()
 			TopGui.Enabled = true
+			TopBtn.Visible = true
 			Bubble.Visible = false
 			PlaceTopbar()
 			task.defer(PlaceTopbar)
 			UpdateTopbarState()
 		else
-			if TopGui then TopGui.Enabled = false end
+			if TopGui then
+				TopGui.Enabled = false
+				TopBtn.Visible = false
+			end
 			Bubble.Visible = not Opened and not Destroyed
 		end
 	end
@@ -3164,6 +3233,7 @@ function MugiHub_Library:CreateWindow(Config)
 		for _, c in ipairs(Conns) do pcall(function() c:Disconnect() end) end
 		for _, t in ipairs(Loops) do pcall(function() t:Cancel() end) end
 		pcall(function() MugiHubGui:Destroy() end)
+		if TopBtn then pcall(function() TopBtn:Destroy() end) end
 		if TopGui then pcall(function() TopGui:Destroy() end) end
 	end
 

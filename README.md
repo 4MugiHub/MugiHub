@@ -355,7 +355,7 @@ Options of the Bubble field. It can be a plain icon source, or a table with thes
 | Size | Draggable | 42 | Diameter in pixels. |
 | Position | Draggable | Top left area | A UDim2 start position. |
 | Title | Topbar | Window title | Text shown next to the icon. |
-| Offset | Topbar | Vector2 0, 0 | Pixel nudge added to the automatic position, useful if another top bar item overlaps. |
+| Offset | Topbar | Vector2 0, 0 | Pixel nudge added to the automatic position when the pill is not inside a TopbarPlus list. |
 
 ```lua
 local Window = MugiHub.Library:CreateWindow({
@@ -376,13 +376,19 @@ Window:SetBubbleIcon("shield")      -- icon for both types
 print(Window:GetBubbleType())       -- "Draggable" or "Topbar"
 ```
 
-**How the Topbar type is placed.** MugiHub does not load the TopbarPlus module. It builds its own pill in a separate screen interface and places it using Roblox's official GuiService TopbarInset property, which describes the free area of the top bar after the core controls. The button is positioned at the start of that area, vertically centered, and moves again whenever the inset or the screen size changes. If the property cannot be read, a fixed fallback of 164 pixels from the left is used. While the window is open the pill border is brighter; the window minimize button and the keybind still work and simply change that state.
+**How the Topbar type is placed.** MugiHub does not load the TopbarPlus module, but it follows the same layout idea, in this order:
+
+1. **Joins TopbarPlus when the game uses it.** If the game already built a TopbarPlus top bar (a screen interface with a Holders frame that has a Left list), the MugiHub pill is placed inside that same Left list, after the existing icons. The list layout of TopbarPlus then handles position, spacing and resizing, so the pill always sits next to the other icons and never overlaps them. Its height follows the other icons in the list.
+2. **Uses the Roblox top bar area otherwise.** Without TopbarPlus, the pill is placed at the start of the free area reported by the official GuiService TopbarInset property (right after the core menu, chat and microphone buttons), vertically centered. If that property cannot be read, a fixed 164 pixel offset from the left is used.
+
+The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. When the window is open the pill turns a lighter gray with a thin outline. The window minimize button and the keybind still work and simply change that state. If TopbarPlus appears after your script ran, the pill moves into its list automatically.
 
 **Topbar notes and limits.**
-- Other items that executors or games add to the top bar are not part of the inset, so they can overlap the pill. Use the Offset option to move it.
+- The Offset option only applies in the second case (no TopbarPlus). In the first case the list layout decides the position.
+- Top bar items added by other executors or other interfaces that are neither TopbarPlus nor core buttons are not detected and can overlap the pill in the second case.
 - Only left-side placement exists, and there is one button per window.
 - In Topbar mode the floating bubble is never shown.
-- The Topbar placement has not been verified on a real Roblox client or executor.
+- Joining TopbarPlus depends on its known structure (a Holders frame with a Left list). It has not been verified on a real Roblox client or executor, and a different TopbarPlus version could differ.
 
 ## Tags API
 
@@ -2394,7 +2400,7 @@ What was actually checked for this release, and how.
 - Compiled and statically analyzed with the real Luau compiler: no syntax errors
 - Source check: line 1 is the only comment in the file, no non-ASCII characters (no emoji), no pink colors (the only magenta is a keypoint of the hue spectrum in the color picker)
 - Run in a simulated Roblox environment (a strict mock that rejects unknown properties and wrong value types, with a fake file system and HTTP): window creation, every component, tags with icons, tab icons, search icon, notifications, popup color picker (hex, RGB, presets, cancel, done), background via link and via `og:image` page, bubble customization, all 428 icons drawing without errors, config save/load/delete with the HWID-or-account rule (same account other device: visible; other account same device: visible; both changed: hidden), delete confirmation, auto save, notification cleanup and full cleanup on `Destroy`
-- **Added after the checks above and not compiled or run:** the anti-aliased icon renderer, the Key System, the Topbar bubble type and Popups were added after the compiler and mock runs listed here. After the last change they were checked only for balanced blocks, the single-comment rule, ASCII-only source and undefined names; the PNG encoding logic was mirrored and verified in Python. They have not been compiled with Luau or run in any simulated environment. The author tested the Key System window on a real phone before the latest changes and reported no bugs. Topbar placement (which relies on the GuiService TopbarInset property) and Popups have not been seen on a real client.
+- **Added after the checks above and not compiled or run:** the anti-aliased icon renderer, the Key System, the Topbar bubble type and Popups were added after the compiler and mock runs listed here. After the last change they were checked only for balanced blocks, the single-comment rule, ASCII-only source and undefined names; the PNG encoding logic was mirrored and verified in Python. They have not been compiled with Luau or run in any simulated environment. The author tested the Key System window on a real phone before the latest changes and reported no bugs. Topbar placement (joining the TopbarPlus list, or the GuiService TopbarInset fallback) and Popups have not been seen on a real client.
 - **Not tested in the real Roblox client or in a real executor.** Behavior that depends on executor functions (`request`, `getcustomasset`, `gethwid`, file functions) follows their documented behavior but could differ per executor.
 
 **Thumbnail**

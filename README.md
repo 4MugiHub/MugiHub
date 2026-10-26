@@ -355,7 +355,7 @@ Options of the Bubble field. It can be a plain icon source, or a table with thes
 | Size | Draggable | 42 | Diameter in pixels. |
 | Position | Draggable | Top left area | A UDim2 start position. |
 | Title | Topbar | Window title | Text shown next to the icon. |
-| Offset | Topbar | Vector2 0, 0 | Pixel nudge added to the automatic position when the pill is not inside a TopbarPlus list. |
+| Offset | Topbar | Vector2 0, 0 | Pixel nudge added to the automatic position when the pill is not inside a TopbarPlus list (detection and fallback placement). |
 
 ```lua
 local Window = MugiHub.Library:CreateWindow({
@@ -376,19 +376,23 @@ Window:SetBubbleIcon("shield")      -- icon for both types
 print(Window:GetBubbleType())       -- "Draggable" or "Topbar"
 ```
 
-**How the Topbar type is placed.** MugiHub does not load the TopbarPlus module, but it follows the same layout idea, in this order:
+**How the Topbar type is placed.** MugiHub does not load the TopbarPlus module. It places its pill with three methods, tried in this order:
 
-1. **Joins TopbarPlus when the game uses it.** If the game already built a TopbarPlus top bar (a screen interface with a Holders frame that has a Left list), the MugiHub pill is placed inside that same Left list, after the existing icons. The list layout of TopbarPlus then handles position, spacing and resizing, so the pill always sits next to the other icons and never overlaps them. Its height follows the other icons in the list.
-2. **Uses the Roblox top bar area otherwise.** Without TopbarPlus, the pill is placed at the start of the free area reported by the official GuiService TopbarInset property (right after the core menu, chat and microphone buttons), vertically centered. If that property cannot be read, a fixed 164 pixel offset from the left is used.
+1. **Joins TopbarPlus when the game uses it.** If the game already built a TopbarPlus top bar (a screen interface with a Holders frame that has a Left list), the MugiHub pill is placed inside that same Left list, after the existing icons. The list layout of TopbarPlus then handles position, spacing and resizing.
+2. **Detects the top bar that is really on screen.** MugiHub looks at the Roblox top bar and at every enabled screen interface of the game, collects the visible objects inside the top bar band, and finds the right edge of the row of icons that starts at the left (the Roblox logo, the menu, chat and microphone pill, and any icons the game added). The pill is placed after that row with a 12 pixel gap, using the same top position and height as those icons. If something else in the top bar band would still overlap the pill, the pill moves to the right of it. The check repeats every couple of seconds, so icons that a game adds or removes later are followed.
+3. **Falls back to the Roblox top bar area.** If nothing can be detected, the pill uses the free area reported by the official GuiService TopbarInset property (right after the core buttons), or a fixed 164 pixel offset from the left if that property cannot be read.
 
-The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. When the window is open the pill turns a lighter gray with a thin outline. The window minimize button and the keybind still work and simply change that state. If TopbarPlus appears after your script ran, the pill moves into its list automatically.
+The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. When the window is open the pill turns a lighter gray with a thin outline. The window minimize button and the keybind still work and simply change that state.
+
+**Image icons are round.** When the icon is an image (a link or an asset), it is cropped to a circle in the draggable bubble and in the topbar pill, even if the image file itself is square.
 
 **Topbar notes and limits.**
-- The Offset option only applies in the second case (no TopbarPlus). In the first case the list layout decides the position.
-- Top bar items added by other executors or other interfaces that are neither TopbarPlus nor core buttons are not detected and can overlap the pill in the second case.
+- The Offset option applies to methods 2 and 3. With method 1 the list layout decides the position.
+- Method 2 relies on heuristics: it treats any visible object of icon or pill size inside the top bar band as occupied space. An unrelated object in that band can push the pill further right.
+- Access to the Roblox top bar depends on the executor being allowed to read the core interface. When it is not, only the game's own interfaces are checked.
 - Only left-side placement exists, and there is one button per window.
 - In Topbar mode the floating bubble is never shown.
-- Joining TopbarPlus depends on its known structure (a Holders frame with a Left list). It has not been verified on a real Roblox client or executor, and a different TopbarPlus version could differ.
+- None of these methods has been verified on a real Roblox client or executor, and a different top bar version could differ.
 
 ## Tags API
 

@@ -30,6 +30,7 @@ Monochrome gradient theme · Animated glowing border · SVG icons everywhere · 
 - [Window API](#window-api)
 - [Icons](#icons)
 - [Images and Links](#images-and-links)
+- [Profile Card](#profile-card)
 - [Window Background](#window-background)
 - [Bubble and Topbar Button](#bubble-and-topbar-button)
 - [Tags API](#tags-api)
@@ -251,6 +252,8 @@ Named fields can be used instead of (or together with) positions:
 | `BackgroundFit` | `"crop"` (default), `"fit"` or `"stretch"` |
 | `Bubble` | Minimize/open button: an icon string or `{Type, Icon, Size, Position, Title, Offset}` (see [Bubble and Topbar Button](#bubble-and-topbar-button)) |
 | `BubbleType` | `"Draggable"` (default) or `"Topbar"`; same as `Bubble.Type` |
+| `Profile` | Settings for the welcome card at the bottom of the sidebar: `{Size, Rainbow, RainbowSpeed}` (see [Profile Card](#profile-card)) |
+| `ProfileSize`, `ProfileRainbow`, `ProfileRainbowSpeed` | Shortcuts for the three `Profile` entries |
 
 | Method | Description |
 |---|---|
@@ -262,6 +265,8 @@ Named fields can be used instead of (or together with) positions:
 | `Window:SetBubbleIcon(source)` | Change the bubble or topbar icon at runtime |
 | `Window:SetBubbleType(type)` / `Window:GetBubbleType()` | Switch between `"Draggable"` and `"Topbar"`, or read the current type |
 | `Window:SetBubbleTitle(text)` | Change the topbar button text |
+| `Window:SetProfileSize(size)` / `Window:GetProfileSize()` | Set or read the profile card size: `"Small"`, `"Medium"` or `"Large"` |
+| `Window:SetProfileRainbow(enabled, speed)` / `Window:GetProfileRainbow()` | Turn the rainbow background of the profile card on or off (speed in seconds per turn is optional) |
 | `Window:CreatePopup({...})` | Create a draggable popup panel (see [Popups](#popups)) |
 | `Window:ColorPicker({Title, Color, Callback, OnDone, OnCancel})` | Open the popup color picker without a component |
 | `Window:AddTab({name, icon})` | Create a tab |
@@ -318,6 +323,41 @@ The window icon, bubble, tab icons and the background all accept links. The libr
 If anything fails (no HTTP, blocked site, not an image) the image is simply not shown - **no error is thrown**. `MugiHub.Library:ClearImageCache()` removes cached files.
 
 > Executors need `request` (or `http_request`), `writefile` and `getcustomasset` for links. `rbxassetid` always works without any of them.
+
+## Profile Card
+
+The card at the bottom of the sidebar shows the player's avatar and the text Welcome followed by a shortened player name. You can change its size and give it an animated rainbow background.
+
+| Option | Default | Description |
+|---|---|---|
+| Size | Small | One of three presets: **Small**, **Medium** or **Large**. The preset changes the card height, the avatar size and the text size together, and the tab list above it adjusts automatically. Aliases such as m, l, mid and big are accepted. |
+| Rainbow | false | Turns on an animated rainbow background for the card. |
+| RainbowSpeed | 4 | Seconds for one full turn of the rainbow. Limited to 1 to 30. |
+
+| Preset | Card height | Avatar | Text size |
+|---|---|---|---|
+| Small | 34 | 24 | 10 |
+| Medium | 44 | 32 | 11 |
+| Large | 54 | 40 | 12 |
+
+```lua
+local Window = MugiHub.Library:CreateWindow({
+    Title = "My Hub",
+    Profile = { Size = "Medium", Rainbow = true, RainbowSpeed = 5 },
+})
+
+Window:SetProfileSize("Large")
+Window:SetProfileRainbow(false)
+Window:SetProfileRainbow(true, 3)
+print(Window:GetProfileSize(), Window:GetProfileRainbow())
+```
+
+Notes:
+- While the rainbow is on, a dark layer sits between the rainbow and the text, and the text turns white with a dark outline, so the Welcome line stays readable on every color.
+- The rainbow uses red, orange, yellow, green, cyan, blue and violet. It is driven by one rotating gradient and is cancelled when switched off or when the window is destroyed, so nothing keeps running unnecessarily.
+- The avatar picture is a 100 by 100 headshot, which stays sharp at all three sizes.
+- Suitable for premium or special keys: you can enable the rainbow only after a key is accepted by calling SetProfileRainbow in your success callback.
+- This has not been verified on a real Roblox client or executor.
 
 ## Window Background
 
@@ -382,7 +422,7 @@ print(Window:GetBubbleType())       -- "Draggable" or "Topbar"
 2. **Detects the top bar that is really on screen.** MugiHub looks at the Roblox top bar and at every enabled screen interface of the game, collects the visible objects inside the top bar band, and finds the right edge of the row of icons that starts at the left (the Roblox logo, the menu, chat and microphone pill, and any icons the game added). The pill is placed after that row with a 12 pixel gap, using the same top position and height as those icons. If something else in the top bar band would still overlap the pill, the pill moves to the right of it. The check repeats every couple of seconds, so icons that a game adds or removes later are followed.
 3. **Falls back to the Roblox top bar area.** If nothing can be detected, the pill uses the free area reported by the official GuiService TopbarInset property (right after the core buttons), or a fixed 164 pixel offset from the left if that property cannot be read.
 
-The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. When the window is open the pill turns a lighter gray with a thin outline. The window minimize button and the keybind still work and simply change that state.
+The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. Like the Roblox top bar it has no animations: there is no hover effect and no ripple, and the pill simply switches to a lighter gray with a thin outline while the window is open. The window minimize button and the keybind still work and simply change that state.
 
 **Image icons are round.** When the icon is an image (a link or an asset), it is cropped to a circle in the draggable bubble and in the topbar pill, even if the image file itself is square.
 

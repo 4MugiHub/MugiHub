@@ -422,7 +422,7 @@ print(Window:GetBubbleType())       -- "Draggable" or "Topbar"
 2. **Detects the top bar that is really on screen.** MugiHub looks at the Roblox top bar and at every enabled screen interface of the game, collects the visible objects inside the top bar band, and finds the right edge of the row of icons that starts at the left (the Roblox logo, the menu, chat and microphone pill, and any icons the game added). The pill is placed after that row with a 12 pixel gap, using the same top position and height as those icons. If something else in the top bar band would still overlap the pill, the pill moves to the right of it. The check repeats every couple of seconds, so icons that a game adds or removes later are followed.
 3. **Falls back to the Roblox top bar area.** If nothing can be detected, the pill uses the free area reported by the official GuiService TopbarInset property (right after the core buttons), or a fixed 164 pixel offset from the left if that property cannot be read.
 
-The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. Like the Roblox top bar it has no animations: there is no hover effect and no ripple, and the pill simply switches to a lighter gray with a thin outline while the window is open. The window minimize button and the keybind still work and simply change that state.
+The pill copies the look of the Roblox top bar widgets: 44 pixels high, fully rounded, dark with a slight transparency, white icon and title. Like the Roblox top bar it has no animations: there is no hover effect and no ripple, and the pill simply switches to a lighter gray with a thin outline while the window is open. The outline is drawn on the inside edge of the pill (when the Roblox version supports inner strokes), so it is never cut off by a container that is exactly as tall as the pill. The window minimize button and the keybind still work and simply change that state.
 
 **Image icons are round.** When the icon is an image (a link or an asset), it is cropped to a circle in the draggable bubble and in the topbar pill, even if the image file itself is square.
 
@@ -1376,6 +1376,7 @@ The link works in both directions: opening or closing the popup from code also m
 | Open | false | Open the popup immediately. |
 | OnOpen | None | Function called with the popup when it opens. |
 | OnClose | None | Function called with the popup when it closes, from the X, from code or from the toggle. |
+| Collapsed | false | Start in the collapsed (minimized) state. |
 
 ### Popup Methods
 
@@ -1383,6 +1384,7 @@ The link works in both directions: opening or closing the popup from code also m
 |---|---|
 | Open, Close, Toggle, SetOpen(bool), IsOpen | Show, hide, flip, set or read the state. Opening and closing are animated. |
 | BindToggle(toggle) | Bind a toggle object. Returns whether the object was valid. |
+| SetCollapsed(bool), Collapse, Expand, ToggleCollapsed, IsCollapsed | Minimize the popup to just its header bar, restore it, or read the state. |
 | SetTitle(text), SetIcon(source) | Change the header. |
 | SetWidth(n), SetHeight(n) | Resize with a short animation, using the same limits as the options. |
 | SetPosition(udim2) | Move the popup. |
@@ -1419,6 +1421,7 @@ Popup:AddButton({ "Close me", "Buttons keep the MugiHub style", function() Popup
 ### Popup Behavior and Limits
 
 - Popups sit above the window. Dialogs and the color picker open inside the window, so while one of them is shown the window is raised above popups, then returns to normal.
+- **Minimize button.** Next to the red X there is a minimize button. Pressing it shrinks the popup with a short animation until only the header remains (icon, title, minimize and X), and pressing it again restores the popup. The popup keeps its position: the header stays where it was and only the body collapses or expands, and the contents are hidden and unclickable while collapsed. Opening and closing the popup is animated too. Neither animation can be turned off per popup.
 - Clicking a popup brings it in front of other popups. Dragging works with mouse and touch.
 - The popup follows the window scale (Window:SetScale) and is removed when the window is destroyed.
 - Components inside a popup are not included in the window search. Their Flag values still work with configs.
